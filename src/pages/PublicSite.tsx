@@ -49,6 +49,19 @@ interface Product {
   category?: string;
 }
 
+const DEFAULT_CATALOG: Record<string, Array<{ id: string; name: string; price: number; image_url: string; description?: string }>> = {
+  'cha-casa-nova': [
+    { id: 'stove', name: 'Fogão', price: 1299.9, image_url: '/src/assets/products/stove.jpg' },
+    { id: 'microwave', name: 'Micro-ondas', price: 599.9, image_url: '/src/assets/products/microwave.jpg' },
+    { id: 'blender', name: 'Liquidificador', price: 199.9, image_url: '/src/assets/products/blender.jpg' },
+    { id: 'mixer', name: 'Batedeira', price: 349.9, image_url: '/src/assets/products/mixer.jpg' },
+    { id: 'electric-oven', name: 'Forno Elétrico', price: 899.9, image_url: '/src/assets/products/electric-oven.jpg' },
+    { id: 'air-fryer', name: 'Air Fryer', price: 499.9, image_url: '/src/assets/products/air-fryer.jpg' },
+    { id: 'grill', name: 'Grill Elétrico', price: 279.9, image_url: '/src/assets/products/grill.jpg' },
+    { id: 'range-hood', name: 'Coifa', price: 799.9, image_url: '/src/assets/products/range-hood.jpg' },
+  ],
+};
+
 const PublicSiteContent = () => {
 
   const { id } = useParams<{ id: string }>();
@@ -114,27 +127,45 @@ const PublicSiteContent = () => {
         if (siteProductsError) {
           console.error('Erro ao carregar produtos:', siteProductsError);
         } else if (siteProductsData && siteProductsData.length > 0) {
-          // Buscar dados dos produtos separadamente
           const productIds = siteProductsData.map(sp => sp.product_id);
           const { data: productsData, error: productsError } = await supabase
             .from('products')
             .select('*')
             .in('id', productIds)
             .eq('status', 'active');
-
           if (productsError) {
             console.error('Erro ao carregar dados dos produtos:', productsError);
           } else {
-            // Combinar dados dos site_products com produtos
             const combinedData = siteProductsData.map(siteProduct => ({
               ...siteProduct,
               product: productsData?.find(p => p.id === siteProduct.product_id) || null
             }));
             setProducts(combinedData);
           }
+        } else {
+          // Fallback: usar catálogo padrão por layout quando não há produtos no banco
+          const catalog = DEFAULT_CATALOG[siteData.layout_id] || DEFAULT_CATALOG['cha-casa-nova'];
+          const fallback = (catalog || []).map((p, idx) => ({
+            id: `fallback-${p.id}`,
+            product_id: p.id,
+            site_id: siteData.id,
+            custom_name: p.name,
+            custom_description: p.description,
+            custom_image_url: p.image_url,
+            custom_price: p.price,
+            is_available: true,
+            position: idx + 1,
+            product: {
+              id: p.id,
+              name: p.name,
+              price: p.price,
+              image_url: p.image_url,
+              description: p.description,
+              category: 'default',
+            } as Product
+          }));
+          setProducts(fallback);
         }
-
-        // Remover busca de todos os produtos - agora só usamos os do site
 
       } catch (error) {
         console.error('Erro inesperado:', error);
@@ -207,7 +238,7 @@ const PublicSiteContent = () => {
     }
   };
 
-  const handleCreatePayment = async (items: { id: string; quantity: number }[]) => {
+  const handleCreatePayment = async (items: Array<{ id?: string; quantity: number; name?: string; price?: number; description?: string; image_url?: string }>) => {
     try {
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: {
@@ -265,7 +296,7 @@ const PublicSiteContent = () => {
             </nav>
 
             <div className="flex items-center gap-3">
-              <CartSidebar />
+              <CartSidebar siteId={site.id} />
               <Button 
                 variant="outline" 
                 size="sm"
@@ -482,21 +513,33 @@ const PublicSiteContent = () => {
                       )}
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2">
                         <div className="text-lg font-semibold text-primary">
                           R$ {price.toFixed(2).replace('.', ',')}
                         </div>
-              <Button
-                onClick={() => {
-                  handleCreatePayment([{
-                    id: siteProduct.id,
-                    quantity: 1
-                  }]);
-                }}
-              >
-                <ShoppingCart className="h-4 w-4 mr-2" />
-                Comprar Agora
-              </Button>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            onClick={() => handleAddToCart(siteProduct)}
+                          >
+                            Adicionar
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              handleCreatePayment([{
+                                id: siteProduct.id,
+                                quantity: 1,
+                                name,
+                                price,
+                                description,
+                                image_url: imageUrl
+                              }]);
+                            }}
+                          >
+                            <ShoppingCart className="h-4 w-4 mr-2" />
+                            Comprar Agora
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>

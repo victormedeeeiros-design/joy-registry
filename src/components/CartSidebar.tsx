@@ -4,9 +4,32 @@ import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Plus, Minus, Trash2 } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/integrations/supabase/client";
 
-export const CartSidebar = () => {
+export const CartSidebar = ({ siteId }: { siteId?: string }) => {
   const { items, updateQuantity, removeItem, total, itemCount } = useCart();
+
+  const handleCheckout = async () => {
+    if (!siteId || items.length === 0) return;
+    try {
+      const payloadItems = items.map((i) => ({
+        id: i.id,
+        quantity: i.quantity,
+        name: i.name,
+        price: i.price,
+        image_url: i.image,
+      }));
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: { items: payloadItems, siteId },
+      });
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (err) {
+      console.error('Checkout error:', err);
+    }
+  };
 
   return (
     <Sheet>
@@ -100,7 +123,7 @@ export const CartSidebar = () => {
                   </span>
                 </div>
                 
-                <Button className="w-full" size="lg">
+                <Button className="w-full" size="lg" onClick={handleCheckout} disabled={!siteId || items.length === 0}>
                   Finalizar Compra
                 </Button>
               </div>

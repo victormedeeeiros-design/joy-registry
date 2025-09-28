@@ -44,65 +44,82 @@ serve(async (req) => {
 
     // Prepare line items for Stripe
     const lineItems = [];
-    
+
     for (const item of items) {
-      // Get site product details
-      const { data: siteProduct, error: siteProductError } = await supabaseClient
-        .from('site_products')
-        .select('*, products(*)')
-        .eq('id', item.id)
-        .eq('site_id', siteId)
-        .single();
-
-      if (siteProductError || !siteProduct) {
-        throw new Error(`Product not found: ${item.id}`);
-      }
-
-      const product = siteProduct.products;
-      if (!product) {
-        throw new Error(`Product data not found for: ${item.id}`);
-      }
-
-      // Use custom values from site_product or fallback to product defaults
-      const name = siteProduct.custom_name || product.name;
-      const price = siteProduct.custom_price || product.price;
-      const description = siteProduct.custom_description || product.description;
-      const imageUrl = siteProduct.custom_image_url || product.image_url;
-
-      // Create or get Stripe price for this product
+      let name;
+      let price;
+      let description;
+      let imageUrl;
       let stripePrice;
-      
-      if (product.stripe_price_id) {
-        // Use existing Stripe price
-        stripePrice = product.stripe_price_id;
-      } else {
-        // Create new Stripe product and price
+
+      if (item.id && siteId) {
+        const { data: siteProduct, error: siteProductError } = await supabaseClient
+          .from('site_products')
+          .select('*, products(*)')
+          .eq('id', item.id)
+          .eq('site_id', siteId)
+          .single();
+
+        if (!siteProductError && siteProduct && siteProduct.products) {
+          const product = siteProduct.products;
+          name = siteProduct.custom_name || product.name;
+          price = siteProduct.custom_price ?? product.price;
+          description = siteProduct.custom_description || product.description || undefined;
+          imageUrl = siteProduct.custom_image_url || product.image_url || undefined;
+
+          if (product.stripe_price_id) {
+            stripePrice = product.stripe_price_id;
+          } else {
+            const stripeProduct = await stripe.products.create({
+              name,
+              description,
+              images: imageUrl ? [imageUrl] : undefined,
+              metadata: {
+                product_id: product.id,
+                site_product_id: siteProduct.id
+              }
+            });
+            const stripePriceObj = await stripe.prices.create({
+              product: stripeProduct.id,
+              unit_amount: Math.round((price as number) * 100),
+              currency: 'brl',
+            });
+            stripePrice = stripePriceObj.id;
+            await supabaseClient
+              .from('products')
+              .update({
+                stripe_product_id: stripeProduct.id,
+                stripe_price_id: stripePriceObj.id
+              })
+              .eq('id', product.id);
+          }
+        }
+      }
+
+      // If we still don't have a stripePrice, use item-provided data as fallback
+      if (!stripePrice) {
+        name = item.name || name;
+        price = item.price ?? price;
+        description = item.description || description;
+        imageUrl = item.image_url || imageUrl;
+        if (!name || typeof price !== 'number') {
+          throw new Error('Missing product data for checkout item');
+        }
         const stripeProduct = await stripe.products.create({
-          name: name,
-          description: description || undefined,
+          name,
+          description,
           images: imageUrl ? [imageUrl] : undefined,
           metadata: {
-            product_id: product.id,
-            site_product_id: siteProduct.id
+            site_id: siteId,
+            source: 'fallback'
           }
         });
-
         const stripePriceObj = await stripe.prices.create({
           product: stripeProduct.id,
-          unit_amount: Math.round(price * 100), // Convert to cents
+          unit_amount: Math.round(price * 100),
           currency: 'brl',
         });
-
         stripePrice = stripePriceObj.id;
-
-        // Update product with Stripe IDs
-        await supabaseClient
-          .from('products')
-          .update({
-            stripe_product_id: stripeProduct.id,
-            stripe_price_id: stripePriceObj.id
-          })
-          .eq('id', product.id);
       }
 
       lineItems.push({
