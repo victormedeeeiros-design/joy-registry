@@ -157,6 +157,30 @@ export type Database = {
           },
         ]
       }
+      payment_methods: {
+        Row: {
+          configuration_fields: Json | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          configuration_fields?: Json | null
+          created_at?: string
+          id: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          configuration_fields?: Json | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           category: string | null
@@ -228,6 +252,47 @@ export type Database = {
           user_type?: string
         }
         Relationships: []
+      }
+      rsvps: {
+        Row: {
+          created_at: string
+          guest_email: string
+          guest_name: string
+          id: string
+          message: string | null
+          site_id: string
+          updated_at: string
+          will_attend: boolean
+        }
+        Insert: {
+          created_at?: string
+          guest_email: string
+          guest_name: string
+          id?: string
+          message?: string | null
+          site_id: string
+          updated_at?: string
+          will_attend: boolean
+        }
+        Update: {
+          created_at?: string
+          guest_email?: string
+          guest_name?: string
+          id?: string
+          message?: string | null
+          site_id?: string
+          updated_at?: string
+          will_attend?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rsvps_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       settings: {
         Row: {
@@ -319,9 +384,11 @@ export type Database = {
           id: string
           is_active: boolean | null
           layout_id: string
+          payment_method: string | null
           story_images: string[] | null
           story_text: string | null
           stripe_public_key: string | null
+          stripe_publishable_key: string | null
           stripe_secret_key: string | null
           title: string
           updated_at: string
@@ -337,9 +404,11 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           layout_id: string
+          payment_method?: string | null
           story_images?: string[] | null
           story_text?: string | null
           stripe_public_key?: string | null
+          stripe_publishable_key?: string | null
           stripe_secret_key?: string | null
           title: string
           updated_at?: string
@@ -355,9 +424,11 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           layout_id?: string
+          payment_method?: string | null
           story_images?: string[] | null
           story_text?: string | null
           stripe_public_key?: string | null
+          stripe_publishable_key?: string | null
           stripe_secret_key?: string | null
           title?: string
           updated_at?: string

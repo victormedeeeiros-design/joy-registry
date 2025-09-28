@@ -32,6 +32,7 @@ interface SiteProduct {
   custom_price?: number;
   is_available: boolean;
   position: number;
+  product?: Product | null;
 }
 
 interface Product {
@@ -48,7 +49,6 @@ const PublicSiteContent = () => {
   const { id } = useParams<{ id: string }>();
   const [site, setSite] = useState<Site | null>(null);
   const [products, setProducts] = useState<SiteProduct[]>([]);
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<string>('home');
@@ -84,31 +84,38 @@ const PublicSiteContent = () => {
 
         setSite(siteData);
 
-        // Buscar produtos do site
-        const { data: productsData, error: productsError } = await supabase
+        // Buscar produtos do site com dados dos produtos
+        const { data: siteProductsData, error: siteProductsError } = await supabase
           .from('site_products')
           .select('*')
           .eq('site_id', id)
           .eq('is_available', true)
           .order('position', { ascending: true });
 
-        if (productsError) {
-          console.error('Erro ao carregar produtos:', productsError);
-        } else {
-          setProducts(productsData || []);
+        if (siteProductsError) {
+          console.error('Erro ao carregar produtos:', siteProductsError);
+        } else if (siteProductsData && siteProductsData.length > 0) {
+          // Buscar dados dos produtos separadamente
+          const productIds = siteProductsData.map(sp => sp.product_id);
+          const { data: productsData, error: productsError } = await supabase
+            .from('products')
+            .select('*')
+            .in('id', productIds)
+            .eq('status', 'active');
+
+          if (productsError) {
+            console.error('Erro ao carregar dados dos produtos:', productsError);
+          } else {
+            // Combinar dados dos site_products com produtos
+            const combinedData = siteProductsData.map(siteProduct => ({
+              ...siteProduct,
+              product: productsData?.find(p => p.id === siteProduct.product_id) || null
+            }));
+            setProducts(combinedData);
+          }
         }
 
-        // Buscar todos os produtos disponíveis
-        const { data: allProductsData, error: allProductsError } = await supabase
-          .from('products')
-          .select('*')
-          .eq('status', 'active');
-
-        if (allProductsError) {
-          console.error('Erro ao carregar produtos gerais:', allProductsError);
-        } else {
-          setAllProducts(allProductsData || []);
-        }
+        // Remover busca de todos os produtos - agora só usamos os do site
 
       } catch (error) {
         console.error('Erro inesperado:', error);
@@ -158,12 +165,18 @@ const PublicSiteContent = () => {
     );
   }
 
-  const handleAddToCart = (product: Product) => {
+  const handleAddToCart = (siteProduct: SiteProduct) => {
+    if (!siteProduct.product) return;
+    
+    const name = siteProduct.custom_name || siteProduct.product.name;
+    const price = siteProduct.custom_price || siteProduct.product.price;
+    const image = siteProduct.custom_image_url || siteProduct.product.image_url;
+    
     addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image_url
+      id: siteProduct.id,
+      name,
+      price,
+      image
     });
   };
 
@@ -197,11 +210,11 @@ const PublicSiteContent = () => {
               </Button>
               <Button 
                 variant="ghost"
-                className={activeSection === 'story' ? 'text-primary' : ''}
-                onClick={() => scrollToSection('story')}
+                className={activeSection === 'rsvp' ? 'text-primary' : ''}
+                onClick={() => scrollToSection('rsvp')}
               >
-                <BookOpen className="h-4 w-4 mr-2" />
-                Nossa História
+                <Heart className="h-4 w-4 mr-2" />
+                RSVP
               </Button>
               <Button 
                 variant="ghost"
@@ -215,7 +228,11 @@ const PublicSiteContent = () => {
 
             <div className="flex items-center gap-3">
               <CartSidebar />
-              <Button variant="outline" size="sm">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => navigate('/auth')}
+              >
                 <User className="h-4 w-4 mr-2" />
                 Login
               </Button>
@@ -248,6 +265,22 @@ const PublicSiteContent = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
               size="lg" 
+              className="bg-primary text-white hover:bg-primary/90"
+              onClick={() => navigate('/auth?rsvp=yes')}
+            >
+              <Heart className="h-5 w-5 mr-2" />
+              Vou comparecer
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="bg-white/10 text-white border-white/20 hover:bg-white/20"
+              onClick={() => navigate('/auth?rsvp=no')}
+            >
+              Não poderei comparecer
+            </Button>
+            <Button 
+              size="lg" 
               className="bg-white text-primary hover:bg-white/90"
               onClick={() => scrollToSection('gifts')}
             >
@@ -257,6 +290,35 @@ const PublicSiteContent = () => {
           </div>
         </section>
       </HeroCarousel>
+
+      {/* RSVP Section */}
+      <section id="rsvp" className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl font-script mb-4">Confirmação de Presença</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
+            Sua presença é muito importante para nós! Por favor, confirme sua participação.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto">
+            <Button 
+              size="lg" 
+              className="flex-1 w-full sm:w-auto"
+              onClick={() => navigate('/auth?rsvp=yes')}
+            >
+              <Heart className="h-5 w-5 mr-2" />
+              Vou comparecer
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="flex-1 w-full sm:w-auto"
+              onClick={() => navigate('/auth?rsvp=no')}
+            >
+              Não poderei comparecer
+            </Button>
+          </div>
+        </div>
+      </section>
 
       {/* Story Section */}
       {site.story_images && site.story_images.length > 0 && (
@@ -297,7 +359,7 @@ const PublicSiteContent = () => {
             </p>
           </div>
 
-          {allProducts.length === 0 ? (
+          {products.length === 0 ? (
             <Card className="max-w-md mx-auto text-center">
               <CardContent className="p-8">
                 <Gift className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -309,48 +371,58 @@ const PublicSiteContent = () => {
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {allProducts.map((product) => (
-                <Card key={product.id} className="hover:shadow-elegant transition-all duration-300 group">
-                  <CardHeader className="p-4">
-                     <div className="aspect-square rounded-lg overflow-hidden mb-4 bg-muted">
-                       {product.image_url ? (
-                         <img 
-                           src={product.image_url} 
-                           alt={product.name}
-                           className="w-full h-full object-cover"
-                         />
-                       ) : (
-                         <div className="w-full h-full flex items-center justify-center">
-                           <Gift className="h-16 w-16 text-muted-foreground/50" />
-                         </div>
-                       )}
-                     </div>
-                    <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                      {product.name}
-                    </CardTitle>
-                    {product.description && (
-                      <CardDescription className="text-sm">
-                        {product.description}
-                      </CardDescription>
-                    )}
-                  </CardHeader>
-                  <CardContent className="p-4 pt-0">
-                    <div className="flex items-center justify-between">
-                      <div className="text-lg font-semibold text-primary">
-                        R$ {product.price.toFixed(2).replace('.', ',')}
+              {products.map((siteProduct) => {
+                const product = siteProduct.product;
+                if (!product) return null;
+                
+                const name = siteProduct.custom_name || product.name;
+                const price = siteProduct.custom_price || product.price;
+                const description = siteProduct.custom_description || product.description;
+                const imageUrl = siteProduct.custom_image_url || product.image_url;
+                
+                return (
+                  <Card key={siteProduct.id} className="hover:shadow-elegant transition-all duration-300 group">
+                    <CardHeader className="p-4">
+                       <div className="aspect-square rounded-lg overflow-hidden mb-4 bg-muted">
+                         {imageUrl ? (
+                           <img 
+                             src={imageUrl} 
+                             alt={name}
+                             className="w-full h-full object-cover"
+                           />
+                         ) : (
+                           <div className="w-full h-full flex items-center justify-center">
+                             <Gift className="h-16 w-16 text-muted-foreground/50" />
+                           </div>
+                         )}
+                       </div>
+                      <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                        {name}
+                      </CardTitle>
+                      {description && (
+                        <CardDescription className="text-sm">
+                          {description}
+                        </CardDescription>
+                      )}
+                    </CardHeader>
+                    <CardContent className="p-4 pt-0">
+                      <div className="flex items-center justify-between">
+                        <div className="text-lg font-semibold text-primary">
+                          R$ {price.toFixed(2).replace('.', ',')}
+                        </div>
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleAddToCart(siteProduct)}
+                          className="ml-auto"
+                        >
+                          <Gift className="h-4 w-4 mr-2" />
+                          Presentear
+                        </Button>
                       </div>
-                      <Button 
-                        size="sm" 
-                        onClick={() => handleAddToCart(product)}
-                        className="ml-auto"
-                      >
-                        <Gift className="h-4 w-4 mr-2" />
-                        Presentear
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>

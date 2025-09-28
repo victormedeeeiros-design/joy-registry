@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Eye, Palette, Type, Package, Settings, Trash2, Plus } from "lucide-react";
+import { ArrowLeft, Save, Eye, Palette, Type, Package, Settings, Trash2, Plus, Edit } from "lucide-react";
 
 interface Site {
   id: string;
@@ -82,7 +82,14 @@ const EditSite = () => {
     description: "",
     story_text: "",
     color_scheme: "elegant-gold",
-    font_family: "inter"
+    font_family: "inter",
+    payment_method: "stripe",
+    stripe_publishable_key: "",
+    stripe_secret_key: "",
+    custom_name: "",
+    custom_price: 0,
+    custom_description: "",
+    custom_image_url: ""
   });
 
   useEffect(() => {
@@ -109,7 +116,14 @@ const EditSite = () => {
         description: siteData.description || "",
         story_text: siteData.story_text || "",
         color_scheme: (siteData as any).color_scheme || "elegant-gold",
-        font_family: (siteData as any).font_family || "inter"
+        font_family: (siteData as any).font_family || "inter",
+        payment_method: (siteData as any).payment_method || "stripe",
+        stripe_publishable_key: (siteData as any).stripe_publishable_key || "",
+        stripe_secret_key: (siteData as any).stripe_secret_key || "",
+        custom_name: "",
+        custom_price: 0,
+        custom_description: "",
+        custom_image_url: ""
       });
 
       // Carregar produtos do site
@@ -157,6 +171,9 @@ const EditSite = () => {
         story_text: formData.story_text || null,
         color_scheme: formData.color_scheme || 'elegant-gold',
         font_family: formData.font_family || 'inter',
+        payment_method: formData.payment_method || 'stripe',
+        stripe_publishable_key: formData.stripe_publishable_key || null,
+        stripe_secret_key: formData.stripe_secret_key || null,
           updated_at: new Date().toISOString()
         })
         .eq('id', site.id);
@@ -445,29 +462,54 @@ const EditSite = () => {
                       const product = products.find(p => p.id === siteProduct.product_id);
                       if (!product) return null;
                       
+                      const name = siteProduct.custom_name || product.name;
+                      const price = siteProduct.custom_price || product.price;
+                      const description = siteProduct.custom_description || product.description;
+                      const imageUrl = siteProduct.custom_image_url || product.image_url;
+                      
                       return (
                         <div key={siteProduct.id} className="flex items-center justify-between p-3 border rounded-lg">
                           <div className="flex items-center gap-3">
                             <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-                              {product.image_url ? (
-                                <img src={product.image_url} alt={product.name} className="w-full h-full object-cover rounded-lg" />
+                              {imageUrl ? (
+                                <img src={imageUrl} alt={name} className="w-full h-full object-cover rounded-lg" />
                               ) : (
                                 <Package className="h-6 w-6 text-muted-foreground" />
                               )}
                             </div>
                             <div>
-                              <p className="font-medium">{product.name}</p>
-                              <p className="text-sm text-muted-foreground">R$ {product.price.toFixed(2)}</p>
+                              <p className="font-medium">{name}</p>
+                              <p className="text-sm text-muted-foreground">R$ {price.toFixed(2)}</p>
+                              {description && (
+                                <p className="text-xs text-muted-foreground">{description}</p>
+                              )}
                             </div>
                           </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeProductFromSite(siteProduct.id)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setFormData({
+                                  ...formData,
+                                  custom_name: name,
+                                  custom_price: price,
+                                  custom_description: description || '',
+                                  custom_image_url: imageUrl || ''
+                                });
+                              }}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeProductFromSite(siteProduct.id)}
+                              className="text-destructive hover:text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                       );
                     })}
@@ -512,6 +554,11 @@ const EditSite = () => {
                           </Button>
                         </div>
                       ))}
+                    {products.filter(product => !siteProducts.some(sp => sp.product_id === product.id)).length === 0 && (
+                      <p className="text-center text-muted-foreground py-8">
+                        Todos os produtos disponíveis já foram adicionados
+                      </p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -519,24 +566,94 @@ const EditSite = () => {
           </TabsContent>
 
           <TabsContent value="settings" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Status do Site</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Site {site.is_active ? 'Ativo' : 'Inativo'}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {site.is_active ? 'Seu site está público e recebendo visitantes' : 'Seu site está offline'}
+            <div className="grid grid-cols-1 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Status do Site</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Site {site.is_active ? 'Ativo' : 'Inativo'}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {site.is_active ? 'Seu site está público e recebendo visitantes' : 'Seu site está offline'}
+                      </p>
+                    </div>
+                    <Badge variant={site.is_active ? "default" : "secondary"}>
+                      {site.is_active ? "Ativo" : "Inativo"}
+                    </Badge>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Configurações de Pagamento</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="payment_method">Meio de Pagamento</Label>
+                    <Select 
+                      value={formData.payment_method} 
+                      onValueChange={(value) => setFormData({ ...formData, payment_method: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="stripe">Stripe</SelectItem>
+                        <SelectItem value="paypal" disabled>PayPal (Em breve)</SelectItem>
+                        <SelectItem value="mercadopago" disabled>Mercado Pago (Em breve)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {formData.payment_method === 'stripe' && (
+                    <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
+                      <h4 className="font-medium">Configurações do Stripe</h4>
+                      <div className="space-y-2">
+                        <Label htmlFor="stripe_publishable_key">Chave Pública do Stripe</Label>
+                        <Input
+                          id="stripe_publishable_key"
+                          type="text"
+                          placeholder="pk_test_..."
+                          value={formData.stripe_publishable_key}
+                          onChange={(e) => setFormData({ ...formData, stripe_publishable_key: e.target.value })}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="stripe_secret_key">Chave Secreta do Stripe</Label>
+                        <Input
+                          id="stripe_secret_key"
+                          type="password"
+                          placeholder="sk_test_..."
+                          value={formData.stripe_secret_key}
+                          onChange={(e) => setFormData({ ...formData, stripe_secret_key: e.target.value })}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Suas chaves serão armazenadas de forma segura e usadas para processar pagamentos.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* RSVPs List */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Confirmações de Presença</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 max-h-64 overflow-y-auto">
+                    {/* TODO: Implementar lista de RSVPs */}
+                    <p className="text-center text-muted-foreground py-8">
+                      As confirmações aparecerão aqui conforme os convidados responderem
                     </p>
                   </div>
-                  <Badge variant={site.is_active ? "default" : "secondary"}>
-                    {site.is_active ? "Ativo" : "Inativo"}
-                  </Badge>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
