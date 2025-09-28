@@ -96,7 +96,7 @@ const App = () => (
             path="/edit-site/:id" 
             element={
               <ProtectedRoute userType="site_creator">
-                <Navigate to="/dashboard" replace />
+                <EditSite />
               </ProtectedRoute>
             } 
           />

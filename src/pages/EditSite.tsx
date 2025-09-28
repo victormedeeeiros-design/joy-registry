@@ -108,8 +108,8 @@ const EditSite = () => {
         title: siteData.title || "",
         description: siteData.description || "",
         story_text: siteData.story_text || "",
-        color_scheme: siteData.color_scheme || "elegant-gold",
-        font_family: siteData.font_family || "inter"
+        color_scheme: (siteData as any).color_scheme || "elegant-gold",
+        font_family: (siteData as any).font_family || "inter"
       });
 
       // Carregar produtos do site
@@ -154,9 +154,9 @@ const EditSite = () => {
         .update({
           title: formData.title,
           description: formData.description,
-          story_text: formData.story_text,
-          color_scheme: formData.color_scheme,
-          font_family: formData.font_family,
+        story_text: formData.story_text || null,
+        color_scheme: formData.color_scheme || 'elegant-gold',
+        font_family: formData.font_family || 'inter',
           updated_at: new Date().toISOString()
         })
         .eq('id', site.id);

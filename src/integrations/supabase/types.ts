@@ -309,10 +309,12 @@ export type Database = {
       }
       sites: {
         Row: {
+          color_scheme: string | null
           created_at: string
           creator_id: string
           custom_domain: string | null
           description: string | null
+          font_family: string | null
           hero_images: string[] | null
           id: string
           is_active: boolean | null
@@ -325,10 +327,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          color_scheme?: string | null
           created_at?: string
           creator_id: string
           custom_domain?: string | null
           description?: string | null
+          font_family?: string | null
           hero_images?: string[] | null
           id?: string
           is_active?: boolean | null
@@ -341,10 +345,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          color_scheme?: string | null
           created_at?: string
           creator_id?: string
           custom_domain?: string | null
           description?: string | null
+          font_family?: string | null
           hero_images?: string[] | null
           id?: string
           is_active?: boolean | null
