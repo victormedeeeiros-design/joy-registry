@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Loader2, Home } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,12 +22,13 @@ const CreateSite = () => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    eventType: "", // Novo campo para tipo de evento
+    eventDate: "", // Data do evento
+    hostNames: "", // Nomes dos anfitriões
   });
 
   const layoutNames = {
-    "modern-grid": "Grade Moderna",
-    "story-driven": "História Personalizada",
-    "minimal-elegant": "Minimalista Elegante"
+    "cha-casa-nova": "Chá de Casa Nova"
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -45,10 +47,10 @@ const CreateSite = () => {
       return;
     }
 
-    if (!formData.title.trim()) {
+    if (!formData.title.trim() || !formData.eventType || !formData.hostNames.trim()) {
       toast({
         title: "Erro",
-        description: "O título do site é obrigatório.",
+        description: "Título, tipo de evento e nomes dos anfitriões são obrigatórios.",
         variant: "destructive",
       });
       return;
@@ -128,13 +130,54 @@ const CreateSite = () => {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleCreateSite} className="space-y-6">
+                {/* Tipo de Evento */}
+                <div className="space-y-2">
+                  <Label htmlFor="eventType">
+                    Tipo de Evento <span className="text-destructive">*</span>
+                  </Label>
+                  <Select value={formData.eventType} onValueChange={(value) => handleInputChange("eventType", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o tipo de evento" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="cha-casa-nova">
+                        <div className="flex items-center gap-2">
+                          <Home className="h-4 w-4" />
+                          Chá de Casa Nova
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    Selecione o tipo de celebração para personalizar seu site
+                  </p>
+                </div>
+
+                {/* Nomes dos Anfitriões */}
+                <div className="space-y-2">
+                  <Label htmlFor="hostNames">
+                    Nomes dos Anfitriões <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="hostNames"
+                    placeholder="Ex: Maria e João, Família Silva"
+                    value={formData.hostNames}
+                    onChange={(e) => handleInputChange("hostNames", e.target.value)}
+                    required
+                    maxLength={100}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Quem está organizando este evento?
+                  </p>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="title">
                     Título do Site <span className="text-destructive">*</span>
                   </Label>
                   <Input
                     id="title"
-                    placeholder="Ex: Lista de Casamento da Maria e João"
+                    placeholder="Ex: Chá de Casa Nova da Maria e João"
                     value={formData.title}
                     onChange={(e) => handleInputChange("title", e.target.value)}
                     required
@@ -145,18 +188,32 @@ const CreateSite = () => {
                   </p>
                 </div>
 
+                {/* Data do Evento (opcional) */}
                 <div className="space-y-2">
-                  <Label htmlFor="description">Descrição (opcional)</Label>
+                  <Label htmlFor="eventDate">Data do Evento (opcional)</Label>
+                  <Input
+                    id="eventDate"
+                    type="date"
+                    value={formData.eventDate}
+                    onChange={(e) => handleInputChange("eventDate", e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Quando será a celebração?
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">Mensagem Especial (opcional)</Label>
                   <Textarea
                     id="description"
-                    placeholder="Ex: Celebre conosco este momento especial! Aqui estão os presentes que sonhamos para nossa nova casa."
+                    placeholder="Ex: Estamos muito felizes por iniciar essa nova etapa em nossa casa nova! Venham celebrar conosco e nos ajudar a tornar nossa casa ainda mais especial."
                     value={formData.description}
                     onChange={(e) => handleInputChange("description", e.target.value)}
                     rows={4}
                     maxLength={500}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Uma breve descrição sobre o evento ou ocasião
+                    Uma mensagem carinhosa para seus convidados
                   </p>
                 </div>
 
@@ -194,7 +251,7 @@ const CreateSite = () => {
                   </Button>
                   <Button 
                     type="submit" 
-                    disabled={loading || !formData.title.trim()}
+                    disabled={loading || !formData.title.trim() || !formData.eventType || !formData.hostNames.trim()}
                     className="flex-1 gap-2"
                   >
                     {loading && <Loader2 className="h-4 w-4 animate-spin" />}

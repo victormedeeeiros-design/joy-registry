@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Check, Palette, Grid3X3, Layers } from "lucide-react";
+import { ArrowLeft, Check, Home, Heart, Baby, Cake, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface LayoutOption {
@@ -18,33 +18,46 @@ const LayoutSelection = () => {
   const navigate = useNavigate();
   const [selectedLayout, setSelectedLayout] = useState<string>("");
 
-  const layouts: LayoutOption[] = [
+const layouts: LayoutOption[] = [
     {
-      id: "modern-grid",
-      name: "Grade Moderna",
-      description: "Layout em grade limpo e moderno, perfeito para exibir produtos de forma organizada",
-      preview: "🎁 Grid layout with clean cards",
-      features: ["Grade responsiva", "Cards limpos", "Foco nos produtos", "Mobile-first"],
+      id: "cha-casa-nova",
+      name: "Chá de Casa Nova",
+      description: "Layout especial para celebrar sua nova casa, com seções para presentes essenciais e decoração",
+      preview: "🏠 Layout completo para casa nova",
+      features: ["Seções organizadas", "Lista de presentes", "Fotos da casa", "Mensagem personalizada"],
       recommended: true
     },
     {
-      id: "story-driven",
-      name: "História Personalizada",
-      description: "Layout que conta uma história, ideal para casamentos e celebrações especiais",
-      preview: "💕 Story-based with timeline",
-      features: ["Seção de história", "Timeline visual", "Fotos personalizadas", "Narrativa envolvente"]
+      id: "casamento",
+      name: "Casamento",
+      description: "Em breve - Layout elegante para listas de casamento",
+      preview: "💒 Em desenvolvimento...",
+      features: ["Em breve"],
+      recommended: false
     },
     {
-      id: "minimal-elegant",
-      name: "Minimalista Elegante",
-      description: "Design clean e sofisticado, focado na simplicidade e elegância",
-      preview: "✨ Clean minimal design",
-      features: ["Design limpo", "Tipografia elegante", "Cores suaves", "Navegação intuitiva"]
+      id: "cha-bebe",
+      name: "Chá de Bebê",
+      description: "Em breve - Layout fofo para celebrar a chegada do bebê",
+      preview: "👶 Em desenvolvimento...",
+      features: ["Em breve"],
+      recommended: false
+    },
+    {
+      id: "aniversario",
+      name: "Aniversário",
+      description: "Em breve - Layout festivo para comemorações de aniversário",
+      preview: "🎂 Em desenvolvimento...",
+      features: ["Em breve"],
+      recommended: false
     }
   ];
 
   const handleLayoutSelect = (layoutId: string) => {
-    setSelectedLayout(layoutId);
+    // Só permite selecionar chá de casa nova
+    if (layoutId === "cha-casa-nova") {
+      setSelectedLayout(layoutId);
+    }
   };
 
   const handleContinue = () => {
@@ -81,10 +94,12 @@ const LayoutSelection = () => {
           {layouts.map((layout) => (
             <Card 
               key={layout.id} 
-              className={`cursor-pointer transition-all border-2 ${
-                selectedLayout === layout.id 
-                  ? "border-primary bg-primary/5" 
-                  : "border-border hover:border-primary/50"
+              className={`transition-all border-2 ${
+                layout.id === "cha-casa-nova" 
+                  ? `cursor-pointer ${selectedLayout === layout.id 
+                      ? "border-primary bg-primary/5" 
+                      : "border-border hover:border-primary/50"}`
+                  : "opacity-60 cursor-not-allowed border-muted"
               }`}
               onClick={() => handleLayoutSelect(layout.id)}
             >
@@ -96,6 +111,12 @@ const LayoutSelection = () => {
                       {layout.recommended && (
                         <Badge variant="default" className="text-xs">
                           Recomendado
+                        </Badge>
+                      )}
+                      {layout.id !== "cha-casa-nova" && (
+                        <Badge variant="secondary" className="text-xs">
+                          <Lock className="h-3 w-3 mr-1" />
+                          Em Breve
                         </Badge>
                       )}
                     </CardTitle>
@@ -115,9 +136,10 @@ const LayoutSelection = () => {
                 {/* Preview placeholder */}
                 <div className="bg-muted rounded-lg p-6 mb-4 text-center">
                   <div className="text-4xl mb-2">
-                    {layout.id === "modern-grid" && <Grid3X3 className="h-12 w-12 mx-auto text-muted-foreground" />}
-                    {layout.id === "story-driven" && <Layers className="h-12 w-12 mx-auto text-muted-foreground" />}
-                    {layout.id === "minimal-elegant" && <Palette className="h-12 w-12 mx-auto text-muted-foreground" />}
+                    {layout.id === "cha-casa-nova" && <Home className="h-12 w-12 mx-auto text-primary" />}
+                    {layout.id === "casamento" && <Heart className="h-12 w-12 mx-auto text-muted-foreground" />}
+                    {layout.id === "cha-bebe" && <Baby className="h-12 w-12 mx-auto text-muted-foreground" />}
+                    {layout.id === "aniversario" && <Cake className="h-12 w-12 mx-auto text-muted-foreground" />}
                   </div>
                   <p className="text-sm text-muted-foreground">{layout.preview}</p>
                 </div>
@@ -143,10 +165,10 @@ const LayoutSelection = () => {
           <Button 
             size="lg" 
             onClick={handleContinue} 
-            disabled={!selectedLayout}
+            disabled={!selectedLayout || selectedLayout !== "cha-casa-nova"}
             className="px-8"
           >
-            Continuar com Layout Selecionado
+            {selectedLayout === "cha-casa-nova" ? "Continuar com Chá de Casa Nova" : "Selecione um Layout Disponível"}
           </Button>
         </div>
       </div>
