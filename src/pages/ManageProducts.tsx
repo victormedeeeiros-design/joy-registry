@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Plus, Pencil, Trash2, Package, Image, DollarSign } from "lucide-react";
@@ -29,6 +30,9 @@ const ManageProducts = () => {
   const [loading, setLoading] = useState(true);
   const [showDialog, setShowDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [showNewCategory, setShowNewCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [formData, setFormData] = useState({
     id: "",
     name: "",
@@ -40,6 +44,7 @@ const ManageProducts = () => {
 
   useEffect(() => {
     loadProducts();
+    loadCategories();
   }, []);
 
   const loadProducts = async () => {
@@ -60,6 +65,27 @@ const ManageProducts = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('products')
+        .select('category')
+        .not('category', 'is', null);
+
+      if (error) throw error;
+      
+      const uniqueCategories = [...new Set(data?.map(p => p.category).filter(Boolean))] as string[];
+      
+      // Adicionar categorias padrão se não existirem
+      const defaultCategories = ['Eletrodomésticos', 'Brincadeiras', 'Casa e Jardim', 'Cozinha'];
+      const allCategories = [...new Set([...defaultCategories, ...uniqueCategories])];
+      
+      setCategories(allCategories);
+    } catch (error) {
+      console.error('Erro ao carregar categorias:', error);
     }
   };
 
@@ -91,6 +117,18 @@ const ManageProducts = () => {
   const handleCloseDialog = () => {
     setShowDialog(false);
     setEditingProduct(null);
+    setShowNewCategory(false);
+    setNewCategoryName("");
+  };
+
+  const handleAddNewCategory = () => {
+    if (newCategoryName.trim()) {
+      const newCategories = [...categories, newCategoryName.trim()];
+      setCategories([...new Set(newCategories)]);
+      setFormData({ ...formData, category: newCategoryName.trim() });
+      setNewCategoryName("");
+      setShowNewCategory(false);
+    }
   };
 
   const handleSaveProduct = async () => {
@@ -151,6 +189,7 @@ const ManageProducts = () => {
 
       handleCloseDialog();
       loadProducts();
+      loadCategories();
     } catch (error: any) {
       console.error('Erro ao salvar produto:', error);
       toast({
@@ -286,7 +325,7 @@ const ManageProducts = () => {
                   )}
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="text-lg font-semibold text-primary">
                       R$ {product.price.toFixed(2).replace('.', ',')}
                     </div>
@@ -294,6 +333,14 @@ const ManageProducts = () => {
                       {product.status === 'active' ? 'Ativo' : 'Inativo'}
                     </Badge>
                   </div>
+                  
+                  {product.category && (
+                    <div className="mb-4">
+                      <Badge variant="outline" className="text-xs">
+                        {product.category}
+                      </Badge>
+                    </div>
+                  )}
                   
                   <div className="flex gap-2">
                     <Button
@@ -392,12 +439,60 @@ const ManageProducts = () => {
             
             <div className="space-y-2">
               <Label htmlFor="category">Categoria</Label>
-              <Input
-                id="category"
-                value={formData.category}
-                onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                placeholder="Ex: Eletrodomésticos"
-              />
+              {!showNewCategory ? (
+                <div className="flex gap-2">
+                  <Select 
+                    value={formData.category} 
+                    onValueChange={(value) => setFormData({ ...formData, category: value })}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder="Selecione uma categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowNewCategory(true)}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <Input
+                    value={newCategoryName}
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="Nome da nova categoria"
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddNewCategory()}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={handleAddNewCategory}
+                  >
+                    Adicionar
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setShowNewCategory(false);
+                      setNewCategoryName("");
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              )}
             </div>
             
             <div className="space-y-2">

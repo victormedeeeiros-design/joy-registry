@@ -268,15 +268,6 @@ const EditSite = () => {
 
       if (error) throw error;
 
-      // Apply theme class based on color scheme
-      const body = document.body;
-      body.className = body.className.replace(/theme-[\w-]+/g, '');
-      if (formData.color_scheme === 'dark-elegance') {
-        body.classList.add('theme-dark-elegance');
-      } else if (formData.color_scheme === 'midnight-black') {
-        body.classList.add('theme-midnight-black');
-      }
-
       toast({
         title: "Alterações salvas!",
         description: "As informações do site foram atualizadas com sucesso.",

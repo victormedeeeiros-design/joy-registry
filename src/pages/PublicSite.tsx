@@ -69,6 +69,10 @@ const DEFAULT_CATALOG: Record<string, Array<{ id: string; name: string; price: n
     { id: 'air-fryer', name: 'Air Fryer', price: 499.9, image_url: airFryerImg, category: 'Eletrodomésticos', description: 'Fritadeira sem óleo 4L' },
     { id: 'grill', name: 'Grill Elétrico', price: 279.9, image_url: grillImg, category: 'Eletrodomésticos', description: 'Grill elétrico antiaderente' },
     { id: 'range-hood', name: 'Coifa', price: 799.9, image_url: rangeHoodImg, category: 'Eletrodomésticos', description: 'Coifa 60cm inox' },
+    { id: 'kit-sobrevivencia', name: 'Kit sobrevivência do merecedor novo', price: 80.00, image_url: '', category: 'Brincadeiras', description: 'Kit divertido para novos moradores' },
+    { id: 'pano-motivacional', name: 'Pano de prato motivacional', price: 35.00, image_url: '', category: 'Brincadeiras', description: 'Pano de prato com frases motivacionais' },
+    { id: 'tapete-diferentao', name: 'Tapete de porta diferentão', price: 65.00, image_url: '', category: 'Brincadeiras', description: 'Tapete com mensagens divertidas' },
+    { id: 'manual-sobrevivencia', name: 'Manual de sobrevivência doméstica', price: 45.00, image_url: '', category: 'Brincadeiras', description: 'Guia humorístico para vida doméstica' }
   ],
 };
 
@@ -125,6 +129,15 @@ const PublicSiteContent = () => {
         }
 
         setSite(siteData);
+
+        // Apply theme class based on color scheme
+        const body = document.body;
+        body.className = body.className.replace(/theme-[\w-]+/g, '');
+        if (siteData.color_scheme === 'dark-elegance') {
+          body.classList.add('theme-dark-elegance');
+        } else if (siteData.color_scheme === 'midnight-black') {
+          body.classList.add('theme-midnight-black');
+        }
 
         // Buscar produtos do site com dados dos produtos
         const { data: siteProductsData, error: siteProductsError } = await supabase
@@ -186,6 +199,12 @@ const PublicSiteContent = () => {
     };
 
     loadSite();
+
+    // Cleanup: restore default theme when leaving the page
+    return () => {
+      const body = document.body;
+      body.className = body.className.replace(/theme-[\w-]+/g, '');
+    };
   }, [id]);
 
   if (loading) {
