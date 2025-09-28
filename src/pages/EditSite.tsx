@@ -788,7 +788,7 @@ const EditSite = () => {
 
       <div className="container mx-auto px-4 py-8">
         <Tabs defaultValue="design" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="design" className="gap-2">
               <Palette className="h-4 w-4" />
               Design
@@ -800,6 +800,10 @@ const EditSite = () => {
             <TabsTrigger value="products" className="gap-2">
               <Package className="h-4 w-4" />
               Lista de Presentes
+            </TabsTrigger>
+            <TabsTrigger value="rsvps" className="gap-2">
+              <Users className="h-4 w-4" />
+              Confirmações de Presença
             </TabsTrigger>
             <TabsTrigger value="settings" className="gap-2">
               <Settings className="h-4 w-4" />
@@ -1280,6 +1284,13 @@ const EditSite = () => {
             </div>
           </TabsContent>
 
+          <TabsContent value="rsvps" className="space-y-6">
+            <div className="grid grid-cols-1 gap-6">
+              {/* RSVPs List */}
+              <RSVPList siteId={site.id} />
+            </div>
+          </TabsContent>
+
           <TabsContent value="settings" className="space-y-6">
             <div className="grid grid-cols-1 gap-6">
               <Card>
@@ -1353,9 +1364,6 @@ const EditSite = () => {
                   )}
                 </CardContent>
               </Card>
-
-              {/* RSVPs List */}
-              <RSVPList siteId={site.id} />
             </div>
           </TabsContent>
         </Tabs>

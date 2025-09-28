@@ -45,16 +45,43 @@ export const RSVPSection = ({ site, siteUser, navigate }: RSVPSectionProps) => {
 
     setLoading(true);
     try {
-      const { error } = await supabase
+      // Primeiro verifica se já existe um RSVP para este usuário neste site
+      const { data: existingRSVP } = await supabase
         .from('site_rsvps')
-        .upsert({
-          site_id: site.id,
-          site_user_id: siteUser.id,
-          guest_name: siteUser.name,
-          guest_email: siteUser.email,
-          message: message.trim() || null,
-          will_attend: willAttend
-        });
+        .select('*')
+        .eq('site_id', site.id)
+        .eq('guest_email', siteUser.email)
+        .single();
+
+      let error = null;
+
+      if (existingRSVP) {
+        // Se já existe, faz update
+        const { error: updateError } = await supabase
+          .from('site_rsvps')
+          .update({
+            site_user_id: siteUser.id,
+            guest_name: siteUser.name,
+            message: message.trim() || null,
+            will_attend: willAttend,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingRSVP.id);
+        error = updateError;
+      } else {
+        // Se não existe, faz insert
+        const { error: insertError } = await supabase
+          .from('site_rsvps')
+          .insert({
+            site_id: site.id,
+            site_user_id: siteUser.id,
+            guest_name: siteUser.name,
+            guest_email: siteUser.email,
+            message: message.trim() || null,
+            will_attend: willAttend
+          });
+        error = insertError;
+      }
 
       if (error) throw error;
 
