@@ -86,6 +86,18 @@ const App = () => (
               </ProtectedRoute>
             } 
           />
+          <Route 
+            path="/site/:id" 
+            element={<Navigate to="/dashboard" replace />} 
+          />
+          <Route 
+            path="/edit-site/:id" 
+            element={
+              <ProtectedRoute userType="site_creator">
+                <Navigate to="/dashboard" replace />
+              </ProtectedRoute>
+            } 
+          />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

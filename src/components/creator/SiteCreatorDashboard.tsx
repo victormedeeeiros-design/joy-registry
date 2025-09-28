@@ -161,11 +161,20 @@ const SiteCreatorDashboard = () => {
                     {site.description || "Sem descrição"}
                   </p>
                   <div className="flex gap-2">
-                    <Button size="sm" variant="outline" className="flex-1 gap-1">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      className="flex-1 gap-1"
+                      onClick={() => window.open(`/site/${site.id}`, '_blank')}
+                    >
                       <Eye className="h-3 w-3" />
                       Ver
                     </Button>
-                    <Button size="sm" className="flex-1 gap-1">
+                    <Button 
+                      size="sm" 
+                      className="flex-1 gap-1"
+                      onClick={() => navigate(`/edit-site/${site.id}`)}
+                    >
                       <Edit className="h-3 w-3" />
                       Editar
                     </Button>
