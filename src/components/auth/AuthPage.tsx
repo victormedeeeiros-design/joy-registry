@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -67,6 +67,28 @@ const AuthPage = () => {
     setLoading(false);
   };
 
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    const { error } = await signUp(email, password, name);
+    
+    if (error) {
+      toast({
+        title: "Erro no cadastro",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Cadastro realizado com sucesso!",
+        description: "Verifique seu email para ativar sua conta.",
+      });
+    }
+    
+    setLoading(false);
+  };
+
   const handleRSVP = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -117,27 +139,9 @@ const AuthPage = () => {
     } finally {
       setLoading(false);
     }
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    const { error } = await signUp(email, password, name);
-    
-    if (error) {
-      toast({
-        title: "Erro no cadastro",
-        description: error.message,
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Cadastro realizado com sucesso!",
-        description: "Verifique seu email para ativar sua conta.",
-      });
-    }
-    
-    setLoading(false);
   };
+
+  return (
     <div className="min-h-screen gradient-accent flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">

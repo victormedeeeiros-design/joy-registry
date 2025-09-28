@@ -180,11 +180,22 @@ const PublicSiteContent = () => {
     });
   };
 
-  const scrollToSection = (sectionId: string) => {
-    setActiveSection(sectionId);
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
+  const handleCreatePayment = async (items: { id: string; quantity: number }[]) => {
+    try {
+      const { data, error } = await supabase.functions.invoke('create-payment', {
+        body: {
+          items,
+          siteId: site?.id
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (error: any) {
+      console.error('Payment error:', error);
     }
   };
 
@@ -410,14 +421,17 @@ const PublicSiteContent = () => {
                         <div className="text-lg font-semibold text-primary">
                           R$ {price.toFixed(2).replace('.', ',')}
                         </div>
-                        <Button 
-                          size="sm" 
-                          onClick={() => handleAddToCart(siteProduct)}
-                          className="ml-auto"
-                        >
-                          <Gift className="h-4 w-4 mr-2" />
-                          Presentear
-                        </Button>
+              <Button
+                onClick={() => {
+                  handleCreatePayment([{
+                    id: siteProduct.id,
+                    quantity: 1
+                  }]);
+                }}
+              >
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Comprar Agora
+              </Button>
                       </div>
                     </CardContent>
                   </Card>
