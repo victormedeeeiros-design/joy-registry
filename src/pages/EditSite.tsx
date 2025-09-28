@@ -37,7 +37,8 @@ interface Site {
   story_text?: string;
   color_scheme?: string;
   font_family?: string;
-  font_color?: string;
+  font_color_menu?: string;
+  font_color_hero?: string;
   event_date?: string;
   event_time?: string;
   event_location?: string;
@@ -91,6 +92,17 @@ const fontColors = [
   { id: 'black', name: 'Preto', value: '#000000' },
   { id: 'gold', name: 'Dourado', value: '#D4AF37' },
   { id: 'rose', name: 'Rosa', value: '#E91E63' }
+];
+
+const heroFontColors = [
+  { id: 'white', name: 'Branco (contraste escuro)', value: '#ffffff' },
+  { id: 'black', name: 'Preto (contraste claro)', value: '#000000' },
+  { id: 'gold', name: 'Dourado Elegante', value: '#D4AF37' },
+  { id: 'cream', name: 'Creme Suave', value: '#F5F5DC' },
+  { id: 'navy', name: 'Azul Marinho', value: '#1e3a8a' },
+  { id: 'emerald', name: 'Verde Esmeralda', value: '#059669' },
+  { id: 'rose', name: 'Rosa Elegante', value: '#E91E63' },
+  { id: 'purple', name: 'Roxo Real', value: '#7c3aed' }
 ];
 
 const categories = [
@@ -152,7 +164,8 @@ const EditSite = () => {
     story_text: "",
     color_scheme: "elegant-gold",
     font_family: "inter",
-    font_color: "default",
+    font_color_menu: "default",
+    font_color_hero: "white",
     payment_method: "stripe",
     stripe_publishable_key: "",
     stripe_secret_key: "",
@@ -188,7 +201,8 @@ const EditSite = () => {
         story_text: siteData.story_text || "",
         color_scheme: (siteData as any).color_scheme || "elegant-gold",
         font_family: (siteData as any).font_family || "inter",
-        font_color: (siteData as any).font_color || "default",
+        font_color_menu: (siteData as any).font_color_menu || "default",
+        font_color_hero: (siteData as any).font_color_hero || "white",
         payment_method: (siteData as any).payment_method || "stripe",
         stripe_publishable_key: (siteData as any).stripe_publishable_key || "",
         stripe_secret_key: (siteData as any).stripe_secret_key || "",
@@ -281,6 +295,8 @@ const EditSite = () => {
         story_text: formData.story_text || null,
         color_scheme: formData.color_scheme || 'elegant-gold',
         font_family: formData.font_family || 'playfair',
+        font_color_menu: formData.font_color_menu || 'default',
+        font_color_hero: formData.font_color_hero || 'white',
         hero_images: formData.hero_images || [],
         story_images: formData.story_images || [],
         event_date: formData.event_date || null,
@@ -838,16 +854,41 @@ const EditSite = () => {
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Cor da Fonte</Label>
+                    <Label>Cor da Fonte do Menu</Label>
                     <Select 
-                      value={formData.font_color} 
-                      onValueChange={(value) => setFormData({ ...formData, font_color: value })}
+                      value={formData.font_color_menu} 
+                      onValueChange={(value) => setFormData({ ...formData, font_color_menu: value })}
                     >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         {fontColors.map((color) => (
+                          <SelectItem key={color.id} value={color.id}>
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-4 h-4 rounded border"
+                                style={{ backgroundColor: color.value }}
+                              />
+                              {color.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Cor da Fonte do Hero</Label>
+                    <Select 
+                      value={formData.font_color_hero} 
+                      onValueChange={(value) => setFormData({ ...formData, font_color_hero: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {heroFontColors.map((color) => (
                           <SelectItem key={color.id} value={color.id}>
                             <div className="flex items-center gap-2">
                               <div 

@@ -35,6 +35,8 @@ interface Site {
   event_location?: string;
   color_scheme?: string;
   font_family?: string;
+  font_color_menu?: string;
+  font_color_hero?: string;
 }
 
 interface SiteProduct {
@@ -139,10 +141,12 @@ const PublicSiteContent = () => {
           body.classList.add('theme-midnight-black');
         }
         
-        // Apply font color if specified
-        if (siteData.font_color && siteData.font_color !== 'default') {
-          const root = document.documentElement;
-          const fontColorMap: { [key: string]: string } = {
+        // Apply font colors if specified
+        const root = document.documentElement;
+        
+        // Menu font color
+        if (siteData.font_color_menu && siteData.font_color_menu !== 'default') {
+          const menuColorMap: { [key: string]: string } = {
             'primary': 'var(--primary)',
             'secondary': 'var(--muted-foreground)',
             'accent': 'var(--accent-foreground)',
@@ -152,8 +156,26 @@ const PublicSiteContent = () => {
             'rose': '#E91E63'
           };
           
-          if (fontColorMap[siteData.font_color]) {
-            root.style.setProperty('--foreground', fontColorMap[siteData.font_color]);
+          if (menuColorMap[siteData.font_color_menu]) {
+            root.style.setProperty('--menu-color', menuColorMap[siteData.font_color_menu]);
+          }
+        }
+        
+        // Hero font color
+        if (siteData.font_color_hero && siteData.font_color_hero !== 'white') {
+          const heroColorMap: { [key: string]: string } = {
+            'white': '#ffffff',
+            'black': '#000000',
+            'gold': '#D4AF37',
+            'cream': '#F5F5DC',
+            'navy': '#1e3a8a',
+            'emerald': '#059669',
+            'rose': '#E91E63',
+            'purple': '#7c3aed'
+          };
+          
+          if (heroColorMap[siteData.font_color_hero]) {
+            root.style.setProperty('--hero-color', heroColorMap[siteData.font_color_hero]);
           }
         }
 
@@ -223,9 +245,10 @@ const PublicSiteContent = () => {
       const body = document.body;
       body.className = body.className.replace(/theme-[\w-]+/g, '');
       
-      // Reset font color to default
+      // Reset font colors to default
       const root = document.documentElement;
-      root.style.removeProperty('--foreground');
+      root.style.removeProperty('--menu-color');
+      root.style.removeProperty('--hero-color');
     };
   }, [id]);
 
@@ -319,27 +342,30 @@ const PublicSiteContent = () => {
               <span className="font-script text-xl text-primary">{site.title}</span>
             </div>
             
-            <nav className="hidden md:flex items-center gap-6">
+            <nav className="hidden md:flex items-center gap-6" style={{ color: 'var(--menu-color, var(--foreground))' }}>
               <Button 
                 variant="ghost" 
-                className={activeSection === 'home' ? 'text-primary' : ''}
+                className={`${activeSection === 'home' ? 'text-primary' : ''} hover:text-primary transition-colors`}
                 onClick={() => scrollToSection('home')}
+                style={{ color: 'inherit' }}
               >
                 <Home className="h-4 w-4 mr-2" />
                 Início
               </Button>
               <Button 
                 variant="ghost"
-                className={activeSection === 'story' ? 'text-primary' : ''}
+                className={`${activeSection === 'story' ? 'text-primary' : ''} hover:text-primary transition-colors`}
                 onClick={() => scrollToSection('story')}
+                style={{ color: 'inherit' }}
               >
                 <Heart className="h-4 w-4 mr-2" />
                 Nossa História
               </Button>
               <Button 
                 variant="ghost"
-                className={activeSection === 'gifts' ? 'text-primary' : ''}
+                className={`${activeSection === 'gifts' ? 'text-primary' : ''} hover:text-primary transition-colors`}
                 onClick={() => scrollToSection('gifts')}
+                style={{ color: 'inherit' }}
               >
                 <Gift className="h-4 w-4 mr-2" />
                 Lista de Presentes
@@ -366,18 +392,18 @@ const PublicSiteContent = () => {
         images={site.hero_images || []}
         className="h-[85vh] min-h-[700px] flex items-center justify-center text-white"
       >
-        <section id="home" className="container mx-auto px-4 text-center">
-          <Badge variant="outline" className="mb-4 bg-white/10 text-white border-white/20">
+        <section id="home" className="container mx-auto px-4 text-center" style={{ color: 'var(--hero-color, #ffffff)' }}>
+          <Badge variant="outline" className="mb-4 bg-white/10 border-white/20" style={{ color: 'inherit' }}>
             <Home className="h-4 w-4 mr-2" />
             {site.layout_id === 'cha-casa-nova' ? 'Chá de Casa Nova' : 'Celebração Especial'}
           </Badge>
           
-          <h1 className="text-4xl md:text-6xl font-script mb-6 text-white drop-shadow-lg">
+          <h1 className="text-4xl md:text-6xl font-script mb-6 drop-shadow-lg" style={{ color: 'inherit' }}>
             {site.title}
           </h1>
           
           {site.description && (
-            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-white/90 drop-shadow-md">
+            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90 drop-shadow-md" style={{ color: 'inherit' }}>
               {site.description}
             </p>
           )}
@@ -386,10 +412,10 @@ const PublicSiteContent = () => {
           {(site.event_date || site.event_time || site.event_location) && (
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-8 max-w-2xl mx-auto">
               <div className="flex items-center justify-center gap-2 mb-4">
-                <Calendar className="h-5 w-5 text-white" />
-                <h3 className="text-lg font-semibold text-white">Informações do Evento</h3>
+                <Calendar className="h-5 w-5" style={{ color: 'inherit' }} />
+                <h3 className="text-lg font-semibold" style={{ color: 'inherit' }}>Informações do Evento</h3>
               </div>
-              <div className="space-y-2 text-white/90">
+              <div className="space-y-2 opacity-90" style={{ color: 'inherit' }}>
                 {site.event_date && (
                   <div className="flex items-center justify-center gap-2">
                     <Calendar className="h-4 w-4" />
