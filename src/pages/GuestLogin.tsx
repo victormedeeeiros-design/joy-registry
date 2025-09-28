@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useGuestAuth } from "@/hooks/useGuestAuth";
+import { useSiteAuth } from "@/hooks/useSiteAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Gift, CheckCircle, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +21,7 @@ const GuestLogin = () => {
   const [loading, setLoading] = useState(false);
   const [showRSVP, setShowRSVP] = useState(false);
   const [rsvpStatus, setRsvpStatus] = useState<'yes' | 'no' | null>(null);
-  const { guestUser, loading: authLoading, signIn, signUp } = useGuestAuth();
+  const { siteUser, loading: authLoading, signIn, signUp } = useSiteAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -39,7 +39,7 @@ const GuestLogin = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    if (!authLoading && guestUser) {
+    if (!authLoading && siteUser) {
       // Get the siteId from URL params to redirect back to the correct site
       const siteId = searchParams.get('siteId');
       if (siteId) {
@@ -59,13 +59,24 @@ const GuestLogin = () => {
         }
       }
     }
-  }, [authLoading, guestUser, navigate, searchParams]);
+  }, [authLoading, siteUser, navigate, searchParams]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signIn(email, password);
+    const siteId = searchParams.get('siteId') || localStorage.getItem('currentSiteId');
+    if (!siteId) {
+      toast({
+        title: "Erro",
+        description: "ID do site não encontrado",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await signIn(siteId, email, password);
     
     if (error) {
       toast({
@@ -86,7 +97,18 @@ const GuestLogin = () => {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await signUp(email, password, name);
+    const siteId = searchParams.get('siteId') || localStorage.getItem('currentSiteId');
+    if (!siteId) {
+      toast({
+        title: "Erro",
+        description: "ID do site não encontrado",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    const { error } = await signUp(siteId, email, password, name);
     
     if (error) {
       toast({
@@ -115,7 +137,7 @@ const GuestLogin = () => {
       }
 
       const { error } = await supabase
-        .from('rsvps')
+        .from('site_rsvps')
         .upsert({
           site_id: siteId,
           guest_name: guestName,

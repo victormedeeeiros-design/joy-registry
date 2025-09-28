@@ -435,6 +435,105 @@ export type Database = {
         }
         Relationships: []
       }
+      site_order_items: {
+        Row: {
+          created_at: string
+          id: string
+          price: number
+          quantity: number
+          site_order_id: string
+          site_product_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          price: number
+          quantity?: number
+          site_order_id: string
+          site_product_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          price?: number
+          quantity?: number
+          site_order_id?: string
+          site_product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_order_items_site_order_id_fkey"
+            columns: ["site_order_id"]
+            isOneToOne: false
+            referencedRelation: "site_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_order_items_site_product_id_fkey"
+            columns: ["site_product_id"]
+            isOneToOne: false
+            referencedRelation: "site_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_orders: {
+        Row: {
+          created_at: string
+          giver_message: string | null
+          guest_email: string | null
+          guest_name: string | null
+          id: string
+          site_id: string
+          site_user_id: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          giver_message?: string | null
+          guest_email?: string | null
+          guest_name?: string | null
+          id?: string
+          site_id: string
+          site_user_id?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          giver_message?: string | null
+          guest_email?: string | null
+          guest_name?: string | null
+          id?: string
+          site_id?: string
+          site_user_id?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_orders_site_user_id_fkey"
+            columns: ["site_user_id"]
+            isOneToOne: false
+            referencedRelation: "site_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_products: {
         Row: {
           created_at: string
@@ -485,6 +584,95 @@ export type Database = {
           },
           {
             foreignKeyName: "site_products_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_rsvps: {
+        Row: {
+          created_at: string
+          guest_email: string
+          guest_name: string
+          id: string
+          message: string | null
+          site_id: string
+          site_user_id: string | null
+          updated_at: string
+          will_attend: boolean
+        }
+        Insert: {
+          created_at?: string
+          guest_email: string
+          guest_name: string
+          id?: string
+          message?: string | null
+          site_id: string
+          site_user_id?: string | null
+          updated_at?: string
+          will_attend: boolean
+        }
+        Update: {
+          created_at?: string
+          guest_email?: string
+          guest_name?: string
+          id?: string
+          message?: string | null
+          site_id?: string
+          site_user_id?: string | null
+          updated_at?: string
+          will_attend?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_rsvps_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_rsvps_site_user_id_fkey"
+            columns: ["site_user_id"]
+            isOneToOne: false
+            referencedRelation: "site_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          password_hash: string
+          site_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+          password_hash: string
+          site_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          password_hash?: string
+          site_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_users_site_id_fkey"
             columns: ["site_id"]
             isOneToOne: false
             referencedRelation: "sites"
@@ -601,6 +789,10 @@ export type Database = {
     Functions: {
       authenticate_guest_user: {
         Args: { p_email: string; p_password: string }
+        Returns: Json
+      }
+      authenticate_site_user: {
+        Args: { p_email: string; p_password: string; p_site_id: string }
         Returns: Json
       }
     }
