@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useGuestAuth } from "@/hooks/useGuestAuth";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Heart, Gift, CheckCircle, ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +21,7 @@ const AuthPage = () => {
   const [loading, setLoading] = useState(false);
   const [showRSVP, setShowRSVP] = useState(false);
   const [rsvpStatus, setRsvpStatus] = useState<'yes' | 'no' | null>(null);
-  const { guestUser, loading: authLoading, signIn, signUp } = useGuestAuth();
+  const { user, profile, loading: authLoading, signIn, signUp } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -34,13 +34,16 @@ const AuthPage = () => {
   }, [searchParams]);
 
   useEffect(() => {
-    if (!authLoading && guestUser) {
-      // Get the return URL from localStorage or default to home
-      const returnUrl = localStorage.getItem('returnUrl') || '/';
-      localStorage.removeItem('returnUrl');
-      navigate(returnUrl, { replace: true });
+    if (!authLoading && user && profile) {
+      if (profile.user_type === 'platform_admin') {
+        navigate('/admin', { replace: true });
+      } else if (profile.user_type === 'site_creator') {
+        navigate('/dashboard', { replace: true });
+      } else {
+        navigate('/', { replace: true });
+      }
     }
-  }, [authLoading, guestUser, navigate]);
+  }, [authLoading, user, profile, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
