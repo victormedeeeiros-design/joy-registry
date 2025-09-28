@@ -35,6 +35,95 @@ export type Database = {
         }
         Relationships: []
       }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          price: number
+          quantity: number
+          site_product_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          price: number
+          quantity?: number
+          site_product_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          price?: number
+          quantity?: number
+          site_product_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_site_product_id_fkey"
+            columns: ["site_product_id"]
+            isOneToOne: false
+            referencedRelation: "site_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          created_at: string
+          giver_email: string
+          giver_message: string | null
+          giver_name: string
+          id: string
+          site_id: string
+          status: string
+          stripe_payment_intent_id: string | null
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          giver_email: string
+          giver_message?: string | null
+          giver_name: string
+          id?: string
+          site_id: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          giver_email?: string
+          giver_message?: string | null
+          giver_name?: string
+          id?: string
+          site_id?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       products: {
         Row: {
           category: string | null
@@ -77,6 +166,36 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string | null
+          updated_at: string
+          user_type: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          id: string
+          name?: string | null
+          updated_at?: string
+          user_type: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string | null
+          updated_at?: string
+          user_type?: string
+        }
+        Relationships: []
+      }
       settings: {
         Row: {
           id: string
@@ -97,6 +216,129 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      site_products: {
+        Row: {
+          created_at: string
+          custom_description: string | null
+          custom_image_url: string | null
+          custom_name: string | null
+          custom_price: number | null
+          id: string
+          is_available: boolean | null
+          position: number | null
+          product_id: string
+          site_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          custom_description?: string | null
+          custom_image_url?: string | null
+          custom_name?: string | null
+          custom_price?: number | null
+          id?: string
+          is_available?: boolean | null
+          position?: number | null
+          product_id: string
+          site_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          custom_description?: string | null
+          custom_image_url?: string | null
+          custom_name?: string | null
+          custom_price?: number | null
+          id?: string
+          is_available?: boolean | null
+          position?: number | null
+          product_id?: string
+          site_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_products_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_products_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sites: {
+        Row: {
+          created_at: string
+          creator_id: string
+          custom_domain: string | null
+          description: string | null
+          hero_images: string[] | null
+          id: string
+          is_active: boolean | null
+          layout_id: string
+          story_images: string[] | null
+          story_text: string | null
+          stripe_public_key: string | null
+          stripe_secret_key: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          creator_id: string
+          custom_domain?: string | null
+          description?: string | null
+          hero_images?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          layout_id: string
+          story_images?: string[] | null
+          story_text?: string | null
+          stripe_public_key?: string | null
+          stripe_secret_key?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          creator_id?: string
+          custom_domain?: string | null
+          description?: string | null
+          hero_images?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          layout_id?: string
+          story_images?: string[] | null
+          story_text?: string | null
+          stripe_public_key?: string | null
+          stripe_secret_key?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sites_creator_id_fkey"
+            columns: ["creator_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sites_layout_id_fkey"
+            columns: ["layout_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

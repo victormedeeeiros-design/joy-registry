@@ -33,7 +33,12 @@ const Hero = () => {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-            <Button size="xl" variant="elegant" className="font-semibold">
+            <Button 
+              size="xl" 
+              variant="elegant" 
+              className="font-semibold"
+              onClick={() => window.location.href = '/auth'}
+            >
               <Gift className="w-5 h-5 mr-2" />
               Criar Meu Site de Presentes
             </Button>
