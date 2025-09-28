@@ -7,25 +7,49 @@ Este projeto está configurado para funcionar perfeitamente no Vercel com React 
 ### Arquivos de Configuração
 
 #### 1. `vercel.json`
-Arquivo principal de configuração do Vercel que:
+```json
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+```
+Configuração mínima e essencial que:
 - Reescreve todas as rotas para `/index.html` (necessário para SPAs)
-- Configura headers CORS
-- Define configurações de build
 
 #### 2. `public/_redirects` 
+```
+/*    /index.html   200
+```
 Arquivo de backup para redirecionamentos (funciona como fallback)
 
-#### 3. `vite.config.ts`
+#### 3. `package.json`
+- Especifica Node.js >= 18.0.0
+- Scripts de build otimizados
+
+#### 4. `vite.config.ts`
 Configurado com:
 - Saída para pasta `dist`
 - Code splitting otimizado
 - Base path configurado
 
+### ✅ Problemas Corrigidos:
+
+1. **❌ "Function Runtimes must have a valid version"** 
+   - ✅ Removido configurações desnecessárias de `functions`
+   
+2. **❌ CSS @import warnings**
+   - ✅ Movido `@import` para o topo do arquivo CSS
+
 ### Como fazer o deploy:
 
 1. **Via GitHub** (Recomendado):
-   - Conecte seu repositório ao Vercel
-   - O deploy será automático a cada push
+   - Faça push do seu código para o GitHub  
+   - No Vercel, conecte seu repositório
+   - Deploy automático a cada push!
 
 2. **Via Vercel CLI**:
    ```bash
@@ -42,8 +66,8 @@ Configurado com:
 ### Rotas Configuradas:
 
 - `/` - Página inicial
-- `/auth` - Login/Registro
-- `/dashboard` - Dashboard do criador  
+- `/auth` - Login/Registro  
+- `/dashboard` - Dashboard do criador
 - `/admin` - Dashboard admin
 - `/layouts` - Seleção de layouts
 - `/create-site` - Criar site
@@ -68,6 +92,13 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ✅ **Build Otimizado**: Code splitting automático  
 ✅ **Assets Otimizados**: Imagens e CSS minificados  
 ✅ **TypeScript**: Build com verificação de tipos  
-✅ **CORS Configurado**: Headers corretos para APIs
+✅ **Node 18+**: Compatível com Vercel
 
 O projeto está pronto para produção! 🎉
+
+### 🔧 Debug no Vercel:
+
+Se houver problemas:
+1. Verifique os logs de build no dashboard do Vercel
+2. Certifique-se que as variáveis de ambiente estão configuradas
+3. Teste o build local primeiro: `npm run build && npm run preview`
