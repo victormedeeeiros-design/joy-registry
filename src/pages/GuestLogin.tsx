@@ -31,6 +31,11 @@ const GuestLogin = () => {
       setRsvpStatus(rsvpParam as 'yes' | 'no');
       setShowRSVP(true);
     }
+    // Persist current siteId for safe redirects
+    const siteId = searchParams.get('siteId');
+    if (siteId) {
+      localStorage.setItem('currentSiteId', siteId);
+    }
   }, [searchParams]);
 
   useEffect(() => {
@@ -226,9 +231,22 @@ const GuestLogin = () => {
                     <ArrowLeft className="h-4 w-4" />
                   </Button>
                 </div>
+                <p className="text-center text-sm text-muted-foreground mt-3">
+                  Prefere entrar ou cadastrar-se?
+                  <button
+                    type="button"
+                    className="ml-1 underline hover:text-foreground"
+                    onClick={() => {
+                      setShowRSVP(false);
+                      setRsvpStatus(null);
+                    }}
+                  >
+                    Acessar com email e senha
+                  </button>
+                </p>
               </form>
             ) : (
-              <Tabs defaultValue="signin" className="space-y-4">
+              <><Tabs defaultValue="signin" className="space-y-4">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="signin">Entrar</TabsTrigger>
                   <TabsTrigger value="signup">Cadastrar</TabsTrigger>
@@ -314,6 +332,20 @@ const GuestLogin = () => {
                   </form>
                 </TabsContent>
               </Tabs>
+              <p className="text-center text-sm text-muted-foreground mt-3">
+                Quer apenas confirmar presença?
+                <button
+                  type="button"
+                  className="ml-1 underline hover:text-foreground"
+                  onClick={() => {
+                    setShowRSVP(true);
+                    setRsvpStatus('yes');
+                  }}
+                >
+                  Confirmar presença sem login
+                </button>
+              </p>
+              </>
             )}
           </CardContent>
         </Card>
