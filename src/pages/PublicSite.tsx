@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Home, Calendar, ExternalLink, Gift, User, ShoppingCart, BookOpen } from "lucide-react";
+import { Heart, Home, Calendar, ExternalLink, Gift, User, ShoppingCart, BookOpen, LogOut, CheckCircle } from "lucide-react";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { CartSidebar } from "@/components/CartSidebar";
 import { CartProvider, useCart } from "@/hooks/useCart";
+import { useSiteAuth } from "@/hooks/useSiteAuth";
+import { useToast } from "@/hooks/use-toast";
 
 // Product images (ESM imports ensure correct URLs in build)
 import stoveImg from "@/assets/products/stove.jpg";
@@ -18,6 +20,7 @@ import electricOvenImg from "@/assets/products/electric-oven.jpg";
 import airFryerImg from "@/assets/products/air-fryer.jpg";
 import grillImg from "@/assets/products/grill.jpg";
 import rangeHoodImg from "@/assets/products/range-hood.jpg";
+import { RSVPSection } from "@/components/RSVPSection";
 
 interface Site {
   id: string;
@@ -91,6 +94,8 @@ const PublicSiteContent = () => {
   const [activeSection, setActiveSection] = useState<string>('home');
   const { addItem } = useCart();
   const navigate = useNavigate();
+  const { siteUser, signOut } = useSiteAuth();
+  const { toast } = useToast();
 
   const getProductImageFallback = (productId: string) => {
     const imageMap: { [key: string]: string } = {
@@ -395,17 +400,39 @@ const PublicSiteContent = () => {
 
             <div className="flex items-center gap-3">
               <CartSidebar siteId={site.id} />
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => {
-                  localStorage.setItem('currentSiteId', site.id);
-                  navigate(`/guest-login?siteId=${site.id}`);
-                }}
-              >
-                <User className="h-4 w-4 mr-2" />
-                Login
-              </Button>
+              {siteUser ? (
+                <div className="flex items-center gap-2">
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Olá, </span>
+                    <span className="font-medium">{siteUser.name}</span>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={async () => {
+                      await signOut();
+                      toast({
+                        title: "Logout realizado",
+                        description: "Você foi desconectado com sucesso.",
+                      });
+                    }}
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => {
+                    localStorage.setItem('currentSiteId', site.id);
+                    navigate(`/guest-login?siteId=${site.id}`);
+                  }}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Login
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -614,39 +641,7 @@ const PublicSiteContent = () => {
         </div>
 
         {/* RSVP Section within Story */}
-        <div className="container mx-auto px-4 mt-16">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-script mb-4" style={{ color: 'var(--title-color, var(--foreground))' }}>Confirmação de Presença</h3>
-            <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
-              Sua presença é muito importante para nós! Por favor, confirme sua participação.
-            </p>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto">
-            <Button 
-              size="lg" 
-              className="flex-1 w-full sm:w-auto"
-              onClick={() => {
-                localStorage.setItem('currentSiteId', site.id);
-                navigate(`/guest-login?siteId=${site.id}&rsvp=yes`);
-              }}
-            >
-              <Heart className="h-5 w-5 mr-2" />
-              Vou comparecer
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="flex-1 w-full sm:w-auto"
-              onClick={() => {
-                localStorage.setItem('currentSiteId', site.id);
-                navigate(`/guest-login?siteId=${site.id}&rsvp=no`);
-              }}
-            >
-              Não poderei comparecer
-            </Button>
-          </div>
-        </div>
+        <RSVPSection site={site} siteUser={siteUser} navigate={navigate} />
       </section>
 
       {/* Products Section */}

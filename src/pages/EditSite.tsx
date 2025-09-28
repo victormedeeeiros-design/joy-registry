@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Save, Eye, Palette, Type, Package, Settings, Trash2, Plus, Edit } from "lucide-react";
+import { ArrowLeft, Save, Eye, Palette, Type, Package, Settings, Trash2, Plus, Edit, Users, Calendar } from "lucide-react";
 
 // Product images for fallbacks
 import stoveImg from "@/assets/products/stove.jpg";
@@ -23,6 +23,7 @@ import electricOvenImg from "@/assets/products/electric-oven.jpg";
 import airFryerImg from "@/assets/products/air-fryer.jpg";
 import grillImg from "@/assets/products/grill.jpg";
 import rangeHoodImg from "@/assets/products/range-hood.jpg";
+import { RSVPList } from "@/components/RSVPList";
 
 interface Site {
   id: string;
@@ -1354,19 +1355,7 @@ const EditSite = () => {
               </Card>
 
               {/* RSVPs List */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Confirmações de Presença</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 max-h-64 overflow-y-auto">
-                    {/* TODO: Implementar lista de RSVPs */}
-                    <p className="text-center text-muted-foreground py-8">
-                      As confirmações aparecerão aqui conforme os convidados responderem
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <RSVPList siteId={site.id} />
             </div>
           </TabsContent>
         </Tabs>
