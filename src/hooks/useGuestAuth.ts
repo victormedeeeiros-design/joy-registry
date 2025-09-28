@@ -64,11 +64,17 @@ export const useGuestAuth = () => {
 
       if (error) throw error;
 
-      if (!data.success) {
-        throw new Error(data.error || 'Erro na autenticação');
+      const result = data as { success: boolean; error?: string; user?: { id: string; email: string; name: string } };
+
+      if (!result.success) {
+        throw new Error(result.error || 'Erro na autenticação');
       }
 
-      const user = data.user;
+      if (!result.user) {
+        throw new Error('Dados do usuário não encontrados');
+      }
+
+      const user = result.user;
       setGuestUser(user);
       localStorage.setItem('guestUser', JSON.stringify(user));
       
