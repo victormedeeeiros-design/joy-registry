@@ -70,6 +70,9 @@ export default {
       fontFamily: {
         playfair: ['Playfair Display', 'serif'],
         inter: ['Inter', 'sans-serif'],
+        script: ['Dancing Script', 'cursive'],
+        elegant: ['Great Vibes', 'cursive'],
+        handwriting: ['Caveat', 'cursive'],
       },
       borderRadius: {
         lg: "var(--radius)",
