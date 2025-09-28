@@ -79,6 +79,18 @@ const fontFamilies = [
   { id: 'montserrat', name: 'Montserrat (Clean)', value: 'Montserrat, sans-serif' }
 ];
 
+// Catálogo padrão para fallback
+const DEFAULT_CATALOG = [
+  { id: 'stove', name: 'Fogão', price: 1299.9, image_url: stoveImg },
+  { id: 'microwave', name: 'Micro-ondas', price: 599.9, image_url: microwaveImg },
+  { id: 'blender', name: 'Liquidificador', price: 199.9, image_url: blenderImg },
+  { id: 'mixer', name: 'Batedeira', price: 349.9, image_url: mixerImg },
+  { id: 'electric-oven', name: 'Forno Elétrico', price: 899.9, image_url: electricOvenImg },
+  { id: 'air-fryer', name: 'Air Fryer', price: 499.9, image_url: airFryerImg },
+  { id: 'grill', name: 'Grill Elétrico', price: 279.9, image_url: grillImg },
+  { id: 'range-hood', name: 'Coifa', price: 799.9, image_url: rangeHoodImg },
+];
+
 const EditSite = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -113,10 +125,6 @@ const EditSite = () => {
     event_date: "",
     event_time: "",
     event_location: "",
-    custom_name: "",
-    custom_price: 0,
-    custom_description: "",
-    custom_image_url: ""
   });
 
   useEffect(() => {
@@ -152,10 +160,6 @@ const EditSite = () => {
         event_date: (siteData as any).event_date || "",
         event_time: (siteData as any).event_time || "",
         event_location: (siteData as any).event_location || "",
-        custom_name: "",
-        custom_price: 0,
-        custom_description: "",
-        custom_image_url: ""
       });
 
       // Carregar produtos do site
@@ -288,13 +292,57 @@ const EditSite = () => {
     if (!site) return;
     
     try {
+      // Primeiro tenta buscar o produto da tabela products
+      let product = products.find(p => p.id === productId);
+      
+      // Se não encontrar, usa o catálogo padrão
+      if (!product) {
+        const catalogProduct = DEFAULT_CATALOG['cha-casa-nova'].find(p => p.id === productId);
+        if (!catalogProduct) {
+          toast({
+            title: "Erro",
+            description: "Produto não encontrado.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Cria o produto na tabela products primeiro
+        const { data: newProduct, error: productError } = await supabase
+          .from('products')
+          .insert([{
+            id: catalogProduct.id,
+            name: catalogProduct.name,
+            price: catalogProduct.price,
+            image_url: catalogProduct.image_url,
+            description: catalogProduct.description,
+            category: 'casa-nova',
+            status: 'active'
+          }])
+          .select()
+          .single();
+          
+        if (productError) {
+          console.error('Erro ao criar produto:', productError);
+          toast({
+            title: "Erro",
+            description: "Não foi possível criar o produto.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        product = newProduct;
+        setProducts([...products, newProduct]);
+      }
+      
       const position = Math.max(...siteProducts.map(sp => sp.position), 0) + 1;
       
       const { data, error } = await supabase
         .from('site_products')
         .insert([{
           site_id: site.id,
-          product_id: productId,
+          product_id: product.id,
           position,
           is_available: true
         }])
@@ -337,6 +385,98 @@ const EditSite = () => {
       toast({
         title: "Erro",
         description: "Não foi possível remover o produto.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const updateSiteProduct = async () => {
+    if (!editing || !site) return;
+    
+    try {
+      const { error } = await supabase
+        .from('site_products')
+        .update({
+          custom_name: editing.name || null,
+          custom_price: editing.price || null,
+          custom_description: editing.description || null,
+          custom_image_url: editing.image_url || null,
+        })
+        .eq('id', editing.id);
+
+      if (error) throw error;
+
+      // Atualizar a lista local
+      setSiteProducts(siteProducts.map(sp => 
+        sp.id === editing.id 
+          ? {
+              ...sp,
+              custom_name: editing.name || null,
+              custom_price: editing.price || null,
+              custom_description: editing.description || null,
+              custom_image_url: editing.image_url || null,
+            }
+          : sp
+      ));
+
+      toast({
+        title: "Produto atualizado!",
+        description: "As alterações foram salvas com sucesso.",
+      });
+      
+      setEditOpen(false);
+      setEditing(null);
+    } catch (error) {
+      console.error('Erro ao atualizar produto:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar o produto.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const deleteSite = async () => {
+    if (!site) return;
+    
+    const confirmDelete = window.confirm(
+      `Tem certeza que deseja excluir o site "${site.title}"? Esta ação não pode ser desfeita.`
+    );
+    
+    if (!confirmDelete) return;
+    
+    try {
+      // Deletar produtos do site primeiro (devido às foreign keys)
+      await supabase
+        .from('site_products')
+        .delete()
+        .eq('site_id', site.id);
+      
+      // Deletar RSVPs
+      await supabase
+        .from('rsvps')
+        .delete()
+        .eq('site_id', site.id);
+      
+      // Deletar o site
+      const { error } = await supabase
+        .from('sites')
+        .delete()
+        .eq('id', site.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Site excluído!",
+        description: "O site foi excluído permanentemente.",
+      });
+      
+      navigate('/dashboard');
+    } catch (error) {
+      console.error('Erro ao excluir site:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o site.",
         variant: "destructive",
       });
     }
@@ -400,6 +540,15 @@ const EditSite = () => {
               >
                 <Eye className="h-4 w-4" />
                 Visualizar Site
+              </Button>
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={deleteSite}
+                className="gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                Excluir Site
               </Button>
               <Button 
                 onClick={handleSave} 
@@ -678,13 +827,17 @@ const EditSite = () => {
                               variant="outline"
                               size="sm"
                               onClick={() => {
-                                setFormData({
-                                  ...formData,
-                                  custom_name: name,
-                                  custom_price: price,
-                                  custom_description: description || '',
-                                  custom_image_url: imageUrl || ''
-                                });
+                                const product = products.find(p => p.id === siteProduct.product_id);
+                                if (product) {
+                                  setEditing({
+                                    id: siteProduct.id,
+                                    name: siteProduct.custom_name || product.name,
+                                    price: siteProduct.custom_price || product.price,
+                                    description: siteProduct.custom_description || product.description || '',
+                                    image_url: siteProduct.custom_image_url || product.image_url || ''
+                                  });
+                                  setEditOpen(true);
+                                }
                               }}
                             >
                               <Edit className="h-4 w-4" />
@@ -716,6 +869,7 @@ const EditSite = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {/* Produtos existentes do banco */}
                     {products
                       .filter(product => !siteProducts.some(sp => sp.product_id === product.id))
                       .map((product) => (
@@ -742,7 +896,40 @@ const EditSite = () => {
                           </Button>
                         </div>
                       ))}
-                    {products.filter(product => !siteProducts.some(sp => sp.product_id === product.id)).length === 0 && (
+                    
+                    {/* Produtos do catálogo padrão */}
+                    {DEFAULT_CATALOG
+                      .filter(catalogProduct => 
+                        !products.some(p => p.id === catalogProduct.id) &&
+                        !siteProducts.some(sp => sp.product_id === catalogProduct.id)
+                      )
+                      .map((catalogProduct) => (
+                        <div key={catalogProduct.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                              <img src={catalogProduct.image_url} alt={catalogProduct.name} className="w-full h-full object-cover rounded-lg" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{catalogProduct.name}</p>
+                              <p className="text-sm text-muted-foreground">R$ {catalogProduct.price.toFixed(2)}</p>
+                              <Badge variant="secondary" className="text-xs mt-1">Catálogo</Badge>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => addProductToSite(catalogProduct.id)}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      
+                    {products.filter(product => !siteProducts.some(sp => sp.product_id === product.id)).length === 0 && 
+                     DEFAULT_CATALOG.filter(catalogProduct => 
+                       !products.some(p => p.id === catalogProduct.id) &&
+                       !siteProducts.some(sp => sp.product_id === catalogProduct.id)
+                     ).length === 0 && (
                       <p className="text-center text-muted-foreground py-8">
                         Todos os produtos disponíveis já foram adicionados
                       </p>
@@ -845,6 +1032,66 @@ const EditSite = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Modal de Edição de Produto */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Editar Produto</DialogTitle>
+          </DialogHeader>
+          {editing && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-name">Nome do Produto</Label>
+                <Input
+                  id="edit-name"
+                  value={editing.name}
+                  onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                  placeholder="Nome do produto"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-price">Preço (R$)</Label>
+                <Input
+                  id="edit-price"
+                  type="number"
+                  step="0.01"
+                  value={editing.price}
+                  onChange={(e) => setEditing({ ...editing, price: parseFloat(e.target.value) || 0 })}
+                  placeholder="0.00"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-description">Descrição</Label>
+                <Textarea
+                  id="edit-description"
+                  value={editing.description}
+                  onChange={(e) => setEditing({ ...editing, description: e.target.value })}
+                  placeholder="Descrição do produto"
+                  rows={3}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-image">URL da Imagem</Label>
+                <Input
+                  id="edit-image"
+                  value={editing.image_url}
+                  onChange={(e) => setEditing({ ...editing, image_url: e.target.value })}
+                  placeholder="https://exemplo.com/imagem.jpg"
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={updateSiteProduct}>
+              Salvar Alterações
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
