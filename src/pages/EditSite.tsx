@@ -188,6 +188,7 @@ const EditSite = () => {
         story_text: siteData.story_text || "",
         color_scheme: (siteData as any).color_scheme || "elegant-gold",
         font_family: (siteData as any).font_family || "inter",
+        font_color: (siteData as any).font_color || "default",
         payment_method: (siteData as any).payment_method || "stripe",
         stripe_publishable_key: (siteData as any).stripe_publishable_key || "",
         stripe_secret_key: (siteData as any).stripe_secret_key || "",
@@ -1311,21 +1312,36 @@ const EditSite = () => {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-category">Categoria</Label>
-                <Select 
-                  value={editing.category || 'Eletrodomésticos'} 
-                  onValueChange={(value) => setEditing({ ...editing, category: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                  <Select 
+                    value={editing.category || 'Eletrodomésticos'} 
+                    onValueChange={(value) => setEditing({ ...editing, category: value })}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newCategory = prompt("Nome da nova categoria:");
+                      if (newCategory && newCategory.trim() && editing) {
+                        setEditing({ ...editing, category: newCategory.trim() });
+                      }
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-image">URL da Imagem</Label>
@@ -1386,24 +1402,41 @@ const EditSite = () => {
                 rows={3}
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="new-category">Categoria</Label>
-              <Select 
-                value={newProduct.category} 
-                onValueChange={(value) => setNewProduct({ ...newProduct, category: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-category">Categoria</Label>
+                <div className="flex gap-2">
+                  <Select 
+                    value={newProduct.category} 
+                    onValueChange={(value) => setNewProduct({ ...newProduct, category: value })}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const newCategory = prompt("Nome da nova categoria:");
+                      if (newCategory && newCategory.trim()) {
+                        const updatedCategories = [...categories, newCategory.trim()];
+                        // Não há setCategories aqui, então vamos apenas atualizar o produto
+                        setNewProduct({ ...newProduct, category: newCategory.trim() });
+                      }
+                    }}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             <div className="space-y-2">
               <Label htmlFor="new-image">URL da Imagem</Label>
               <Input

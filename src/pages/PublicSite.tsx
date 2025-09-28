@@ -138,6 +138,24 @@ const PublicSiteContent = () => {
         } else if (siteData.color_scheme === 'midnight-black') {
           body.classList.add('theme-midnight-black');
         }
+        
+        // Apply font color if specified
+        if (siteData.font_color && siteData.font_color !== 'default') {
+          const root = document.documentElement;
+          const fontColorMap: { [key: string]: string } = {
+            'primary': 'var(--primary)',
+            'secondary': 'var(--muted-foreground)',
+            'accent': 'var(--accent-foreground)',
+            'white': '#ffffff',
+            'black': '#000000',
+            'gold': '#D4AF37',
+            'rose': '#E91E63'
+          };
+          
+          if (fontColorMap[siteData.font_color]) {
+            root.style.setProperty('--foreground', fontColorMap[siteData.font_color]);
+          }
+        }
 
         // Buscar produtos do site com dados dos produtos
         const { data: siteProductsData, error: siteProductsError } = await supabase
@@ -204,6 +222,10 @@ const PublicSiteContent = () => {
     return () => {
       const body = document.body;
       body.className = body.className.replace(/theme-[\w-]+/g, '');
+      
+      // Reset font color to default
+      const root = document.documentElement;
+      root.style.removeProperty('--foreground');
     };
   }, [id]);
 

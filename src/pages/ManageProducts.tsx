@@ -33,6 +33,7 @@ const ManageProducts = () => {
   const [categories, setCategories] = useState<string[]>([]);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
+  const [showCategoryManager, setShowCategoryManager] = useState(false);
   const [formData, setFormData] = useState({
     id: "",
     name: "",
@@ -128,7 +129,37 @@ const ManageProducts = () => {
       setFormData({ ...formData, category: newCategoryName.trim() });
       setNewCategoryName("");
       setShowNewCategory(false);
+      
+      toast({
+        title: "Categoria adicionada!",
+        description: `A categoria "${newCategoryName.trim()}" foi criada com sucesso.`,
+      });
     }
+  };
+
+  const handleDeleteCategory = (categoryToDelete: string) => {
+    // Não permitir deletar categorias padrão
+    const defaultCategories = ['Eletrodomésticos', 'Brincadeiras', 'Casa e Jardim', 'Cozinha'];
+    if (defaultCategories.includes(categoryToDelete)) {
+      toast({
+        title: "Erro",
+        description: "Não é possível deletar categorias padrão.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!confirm(`Tem certeza que deseja excluir a categoria "${categoryToDelete}"?`)) {
+      return;
+    }
+
+    const updatedCategories = categories.filter(cat => cat !== categoryToDelete);
+    setCategories(updatedCategories);
+    
+    toast({
+      title: "Categoria removida!",
+      description: `A categoria "${categoryToDelete}" foi removida.`,
+    });
   };
 
   const handleSaveProduct = async () => {
@@ -287,6 +318,15 @@ const ManageProducts = () => {
             >
               <Plus className="h-4 w-4" />
               Novo Produto
+            </Button>
+            
+            <Button 
+              variant="outline"
+              onClick={() => setShowCategoryManager(true)}
+              className="gap-2"
+            >
+              <Package className="h-4 w-4" />
+              Gerenciar Categorias
             </Button>
           </div>
         </div>
@@ -515,6 +555,73 @@ const ManageProducts = () => {
             </Button>
             <Button onClick={handleSaveProduct}>
               {editingProduct ? 'Salvar Alterações' : 'Criar Produto'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Gerenciar Categorias */}
+      <Dialog open={showCategoryManager} onOpenChange={setShowCategoryManager}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Package className="h-5 w-5" />
+              Gerenciar Categorias
+            </DialogTitle>
+            <DialogDescription>
+              Adicione ou remova categorias para organizar seus produtos.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Lista de Categorias */}
+            <div className="space-y-2">
+              <Label>Categorias Existentes</Label>
+              <div className="max-h-48 overflow-y-auto space-y-2">
+                {categories.map((category) => {
+                  const isDefault = ['Eletrodomésticos', 'Brincadeiras', 'Casa e Jardim', 'Cozinha'].includes(category);
+                  return (
+                    <div key={category} className="flex items-center justify-between p-2 bg-muted/30 rounded">
+                      <span className="text-sm">{category}</span>
+                      {!isDefault && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteCategory(category)}
+                          className="h-6 w-6 p-0 text-destructive hover:text-destructive/80"
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            {/* Adicionar Nova Categoria */}
+            <div className="space-y-2">
+              <Label>Adicionar Nova Categoria</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="Nome da nova categoria"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddNewCategory()}
+                />
+                <Button
+                  onClick={handleAddNewCategory}
+                  disabled={!newCategoryName.trim()}
+                >
+                  Adicionar
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCategoryManager(false)}>
+              Fechar
             </Button>
           </DialogFooter>
         </DialogContent>

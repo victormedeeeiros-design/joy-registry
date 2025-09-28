@@ -502,6 +502,7 @@ export type Database = {
           event_date: string | null
           event_location: string | null
           event_time: string | null
+          font_color: string | null
           font_family: string | null
           hero_images: string[] | null
           id: string
@@ -525,6 +526,7 @@ export type Database = {
           event_date?: string | null
           event_location?: string | null
           event_time?: string | null
+          font_color?: string | null
           font_family?: string | null
           hero_images?: string[] | null
           id?: string
@@ -548,6 +550,7 @@ export type Database = {
           event_date?: string | null
           event_location?: string | null
           event_time?: string | null
+          font_color?: string | null
           font_family?: string | null
           hero_images?: string[] | null
           id?: string
