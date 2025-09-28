@@ -68,7 +68,9 @@ const colorSchemes = [
   { id: 'romantic-pink', name: 'Rosa Romântico', colors: ['#FFB6C1', '#FFF0F5', '#8B4B61'] },
   { id: 'modern-blue', name: 'Azul Moderno', colors: ['#4A90E2', '#E8F4FD', '#2C5AA0'] },
   { id: 'natural-green', name: 'Verde Natural', colors: ['#90EE90', '#F0FFF0', '#228B22'] },
-  { id: 'classic-navy', name: 'Azul Marinho Clássico', colors: ['#000080', '#F0F8FF', '#483D8B'] }
+  { id: 'classic-navy', name: 'Azul Marinho Clássico', colors: ['#000080', '#F0F8FF', '#483D8B'] },
+  { id: 'dark-elegance', name: 'Elegância Escura', colors: ['#1a1a1a', '#2d2d2d', '#f5f5f5'] },
+  { id: 'midnight-black', name: 'Preto Midnight', colors: ['#000000', '#1c1c1c', '#ffffff'] }
 ];
 
 const fontFamilies = [
@@ -81,14 +83,14 @@ const fontFamilies = [
 
 // Catálogo padrão para fallback
 const DEFAULT_CATALOG = [
-  { id: 'stove', name: 'Fogão', price: 1299.9, image_url: stoveImg, description: 'Fogão 4 bocas com forno' },
-  { id: 'microwave', name: 'Micro-ondas', price: 599.9, image_url: microwaveImg, description: 'Micro-ondas 20 litros' },
-  { id: 'blender', name: 'Liquidificador', price: 199.9, image_url: blenderImg, description: 'Liquidificador 3 velocidades' },
-  { id: 'mixer', name: 'Batedeira', price: 349.9, image_url: mixerImg, description: 'Batedeira planetária' },
-  { id: 'electric-oven', name: 'Forno Elétrico', price: 899.9, image_url: electricOvenImg, description: 'Forno elétrico 45 litros' },
-  { id: 'air-fryer', name: 'Air Fryer', price: 499.9, image_url: airFryerImg, description: 'Fritadeira sem óleo 4L' },
-  { id: 'grill', name: 'Grill Elétrico', price: 279.9, image_url: grillImg, description: 'Grill elétrico antiaderente' },
-  { id: 'range-hood', name: 'Coifa', price: 799.9, image_url: rangeHoodImg, description: 'Coifa 60cm inox' },
+  { id: 'stove', name: 'Fogão', price: 1299.9, image_url: stoveImg, description: 'Fogão 4 bocas com forno', category: 'Eletrodomésticos' },
+  { id: 'microwave', name: 'Micro-ondas', price: 599.9, image_url: microwaveImg, description: 'Micro-ondas 20 litros', category: 'Eletrodomésticos' },
+  { id: 'blender', name: 'Liquidificador', price: 199.9, image_url: blenderImg, description: 'Liquidificador 3 velocidades', category: 'Eletrodomésticos' },
+  { id: 'mixer', name: 'Batedeira', price: 349.9, image_url: mixerImg, description: 'Batedeira planetária', category: 'Eletrodomésticos' },
+  { id: 'electric-oven', name: 'Forno Elétrico', price: 899.9, image_url: electricOvenImg, description: 'Forno elétrico 45 litros', category: 'Eletrodomésticos' },
+  { id: 'air-fryer', name: 'Air Fryer', price: 499.9, image_url: airFryerImg, description: 'Fritadeira sem óleo 4L', category: 'Eletrodomésticos' },
+  { id: 'grill', name: 'Grill Elétrico', price: 279.9, image_url: grillImg, description: 'Grill elétrico antiaderente', category: 'Eletrodomésticos' },
+  { id: 'range-hood', name: 'Coifa', price: 799.9, image_url: rangeHoodImg, description: 'Coifa 60cm inox', category: 'Eletrodomésticos' },
 ];
 
 const EditSite = () => {
@@ -251,12 +253,45 @@ const EditSite = () => {
         description: formData.description,
         story_text: formData.story_text || null,
         color_scheme: formData.color_scheme || 'elegant-gold',
-        font_family: formData.font_family || 'inter',
-        payment_method: formData.payment_method || 'stripe',
-        stripe_publishable_key: formData.stripe_publishable_key || null,
-        stripe_secret_key: formData.stripe_secret_key || null,
+        font_family: formData.font_family || 'playfair',
+        hero_images: formData.hero_images || [],
+        story_images: formData.story_images || [],
         event_date: formData.event_date || null,
         event_time: formData.event_time || null,
+        event_location: formData.event_location || null,
+      };
+
+      const { error } = await supabase
+        .from('sites')
+        .update(updateData)
+        .eq('id', site.id);
+
+      if (error) throw error;
+
+      // Apply theme class based on color scheme
+      const body = document.body;
+      body.className = body.className.replace(/theme-[\w-]+/g, '');
+      if (formData.color_scheme === 'dark-elegance') {
+        body.classList.add('theme-dark-elegance');
+      } else if (formData.color_scheme === 'midnight-black') {
+        body.classList.add('theme-midnight-black');
+      }
+
+      toast({
+        title: "Alterações salvas!",
+        description: "As informações do site foram atualizadas com sucesso.",
+      });
+    } catch (error) {
+      console.error('Erro ao salvar:', error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar as alterações.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
         event_location: formData.event_location || null,
         updated_at: new Date().toISOString()
       };

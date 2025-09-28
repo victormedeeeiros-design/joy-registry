@@ -59,16 +59,16 @@ interface Product {
   category?: string;
 }
 
-const DEFAULT_CATALOG: Record<string, Array<{ id: string; name: string; price: number; image_url: string; description?: string }>> = {
+const DEFAULT_CATALOG: Record<string, Array<{ id: string; name: string; price: number; image_url: string; description?: string; category?: string }>> = {
   'cha-casa-nova': [
-    { id: 'stove', name: 'Fogão', price: 1299.9, image_url: stoveImg },
-    { id: 'microwave', name: 'Micro-ondas', price: 599.9, image_url: microwaveImg },
-    { id: 'blender', name: 'Liquidificador', price: 199.9, image_url: blenderImg },
-    { id: 'mixer', name: 'Batedeira', price: 349.9, image_url: mixerImg },
-    { id: 'electric-oven', name: 'Forno Elétrico', price: 899.9, image_url: electricOvenImg },
-    { id: 'air-fryer', name: 'Air Fryer', price: 499.9, image_url: airFryerImg },
-    { id: 'grill', name: 'Grill Elétrico', price: 279.9, image_url: grillImg },
-    { id: 'range-hood', name: 'Coifa', price: 799.9, image_url: rangeHoodImg },
+    { id: 'stove', name: 'Fogão', price: 1299.9, image_url: stoveImg, category: 'Eletrodomésticos', description: 'Fogão 4 bocas com forno' },
+    { id: 'microwave', name: 'Micro-ondas', price: 599.9, image_url: microwaveImg, category: 'Eletrodomésticos', description: 'Micro-ondas 20 litros' },
+    { id: 'blender', name: 'Liquidificador', price: 199.9, image_url: blenderImg, category: 'Eletrodomésticos', description: 'Liquidificador 3 velocidades' },
+    { id: 'mixer', name: 'Batedeira', price: 349.9, image_url: mixerImg, category: 'Eletrodomésticos', description: 'Batedeira planetária' },
+    { id: 'electric-oven', name: 'Forno Elétrico', price: 899.9, image_url: electricOvenImg, category: 'Eletrodomésticos', description: 'Forno elétrico 45 litros' },
+    { id: 'air-fryer', name: 'Air Fryer', price: 499.9, image_url: airFryerImg, category: 'Eletrodomésticos', description: 'Fritadeira sem óleo 4L' },
+    { id: 'grill', name: 'Grill Elétrico', price: 279.9, image_url: grillImg, category: 'Eletrodomésticos', description: 'Grill elétrico antiaderente' },
+    { id: 'range-hood', name: 'Coifa', price: 799.9, image_url: rangeHoodImg, category: 'Eletrodomésticos', description: 'Coifa 60cm inox' },
   ],
 };
 
@@ -171,7 +171,7 @@ const PublicSiteContent = () => {
               price: p.price,
               image_url: p.image_url,
               description: p.description,
-              category: 'default',
+              category: p.category || 'Eletrodomésticos',
             } as Product
           }));
           setProducts(fallback);
@@ -323,7 +323,7 @@ const PublicSiteContent = () => {
       {/* Hero Section with Carousel */}
       <HeroCarousel
         images={site.hero_images || []}
-        className="h-[70vh] min-h-[600px] flex items-center justify-center text-white"
+        className="h-[85vh] min-h-[700px] flex items-center justify-center text-white"
       >
         <section id="home" className="container mx-auto px-4 text-center">
           <Badge variant="outline" className="mb-4 bg-white/10 text-white border-white/20">
@@ -401,37 +401,109 @@ const PublicSiteContent = () => {
       </HeroCarousel>
 
       {/* Story Section */}
-      <section id="story" className="py-16 bg-muted/30">
+      <section id="story" className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-script mb-4">Nossa História</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              {site.story_text || "Momentos especiais que queremos compartilhar com vocês"}
+          <div className="text-center mb-16">
+            <div className="flex items-center justify-center mb-6">
+              <Heart className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="text-4xl font-script mb-6 text-foreground">Nossa História</h2>
+            <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
+              Um amor que encontrou seu lar
             </p>
           </div>
           
           {site.story_images && site.story_images.length > 0 ? (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
-              {site.story_images.slice(0, 8).map((image, index) => (
-                <div 
-                  key={index}
-                  className="aspect-square rounded-lg overflow-hidden shadow-soft hover:shadow-elegant transition-all duration-300"
-                >
-                  <img 
-                    src={image} 
-                    alt={`Momento especial ${index + 1}`}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
+            <div className="max-w-6xl mx-auto">
+              <div className="bg-white rounded-2xl shadow-elegant p-8 md:p-12">
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                  {/* Text Content */}
+                  <div className="space-y-8">
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <Home className="h-6 w-6 text-primary" />
+                        <h3 className="text-2xl font-playfair font-semibold text-foreground">O Início de Tudo</h3>
+                      </div>
+                      <p className="text-muted-foreground leading-relaxed">
+                        {site.story_text || "Há alguns anos, duas vidas se encontraram e descobriram que juntas formavam algo muito especial. Após muitos momentos compartilhados, risadas, sonhos e planos, chegou o momento de dar o próximo grande passo: construir um lar juntos."}
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <Home className="h-6 w-6 text-primary" />
+                        <h3 className="text-2xl font-playfair font-semibold text-foreground">Nossa Nova Casa</h3>
+                      </div>
+                      <p className="text-muted-foreground leading-relaxed">
+                        Agora, com as chaves da nossa primeira casa em mãos, queremos compartilhar esta alegria com vocês, pessoas especiais que fazem parte da nossa jornada.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Image */}
+                  <div className="relative">
+                    <div className="aspect-[4/3] rounded-xl overflow-hidden shadow-soft">
+                      <img 
+                        src={site.story_images[0]} 
+                        alt="Nossa história"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    {site.story_images.length > 1 && (
+                      <div className="absolute -bottom-4 -right-4 grid grid-cols-3 gap-2">
+                        {site.story_images.slice(1, 4).map((image, index) => (
+                          <div 
+                            key={index}
+                            className="w-16 h-16 rounded-lg overflow-hidden shadow-soft border-2 border-white"
+                          >
+                            <img 
+                              src={image} 
+                              alt={`Momento ${index + 2}`}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              ))}
+              </div>
             </div>
           ) : (
-            <div className="text-center py-12">
-              <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">Nossa história será contada aqui</h3>
-              <p className="text-muted-foreground">
-                Em breve compartilharemos nossos momentos especiais com vocês
-              </p>
+            <div className="max-w-6xl mx-auto">
+              <div className="bg-white rounded-2xl shadow-elegant p-8 md:p-12">
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                  <div className="space-y-8">
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <Home className="h-6 w-6 text-primary" />
+                        <h3 className="text-2xl font-playfair font-semibold text-foreground">O Início de Tudo</h3>
+                      </div>
+                      <p className="text-muted-foreground leading-relaxed">
+                        Há alguns anos, duas vidas se encontraram e descobriram que juntas formavam algo muito especial. Após muitos momentos compartilhados, risadas, sonhos e planos, chegou o momento de dar o próximo grande passo: construir um lar juntos.
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <div className="flex items-center gap-3 mb-4">
+                        <Home className="h-6 w-6 text-primary" />
+                        <h3 className="text-2xl font-playfair font-semibold text-foreground">Nossa Nova Casa</h3>
+                      </div>
+                      <p className="text-muted-foreground leading-relaxed">
+                        Agora, com as chaves da nossa primeira casa em mãos, queremos compartilhar esta alegria com vocês, pessoas especiais que fazem parte da nossa jornada.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="text-center py-12">
+                    <Heart className="h-24 w-24 text-primary/30 mx-auto mb-6" />
+                    <h3 className="text-xl font-semibold mb-2 text-muted-foreground">Nossa história será contada aqui</h3>
+                    <p className="text-muted-foreground">
+                      Em breve compartilharemos nossos momentos especiais com vocês
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
         </div>
@@ -467,11 +539,11 @@ const PublicSiteContent = () => {
       </section>
 
       {/* Products Section */}
-      <section id="gifts" className="py-16">
+      <section id="gifts" className="py-20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-script mb-4">Lista de Presentes</h2>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl font-script mb-6">Lista de Presentes</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Escolha um presente especial para nos ajudar nesta nova etapa
             </p>
           </div>
@@ -487,75 +559,100 @@ const PublicSiteContent = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {products.map((siteProduct) => {
-                const product = siteProduct.product;
-                if (!product) return null;
+            (() => {
+              // Group products by category
+              const categorizedProducts = products.reduce((acc, siteProduct) => {
+                if (!siteProduct.product) return acc;
                 
-                const name = siteProduct.custom_name || product.name;
-                const price = siteProduct.custom_price || product.price;
-                const description = siteProduct.custom_description || product.description;
-                const imageUrl = siteProduct.custom_image_url || product.image_url || getProductImageFallback(product.id);
-                
-                return (
-                  <Card key={siteProduct.id} className="hover:shadow-elegant transition-all duration-300 group">
-                    <CardHeader className="p-4">
-                       <div className="aspect-square rounded-lg overflow-hidden mb-4 bg-muted">
-                         {imageUrl ? (
-                           <img 
-                             src={imageUrl} 
-                             alt={name}
-                             className="w-full h-full object-cover"
-                           />
-                         ) : (
-                           <div className="w-full h-full flex items-center justify-center">
-                             <Gift className="h-16 w-16 text-muted-foreground/50" />
-                           </div>
-                         )}
-                       </div>
-                      <CardTitle className="text-lg group-hover:text-primary transition-colors">
-                        {name}
-                      </CardTitle>
-                      {description && (
-                        <CardDescription className="text-sm">
-                          {description}
-                        </CardDescription>
-                      )}
-                    </CardHeader>
-                    <CardContent className="p-4 pt-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <div className="text-lg font-semibold text-primary">
-                          R$ {price.toFixed(2).replace('.', ',')}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            onClick={() => handleAddToCart(siteProduct)}
-                          >
-                            Adicionar
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              handleCreatePayment([{
-                                id: siteProduct.id,
-                                quantity: 1,
-                                name,
-                                price,
-                                description,
-                                image_url: imageUrl
-                              }]);
-                            }}
-                          >
-                            <ShoppingCart className="h-4 w-4 mr-2" />
-                            Comprar Agora
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+                const category = siteProduct.product.category || 'Eletrodomésticos';
+                if (!acc[category]) {
+                  acc[category] = [];
+                }
+                acc[category].push(siteProduct);
+                return acc;
+              }, {} as Record<string, typeof products>);
+
+              return Object.entries(categorizedProducts).map(([category, categoryProducts]) => (
+                <div key={category} className="mb-16">
+                  {/* Category Header */}
+                  <div className="text-center mb-10">
+                    <h3 className="text-2xl font-playfair font-semibold text-foreground mb-2">{category}</h3>
+                    <div className="w-24 h-0.5 bg-primary mx-auto"></div>
+                  </div>
+                  
+                  {/* Products Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                    {categoryProducts.map((siteProduct) => {
+                      const product = siteProduct.product;
+                      if (!product) return null;
+                      
+                      const name = siteProduct.custom_name || product.name;
+                      const price = siteProduct.custom_price || product.price;
+                      const image = siteProduct.custom_image_url || product.image_url || getProductImageFallback(product.id);
+                      const description = siteProduct.custom_description || product.description;
+                      
+                      return (
+                        <Card key={siteProduct.id} className="group hover:shadow-elegant transition-all duration-300 overflow-hidden border-0 shadow-soft">
+                          <div className="aspect-square overflow-hidden bg-muted/20">
+                            {image ? (
+                              <img
+                                src={image}
+                                alt={name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Gift className="h-16 w-16 text-muted-foreground/50" />
+                              </div>
+                            )}
+                          </div>
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between mb-3">
+                              <h3 className="font-playfair font-semibold text-lg leading-tight text-foreground">{name}</h3>
+                              <Badge variant="secondary" className="text-xs">{category}</Badge>
+                            </div>
+                            {description && (
+                              <p className="text-sm text-muted-foreground mb-4 line-clamp-2 leading-relaxed">{description}</p>
+                            )}
+                            <div className="mb-6">
+                              <span className="text-2xl font-bold text-primary">
+                                R$ {price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                              </span>
+                            </div>
+                            <div className="space-y-3">
+                              <Button
+                                variant="outline"
+                                size="lg"
+                                className="w-full h-12 border-primary/20 hover:border-primary hover:bg-primary/5"
+                                onClick={() => handleAddToCart(siteProduct)}
+                              >
+                                <ShoppingCart className="h-4 w-4 mr-2" />
+                                Adicionar à Lista
+                              </Button>
+                              <Button
+                                size="lg"
+                                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                                onClick={() => handleCreatePayment([{
+                                  id: siteProduct.id,
+                                  quantity: 1,
+                                  name,
+                                  price,
+                                  description,
+                                  image_url: image
+                                }])}
+                              >
+                                <Gift className="h-4 w-4 mr-2" />
+                                Presentear
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              ));
+            })()
           )}
         </div>
       </section>
