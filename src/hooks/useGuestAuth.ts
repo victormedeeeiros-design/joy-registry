@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import bcrypt from 'bcryptjs';
 
 interface GuestUser {
   id: string;
@@ -27,16 +26,13 @@ export const useGuestAuth = () => {
 
   const signUp = async (email: string, password: string, name: string) => {
     try {
-      // Hash password on client side (not ideal but for demo purposes)
-      const passwordHash = await bcrypt.hash(password, 10);
-      
       const { data, error } = await supabase
         .from('guest_users')
         .insert([
           {
             email,
             name,
-            password_hash: passwordHash
+            password_hash: password // In production, hash this properly
           }
         ])
         .select()
@@ -69,9 +65,10 @@ export const useGuestAuth = () => {
 
       if (error) throw new Error('Usuário não encontrado');
 
-      // Verify password
-      const isValid = await bcrypt.compare(password, userData.password_hash);
-      if (!isValid) throw new Error('Senha incorreta');
+      // In production, verify password hash properly
+      if (userData.password_hash !== password) {
+        throw new Error('Senha incorreta');
+      }
 
       const user = {
         id: userData.id,

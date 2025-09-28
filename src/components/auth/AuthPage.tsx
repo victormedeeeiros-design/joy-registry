@@ -48,65 +48,54 @@ const AuthPage = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     const { error } = await signIn(email, password);
     
     if (error) {
       toast({
         title: "Erro no login",
-        description: error.message,
+        description: error.message || "Erro desconhecido",
         variant: "destructive",
       });
     } else {
       toast({
-        title: "Login realizado com sucesso!",
+        title: "Login realizado com sucesso",
         description: "Bem-vindo de volta!",
       });
     }
-    
     setLoading(false);
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     const { error } = await signUp(email, password, name);
     
     if (error) {
       toast({
         title: "Erro no cadastro",
-        description: error.message,
+        description: error.message || "Erro desconhecido",
         variant: "destructive",
       });
     } else {
       toast({
-        title: "Cadastro realizado com sucesso!",
-        description: "Verifique seu email para ativar sua conta.",
+        title: "Cadastro realizado com sucesso",
+        description: "Verifique seu email para confirmar a conta!",
       });
     }
-    
     setLoading(false);
   };
 
   const handleRSVP = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
-      // Get current site from URL or localStorage
-      const currentPath = window.location.pathname;
-      const siteId = currentPath.includes('/site/') ? 
-        currentPath.split('/site/')[1] : 
-        localStorage.getItem('currentSiteId');
+      const siteId = searchParams.get('site') || localStorage.getItem('currentSiteId');
       
       if (!siteId) {
-        toast({
-          title: "Erro",
-          description: "Não foi possível identificar o site.",
-          variant: "destructive",
-        });
-        return;
+        throw new Error('ID do site não encontrado');
       }
 
       const { error } = await supabase
@@ -114,121 +103,121 @@ const AuthPage = () => {
         .upsert({
           site_id: siteId,
           guest_name: guestName,
-          guest_email: email,
-          will_attend: rsvpStatus === 'yes',
-          message: guestMessage
-        }, {
-          onConflict: 'site_id,guest_email'
+          guest_email: email || `guest_${Date.now()}@temp.com`,
+          message: guestMessage,
+          will_attend: rsvpStatus === 'yes'
         });
 
       if (error) throw error;
 
       toast({
-        title: "Confirmação recebida!",
-        description: `Obrigado por confirmar sua ${rsvpStatus === 'yes' ? 'presença' : 'ausência'}!`,
+        title: "RSVP enviado com sucesso!",
+        description: rsvpStatus === 'yes' 
+          ? "Obrigado por confirmar sua presença!" 
+          : "Obrigado por nos avisar!",
       });
-      
-      // Redirect back to site
-      navigate(`/site/${siteId}`);
+
+      // Redirect back to the site
+      navigate(`/site/${siteId}`, { replace: true });
     } catch (error: any) {
       toast({
-        title: "Erro ao confirmar presença",
+        title: "Erro ao enviar RSVP",
         description: error.message,
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
+    
+    setLoading(false);
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen gradient-accent flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Gift className="h-8 w-8 text-primary" />
-            <Heart className="h-6 w-6 text-accent" />
-          </div>
-          <h1 className="text-3xl font-bold gradient-primary bg-clip-text text-transparent">
-            {showRSVP ? 'Confirmação de Presença' : 'Gift Registry'}
-          </h1>
-          <p className="text-muted-foreground mt-2">
-            {showRSVP ? 
-              `Por favor, confirme sua ${rsvpStatus === 'yes' ? 'presença' : 'ausência'} no evento` :
-              'Crie sua lista de presentes personalizada'
-            }
-          </p>
-        </div>
-
         <Card className="gradient-card border-0 shadow-elegant">
-          <CardHeader>
-            <CardTitle className="text-center text-2xl flex items-center justify-center gap-2">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">
               {showRSVP ? (
-                <>
-                  {rsvpStatus === 'yes' ? (
-                    <CheckCircle className="h-6 w-6 text-green-500" />
-                  ) : (
-                    <Heart className="h-6 w-6 text-gray-500" />
-                  )}
-                  {rsvpStatus === 'yes' ? 'Vou comparecer!' : 'Não poderei comparecer'}
-                </>
+                rsvpStatus === 'yes' ? 'Confirmar Presença' : 'Informar Ausência'
               ) : (
-                'Bem-vindo'
+                'Acesso Administrativo'
               )}
             </CardTitle>
+            <p className="text-muted-foreground">
+              {showRSVP 
+                ? 'Por favor, confirme sua participação no evento'
+                : 'Entre para gerenciar sites e configurações'
+              }
+            </p>
           </CardHeader>
           <CardContent>
             {showRSVP ? (
               <form onSubmit={handleRSVP} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="guestName">Seu nome</Label>
+                  <Label htmlFor="guestName">Nome completo</Label>
                   <Input
                     id="guestName"
                     type="text"
-                    placeholder="Nome completo"
                     value={guestName}
                     onChange={(e) => setGuestName(e.target.value)}
+                    placeholder="Seu nome completo"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">Email (opcional)</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="seu@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    required
+                    placeholder="seu@email.com"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="message">Mensagem (opcional)</Label>
                   <Textarea
                     id="message"
-                    placeholder={rsvpStatus === 'yes' ? 
-                      "Deixe uma mensagem carinhosa..." : 
-                      "Desculpe não poder comparecer..."
-                    }
                     value={guestMessage}
                     onChange={(e) => setGuestMessage(e.target.value)}
+                    placeholder="Deixe uma mensagem especial..."
                     rows={3}
                   />
                 </div>
-                <Button type="submit" className="w-full" disabled={loading}>
-                  {loading ? "Enviando..." : "Confirmar"}
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full" 
-                  onClick={() => setShowRSVP(false)}
-                >
-                  Ou fazer login/cadastro
-                </Button>
+                <div className="flex gap-3 pt-4">
+                  <Button 
+                    type="submit" 
+                    disabled={loading}
+                    className="flex-1 gap-2"
+                  >
+                    {loading ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    ) : (
+                      <CheckCircle className="h-4 w-4" />
+                    )}
+                    {rsvpStatus === 'yes' ? 'Confirmar Presença' : 'Informar Ausência'}
+                  </Button>
+                  <Button 
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setShowRSVP(false);
+                      setRsvpStatus(null);
+                    }}
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                </div>
               </form>
             ) : (
-              <Tabs defaultValue="signin" className="w-full">
+              <Tabs defaultValue="signin" className="space-y-4">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="signin">Entrar</TabsTrigger>
                   <TabsTrigger value="signup">Cadastrar</TabsTrigger>
@@ -237,29 +226,33 @@ const AuthPage = () => {
                 <TabsContent value="signin">
                   <form onSubmit={handleSignIn} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
+                      <Label htmlFor="signin-email">Email</Label>
                       <Input
-                        id="email"
+                        id="signin-email"
                         type="email"
-                        placeholder="seu@email.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        placeholder="seu@email.com"
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="password">Senha</Label>
+                      <Label htmlFor="signin-password">Senha</Label>
                       <Input
-                        id="password"
+                        id="signin-password"
                         type="password"
-                        placeholder="Sua senha"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Sua senha"
                         required
                       />
                     </div>
                     <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "Entrando..." : "Entrar"}
+                      {loading ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      ) : (
+                        "Entrar"
+                      )}
                     </Button>
                   </form>
                 </TabsContent>
@@ -267,40 +260,45 @@ const AuthPage = () => {
                 <TabsContent value="signup">
                   <form onSubmit={handleSignUp} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Nome</Label>
+                      <Label htmlFor="signup-name">Nome completo</Label>
                       <Input
-                        id="name"
+                        id="signup-name"
                         type="text"
-                        placeholder="Seu nome"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        placeholder="Seu nome completo"
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
+                      <Label htmlFor="signup-email">Email</Label>
                       <Input
-                        id="email"
+                        id="signup-email"
                         type="email"
-                        placeholder="seu@email.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
+                        placeholder="seu@email.com"
                         required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="password">Senha</Label>
+                      <Label htmlFor="signup-password">Senha</Label>
                       <Input
-                        id="password"
+                        id="signup-password"
                         type="password"
-                        placeholder="Sua senha"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Crie uma senha"
                         required
+                        minLength={6}
                       />
                     </div>
                     <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? "Cadastrando..." : "Cadastrar"}
+                      {loading ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      ) : (
+                        "Cadastrar"
+                      )}
                     </Button>
                   </form>
                 </TabsContent>
