@@ -292,44 +292,6 @@ const EditSite = () => {
       setSaving(false);
     }
   };
-        event_location: formData.event_location || null,
-        updated_at: new Date().toISOString()
-      };
-
-      const { error } = await supabase
-        .from('sites')
-        .update(updateData)
-        .eq('id', site.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Sucesso!",
-        description: "Site atualizado com sucesso.",
-      });
-      
-      // Atualizar o estado do site com os dados salvos
-      setSite({ 
-        ...site, 
-        ...updateData,
-        // Manter campos que não estão no formData
-        id: site.id,
-        creator_id: site.creator_id,
-        layout_id: site.layout_id,
-        is_active: site.is_active,
-        created_at: site.created_at
-      });
-    } catch (error) {
-      console.error('Erro ao salvar:', error);
-      toast({
-        title: "Erro",
-        description: "Não foi possível salvar as alterações.",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const addProductToSite = async (productId: string) => {
     if (!site) return;
