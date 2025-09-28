@@ -19,20 +19,50 @@ const CreateSite = () => {
   const { toast } = useToast();
   
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    eventType: "", // Novo campo para tipo de evento
-    eventDate: "", // Data do evento
-    hostNames: "", // Nomes dos anfitriões
+    eventType: "", 
+    eventDate: "", 
+    hostNames: "", 
+    heroImages: [] as File[], // Imagens do hero
+    galleryImages: [] as File[], // Imagens da galeria/nossa história
   });
 
   const layoutNames = {
     "cha-casa-nova": "Chá de Casa Nova"
   };
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | File[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleFileUpload = async (files: File[], userId: string): Promise<string[]> => {
+    const uploadedUrls: string[] = [];
+    
+    for (const file of files) {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('site-images')
+        .upload(fileName, file);
+      
+      if (error) {
+        console.error('Error uploading file:', error);
+        throw error;
+      }
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('site-images')
+        .getPublicUrl(fileName);
+      
+      uploadedUrls.push(publicUrl);
+    }
+    
+    return uploadedUrls;
   };
 
   const handleCreateSite = async (e: React.FormEvent) => {
@@ -57,8 +87,21 @@ const CreateSite = () => {
     }
 
     setLoading(true);
+    setUploading(true);
 
     try {
+      // Upload das imagens primeiro
+      let heroImageUrls: string[] = [];
+      let galleryImageUrls: string[] = [];
+      
+      if (formData.heroImages.length > 0) {
+        heroImageUrls = await handleFileUpload(formData.heroImages, profile.id);
+      }
+      
+      if (formData.galleryImages.length > 0) {
+        galleryImageUrls = await handleFileUpload(formData.galleryImages, profile.id);
+      }
+
       const { data, error } = await supabase
         .from('sites')
         .insert([
@@ -68,6 +111,8 @@ const CreateSite = () => {
             layout_id: layoutId,
             creator_id: profile.id,
             is_active: true,
+            hero_images: heroImageUrls,
+            story_images: galleryImageUrls,
           }
         ])
         .select()
@@ -92,6 +137,7 @@ const CreateSite = () => {
       });
     } finally {
       setLoading(false);
+      setUploading(false);
     }
   };
 
@@ -217,6 +263,48 @@ const CreateSite = () => {
                   </p>
                 </div>
 
+                {/* Upload de Imagens do Hero */}
+                <div className="space-y-2">
+                  <Label htmlFor="heroImages">Imagens do Hero (Fundo Principal)</Label>
+                  <Input
+                    id="heroImages"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleInputChange("heroImages", Array.from(e.target.files || []))}
+                    className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary file:text-primary-foreground hover:file:bg-primary/80"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Escolha de 1 a 5 imagens que vão aparecer no fundo da página principal (recomendado: 1920x1080px)
+                  </p>
+                  {formData.heroImages.length > 0 && (
+                    <p className="text-sm text-green-600">
+                      {formData.heroImages.length} imagen{formData.heroImages.length > 1 ? 's' : ''} selecionada{formData.heroImages.length > 1 ? 's' : ''}
+                    </p>
+                  )}
+                </div>
+
+                {/* Upload de Imagens da Galeria */}
+                <div className="space-y-2">
+                  <Label htmlFor="galleryImages">Fotos da Nossa História (opcional)</Label>
+                  <Input
+                    id="galleryImages"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={(e) => handleInputChange("galleryImages", Array.from(e.target.files || []))}
+                    className="file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-secondary file:text-secondary-foreground hover:file:bg-secondary/80"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Fotos do casal, da casa, momentos especiais para contar sua história
+                  </p>
+                  {formData.galleryImages.length > 0 && (
+                    <p className="text-sm text-green-600">
+                      {formData.galleryImages.length} imagen{formData.galleryImages.length > 1 ? 's' : ''} selecionada{formData.galleryImages.length > 1 ? 's' : ''}
+                    </p>
+                  )}
+                </div>
+
                 {/* Layout Preview */}
                 <div className="border rounded-lg p-4 bg-muted/50">
                   <h4 className="font-medium mb-2">Layout Selecionado</h4>
@@ -251,11 +339,11 @@ const CreateSite = () => {
                   </Button>
                   <Button 
                     type="submit" 
-                    disabled={loading || !formData.title.trim() || !formData.eventType || !formData.hostNames.trim()}
+                    disabled={loading || uploading || !formData.title.trim() || !formData.eventType || !formData.hostNames.trim()}
                     className="flex-1 gap-2"
                   >
-                    {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                    Criar Site
+                    {(loading || uploading) && <Loader2 className="h-4 w-4 animate-spin" />}
+                    {uploading ? "Enviando imagens..." : loading ? "Criando..." : "Criar Site"}
                   </Button>
                 </div>
               </form>

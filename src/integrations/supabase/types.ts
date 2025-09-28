@@ -368,7 +368,7 @@ export type Database = {
             foreignKeyName: "sites_layout_id_fkey"
             columns: ["layout_id"]
             isOneToOne: false
-            referencedRelation: "products"
+            referencedRelation: "layouts"
             referencedColumns: ["id"]
           },
         ]
