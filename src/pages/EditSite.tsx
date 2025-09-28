@@ -8,10 +8,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { ArrowLeft, Save, Eye, Palette, Type, Package, Settings, Trash2, Plus, Edit } from "lucide-react";
+
+// Product images for fallbacks
+import stoveImg from "@/assets/products/stove.jpg";
+import microwaveImg from "@/assets/products/microwave.jpg";
+import blenderImg from "@/assets/products/blender.jpg";
+import mixerImg from "@/assets/products/mixer.jpg";
+import electricOvenImg from "@/assets/products/electric-oven.jpg";
+import airFryerImg from "@/assets/products/air-fryer.jpg";
+import grillImg from "@/assets/products/grill.jpg";
+import rangeHoodImg from "@/assets/products/range-hood.jpg";
 
 interface Site {
   id: string;
@@ -79,6 +90,14 @@ const EditSite = () => {
   const [siteProducts, setSiteProducts] = useState<SiteProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editing, setEditing] = useState<{
+    id: string;
+    name: string;
+    price: number;
+    description: string;
+    image_url: string;
+  } | null>(null);
   
   const [formData, setFormData] = useState({
     title: "",

@@ -9,6 +9,16 @@ import { HeroCarousel } from "@/components/HeroCarousel";
 import { CartSidebar } from "@/components/CartSidebar";
 import { CartProvider, useCart } from "@/hooks/useCart";
 
+// Product images (ESM imports ensure correct URLs in build)
+import stoveImg from "@/assets/products/stove.jpg";
+import microwaveImg from "@/assets/products/microwave.jpg";
+import blenderImg from "@/assets/products/blender.jpg";
+import mixerImg from "@/assets/products/mixer.jpg";
+import electricOvenImg from "@/assets/products/electric-oven.jpg";
+import airFryerImg from "@/assets/products/air-fryer.jpg";
+import grillImg from "@/assets/products/grill.jpg";
+import rangeHoodImg from "@/assets/products/range-hood.jpg";
+
 interface Site {
   id: string;
   title: string;
@@ -51,14 +61,14 @@ interface Product {
 
 const DEFAULT_CATALOG: Record<string, Array<{ id: string; name: string; price: number; image_url: string; description?: string }>> = {
   'cha-casa-nova': [
-    { id: 'stove', name: 'Fogão', price: 1299.9, image_url: '/src/assets/products/stove.jpg' },
-    { id: 'microwave', name: 'Micro-ondas', price: 599.9, image_url: '/src/assets/products/microwave.jpg' },
-    { id: 'blender', name: 'Liquidificador', price: 199.9, image_url: '/src/assets/products/blender.jpg' },
-    { id: 'mixer', name: 'Batedeira', price: 349.9, image_url: '/src/assets/products/mixer.jpg' },
-    { id: 'electric-oven', name: 'Forno Elétrico', price: 899.9, image_url: '/src/assets/products/electric-oven.jpg' },
-    { id: 'air-fryer', name: 'Air Fryer', price: 499.9, image_url: '/src/assets/products/air-fryer.jpg' },
-    { id: 'grill', name: 'Grill Elétrico', price: 279.9, image_url: '/src/assets/products/grill.jpg' },
-    { id: 'range-hood', name: 'Coifa', price: 799.9, image_url: '/src/assets/products/range-hood.jpg' },
+    { id: 'stove', name: 'Fogão', price: 1299.9, image_url: stoveImg },
+    { id: 'microwave', name: 'Micro-ondas', price: 599.9, image_url: microwaveImg },
+    { id: 'blender', name: 'Liquidificador', price: 199.9, image_url: blenderImg },
+    { id: 'mixer', name: 'Batedeira', price: 349.9, image_url: mixerImg },
+    { id: 'electric-oven', name: 'Forno Elétrico', price: 899.9, image_url: electricOvenImg },
+    { id: 'air-fryer', name: 'Air Fryer', price: 499.9, image_url: airFryerImg },
+    { id: 'grill', name: 'Grill Elétrico', price: 279.9, image_url: grillImg },
+    { id: 'range-hood', name: 'Coifa', price: 799.9, image_url: rangeHoodImg },
   ],
 };
 
@@ -75,16 +85,16 @@ const PublicSiteContent = () => {
 
   const getProductImageFallback = (productId: string) => {
     const imageMap: { [key: string]: string } = {
-      'microwave': '/src/assets/products/microwave.jpg',
-      'range-hood': '/src/assets/products/range-hood.jpg',
-      'grill': '/src/assets/products/grill.jpg',
-      'blender': '/src/assets/products/blender.jpg',
-      'mixer': '/src/assets/products/mixer.jpg',
-      'electric-oven': '/src/assets/products/electric-oven.jpg',
-      'air-fryer': '/src/assets/products/air-fryer.jpg',
-      'stove': '/src/assets/products/stove.jpg'
+      'microwave': microwaveImg,
+      'range-hood': rangeHoodImg,
+      'grill': grillImg,
+      'blender': blenderImg,
+      'mixer': mixerImg,
+      'electric-oven': electricOvenImg,
+      'air-fryer': airFryerImg,
+      'stove': stoveImg
     };
-    return imageMap[productId] || null;
+    return imageMap[productId] || undefined;
   };
 
   useEffect(() => {
@@ -300,7 +310,7 @@ const PublicSiteContent = () => {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => navigate('/guest-login')}
+                onClick={() => navigate(`/guest-login?siteId=${site.id}`)}
               >
                 <User className="h-4 w-4 mr-2" />
                 Login
@@ -365,7 +375,7 @@ const PublicSiteContent = () => {
             <Button 
               size="lg" 
               className="bg-primary text-white hover:bg-primary/90"
-              onClick={() => navigate('/guest-login?rsvp=yes')}
+              onClick={() => navigate(`/guest-login?siteId=${site.id}&rsvp=yes`)}
             >
               <Heart className="h-5 w-5 mr-2" />
               Vou comparecer
@@ -374,7 +384,7 @@ const PublicSiteContent = () => {
               variant="outline" 
               size="lg" 
               className="bg-white/10 text-white border-white/20 hover:bg-white/20"
-              onClick={() => navigate('/guest-login?rsvp=no')}
+              onClick={() => navigate(`/guest-login?siteId=${site.id}&rsvp=no`)}
             >
               Não poderei comparecer
             </Button>
@@ -439,7 +449,7 @@ const PublicSiteContent = () => {
             <Button 
               size="lg" 
               className="flex-1 w-full sm:w-auto"
-              onClick={() => navigate('/guest-login?rsvp=yes')}
+              onClick={() => navigate(`/guest-login?siteId=${site.id}&rsvp=yes`)}
             >
               <Heart className="h-5 w-5 mr-2" />
               Vou comparecer
@@ -448,7 +458,7 @@ const PublicSiteContent = () => {
               variant="outline" 
               size="lg" 
               className="flex-1 w-full sm:w-auto"
-              onClick={() => navigate('/guest-login?rsvp=no')}
+              onClick={() => navigate(`/guest-login?siteId=${site.id}&rsvp=no`)}
             >
               Não poderei comparecer
             </Button>

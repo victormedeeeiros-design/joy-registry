@@ -70,10 +70,11 @@ serve(async (req) => {
           if (product.stripe_price_id) {
             stripePrice = product.stripe_price_id;
           } else {
+            const validImage = typeof imageUrl === 'string' && /^https?:\/\//.test(imageUrl);
             const stripeProduct = await stripe.products.create({
               name,
               description,
-              images: imageUrl ? [imageUrl] : undefined,
+              images: validImage ? [imageUrl] : undefined,
               metadata: {
                 product_id: product.id,
                 site_product_id: siteProduct.id
@@ -105,10 +106,11 @@ serve(async (req) => {
         if (!name || typeof price !== 'number') {
           throw new Error('Missing product data for checkout item');
         }
+        const validImage2 = typeof imageUrl === 'string' && /^https?:\/\//.test(imageUrl);
         const stripeProduct = await stripe.products.create({
           name,
           description,
-          images: imageUrl ? [imageUrl] : undefined,
+          images: validImage2 ? [imageUrl] : undefined,
           metadata: {
             site_id: siteId,
             source: 'fallback'
