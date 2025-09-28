@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import { 
   Globe, 
   ShoppingBag, 
@@ -25,6 +26,7 @@ interface Site {
 
 const SiteCreatorDashboard = () => {
   const { profile, signOut } = useAuth();
+  const navigate = useNavigate();
   const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -117,7 +119,7 @@ const SiteCreatorDashboard = () => {
         {/* Create New Site Button */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">Seus Sites</h2>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={() => navigate('/layouts')}>
             <Plus className="h-4 w-4" />
             Criar Novo Site
           </Button>
@@ -136,7 +138,7 @@ const SiteCreatorDashboard = () => {
               <p className="text-muted-foreground mb-4">
                 Comece criando seu primeiro site de presentes personalizado
               </p>
-              <Button className="gap-2">
+              <Button className="gap-2" onClick={() => navigate('/layouts')}>
                 <Plus className="h-4 w-4" />
                 Criar Primeiro Site
               </Button>

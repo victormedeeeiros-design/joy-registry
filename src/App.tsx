@@ -9,6 +9,8 @@ import NotFound from "./pages/NotFound";
 import AuthPage from "@/components/auth/AuthPage";
 import PlatformAdminDashboard from "@/components/admin/PlatformAdminDashboard";
 import SiteCreatorDashboard from "@/components/creator/SiteCreatorDashboard";
+import LayoutSelection from "./pages/LayoutSelection";
+import CreateSite from "./pages/CreateSite";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +67,22 @@ const App = () => (
             element={
               <ProtectedRoute userType="site_creator">
                 <SiteCreatorDashboard />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/layouts" 
+            element={
+              <ProtectedRoute userType="site_creator">
+                <LayoutSelection />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/create-site" 
+            element={
+              <ProtectedRoute userType="site_creator">
+                <CreateSite />
               </ProtectedRoute>
             } 
           />
