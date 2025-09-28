@@ -196,7 +196,19 @@ const PublicSiteContent = () => {
             'white': '#ffffff',
             'black': '#000000',
             'gold': '#D4AF37',
-            'rose': '#E91E63'
+            'rose': '#E91E63',
+            'cream': '#F5F5DC',
+            'navy': '#1e3a8a',
+            'emerald': '#059669',
+            'purple': '#7c3aed',
+            'brown': '#8B4513',
+            'teal': '#008080',
+            'coral': '#FF6B6B',
+            'indigo': '#6366F1',
+            'orange': '#FF8C00',
+            'pink': '#FF69B4',
+            'mint': '#00CED1',
+            'burgundy': '#800020'
           };
           
           if (titleColorMap[siteData.title_color]) {

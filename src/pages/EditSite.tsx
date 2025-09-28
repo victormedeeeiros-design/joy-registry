@@ -95,7 +95,19 @@ const fontColors = [
   { id: 'white', name: 'Branco', value: '#ffffff' },
   { id: 'black', name: 'Preto', value: '#000000' },
   { id: 'gold', name: 'Dourado', value: '#D4AF37' },
-  { id: 'rose', name: 'Rosa', value: '#E91E63' }
+  { id: 'rose', name: 'Rosa', value: '#E91E63' },
+  { id: 'cream', name: 'Creme Suave', value: '#F5F5DC' },
+  { id: 'navy', name: 'Azul Marinho', value: '#1e3a8a' },
+  { id: 'emerald', name: 'Verde Esmeralda', value: '#059669' },
+  { id: 'purple', name: 'Roxo Real', value: '#7c3aed' },
+  { id: 'brown', name: 'Marrom Chocolate', value: '#8B4513' },
+  { id: 'teal', name: 'Azul Petróleo', value: '#008080' },
+  { id: 'coral', name: 'Coral', value: '#FF6B6B' },
+  { id: 'indigo', name: 'Índigo', value: '#6366F1' },
+  { id: 'orange', name: 'Laranja', value: '#FF8C00' },
+  { id: 'pink', name: 'Rosa Claro', value: '#FF69B4' },
+  { id: 'mint', name: 'Verde Menta', value: '#00CED1' },
+  { id: 'burgundy', name: 'Borgonha', value: '#800020' }
 ];
 
 const heroFontColors = [
@@ -446,35 +458,69 @@ const EditSite = () => {
     if (!editing || !site) return;
     
     try {
-      const { error } = await supabase
-        .from('site_products')
-        .update({
-          custom_name: editing.name || null,
-          custom_price: editing.price || null,
-          custom_description: editing.description || null,
-          custom_image_url: editing.image_url || null,
-        })
-        .eq('id', editing.id);
+      // Primeiro, vamos atualizar o produto principal se a categoria mudou
+      const currentProduct = products.find(p => p.id === editing.id);
+      if (currentProduct && editing.category && editing.category !== currentProduct.category) {
+        const { error: productError } = await supabase
+          .from('products')
+          .update({
+            category: editing.category
+          })
+          .eq('id', editing.id);
 
-      if (error) throw error;
+        if (productError) {
+          console.error('Erro ao atualizar categoria do produto:', productError);
+          // Continua mesmo se houver erro na categoria, para não impedir outras atualizações
+        } else {
+          // Atualizar lista local de produtos
+          setProducts(products.map(p => 
+            p.id === editing.id 
+              ? { ...p, category: editing.category }
+              : p
+          ));
+        }
+      }
 
-      // Atualizar a lista local
-      setSiteProducts(siteProducts.map(sp => 
-        sp.id === editing.id 
-          ? {
-              ...sp,
-              custom_name: editing.name || null,
-              custom_price: editing.price || null,
-              custom_description: editing.description || null,
-              custom_image_url: editing.image_url || null,
-            }
-          : sp
-      ));
+      // Encontrar o site_product correspondente para atualizar campos customizados
+      const siteProduct = siteProducts.find(sp => {
+        const product = products.find(p => p.id === sp.product_id);
+        return product?.id === editing.id;
+      });
+
+      if (siteProduct) {
+        const { error } = await supabase
+          .from('site_products')
+          .update({
+            custom_name: editing.name !== currentProduct?.name ? editing.name : null,
+            custom_price: editing.price !== currentProduct?.price ? editing.price : null,
+            custom_description: editing.description !== currentProduct?.description ? editing.description : null,
+            custom_image_url: editing.image_url !== currentProduct?.image_url ? editing.image_url : null,
+          })
+          .eq('id', siteProduct.id);
+
+        if (error) throw error;
+
+        // Atualizar a lista local de site_products
+        setSiteProducts(siteProducts.map(sp => 
+          sp.id === siteProduct.id 
+            ? {
+                ...sp,
+                custom_name: editing.name !== currentProduct?.name ? editing.name : null,
+                custom_price: editing.price !== currentProduct?.price ? editing.price : null,
+                custom_description: editing.description !== currentProduct?.description ? editing.description : null,
+                custom_image_url: editing.image_url !== currentProduct?.image_url ? editing.image_url : null,
+              }
+            : sp
+        ));
+      }
 
       toast({
         title: "Produto atualizado!",
         description: "As alterações foram salvas com sucesso.",
       });
+      
+      // Recarregar dados para garantir que as categorias apareçam corretamente
+      await loadSiteData();
       
       setEditOpen(false);
       setEditing(null);
@@ -1157,11 +1203,12 @@ const EditSite = () => {
                                 const product = products.find(p => p.id === siteProduct.product_id);
                                 if (product) {
                                   setEditing({
-                                    id: siteProduct.id,
+                                    id: product.id, // Usar o ID do produto, não do site_product
                                     name: siteProduct.custom_name || product.name,
                                     price: siteProduct.custom_price || product.price,
                                     description: siteProduct.custom_description || product.description || '',
-                                    image_url: siteProduct.custom_image_url || product.image_url || ''
+                                    image_url: siteProduct.custom_image_url || product.image_url || '',
+                                    category: product.category || 'Eletrodomésticos'
                                   });
                                   setEditOpen(true);
                                 }
