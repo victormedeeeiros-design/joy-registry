@@ -510,12 +510,15 @@ export type Database = {
           is_active: boolean | null
           layout_id: string
           payment_method: string | null
+          section_title_1: string | null
+          section_title_2: string | null
           story_images: string[] | null
           story_text: string | null
           stripe_public_key: string | null
           stripe_publishable_key: string | null
           stripe_secret_key: string | null
           title: string
+          title_color: string | null
           updated_at: string
         }
         Insert: {
@@ -535,12 +538,15 @@ export type Database = {
           is_active?: boolean | null
           layout_id: string
           payment_method?: string | null
+          section_title_1?: string | null
+          section_title_2?: string | null
           story_images?: string[] | null
           story_text?: string | null
           stripe_public_key?: string | null
           stripe_publishable_key?: string | null
           stripe_secret_key?: string | null
           title: string
+          title_color?: string | null
           updated_at?: string
         }
         Update: {
@@ -560,12 +566,15 @@ export type Database = {
           is_active?: boolean | null
           layout_id?: string
           payment_method?: string | null
+          section_title_1?: string | null
+          section_title_2?: string | null
           story_images?: string[] | null
           story_text?: string | null
           stripe_public_key?: string | null
           stripe_publishable_key?: string | null
           stripe_secret_key?: string | null
           title?: string
+          title_color?: string | null
           updated_at?: string
         }
         Relationships: [

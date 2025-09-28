@@ -39,6 +39,9 @@ interface Site {
   font_family?: string;
   font_color_menu?: string;
   font_color_hero?: string;
+  title_color?: string;
+  section_title_1?: string;
+  section_title_2?: string;
   event_date?: string;
   event_time?: string;
   event_location?: string;
@@ -166,6 +169,9 @@ const EditSite = () => {
     font_family: "inter",
     font_color_menu: "default",
     font_color_hero: "white",
+    title_color: "default",
+    section_title_1: "O Início de Tudo",
+    section_title_2: "Nossa Nova Casa",
     payment_method: "stripe",
     stripe_publishable_key: "",
     stripe_secret_key: "",
@@ -203,6 +209,9 @@ const EditSite = () => {
         font_family: (siteData as any).font_family || "inter",
         font_color_menu: (siteData as any).font_color_menu || "default",
         font_color_hero: (siteData as any).font_color_hero || "white",
+        title_color: (siteData as any).title_color || "default",
+        section_title_1: (siteData as any).section_title_1 || "O Início de Tudo",
+        section_title_2: (siteData as any).section_title_2 || "Nossa Nova Casa",
         payment_method: (siteData as any).payment_method || "stripe",
         stripe_publishable_key: (siteData as any).stripe_publishable_key || "",
         stripe_secret_key: (siteData as any).stripe_secret_key || "",
@@ -297,6 +306,9 @@ const EditSite = () => {
         font_family: formData.font_family || 'playfair',
         font_color_menu: formData.font_color_menu || 'default',
         font_color_hero: formData.font_color_hero || 'white',
+        title_color: formData.title_color || 'default',
+        section_title_1: formData.section_title_1 || 'O Início de Tudo',
+        section_title_2: formData.section_title_2 || 'Nossa Nova Casa',
         hero_images: formData.hero_images || [],
         story_images: formData.story_images || [],
         event_date: formData.event_date || null,
@@ -942,6 +954,53 @@ const EditSite = () => {
                       placeholder="Conte sua história..."
                       rows={4}
                     />
+                  </div>
+                  
+                  {/* Títulos das Seções */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="section_title_1">Título da Primeira Seção</Label>
+                      <Input
+                        id="section_title_1"
+                        value={formData.section_title_1}
+                        onChange={(e) => setFormData({ ...formData, section_title_1: e.target.value })}
+                        placeholder="Ex: O Início de Tudo"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="section_title_2">Título da Segunda Seção</Label>
+                      <Input
+                        id="section_title_2"
+                        value={formData.section_title_2}
+                        onChange={(e) => setFormData({ ...formData, section_title_2: e.target.value })}
+                        placeholder="Ex: Nossa Nova Casa"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Cor dos Títulos das Seções</Label>
+                    <Select 
+                      value={formData.title_color} 
+                      onValueChange={(value) => setFormData({ ...formData, title_color: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fontColors.map((color) => (
+                          <SelectItem key={color.id} value={color.id}>
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-4 h-4 rounded border"
+                                style={{ backgroundColor: color.value }}
+                              />
+                              {color.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   {/* Campos do evento */}

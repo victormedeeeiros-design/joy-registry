@@ -37,6 +37,9 @@ interface Site {
   font_family?: string;
   font_color_menu?: string;
   font_color_hero?: string;
+  title_color?: string;
+  section_title_1?: string;
+  section_title_2?: string;
 }
 
 interface SiteProduct {
@@ -178,6 +181,23 @@ const PublicSiteContent = () => {
             root.style.setProperty('--hero-color', heroColorMap[siteData.font_color_hero]);
           }
         }
+        
+        // Title color for sections
+        if (siteData.title_color && siteData.title_color !== 'default') {
+          const titleColorMap: { [key: string]: string } = {
+            'primary': 'var(--primary)',
+            'secondary': 'var(--muted-foreground)',
+            'accent': 'var(--accent-foreground)',
+            'white': '#ffffff',
+            'black': '#000000',
+            'gold': '#D4AF37',
+            'rose': '#E91E63'
+          };
+          
+          if (titleColorMap[siteData.title_color]) {
+            root.style.setProperty('--title-color', titleColorMap[siteData.title_color]);
+          }
+        }
 
         // Buscar produtos do site com dados dos produtos
         const { data: siteProductsData, error: siteProductsError } = await supabase
@@ -249,6 +269,7 @@ const PublicSiteContent = () => {
       const root = document.documentElement;
       root.style.removeProperty('--menu-color');
       root.style.removeProperty('--hero-color');
+      root.style.removeProperty('--title-color');
     };
   }, [id]);
 
@@ -398,7 +419,7 @@ const PublicSiteContent = () => {
             {site.layout_id === 'cha-casa-nova' ? 'Chá de Casa Nova' : 'Celebração Especial'}
           </Badge>
           
-          <h1 className="text-4xl md:text-6xl font-script mb-6 drop-shadow-lg" style={{ color: 'inherit' }}>
+          <h1 className="text-4xl md:text-6xl font-script mb-6 drop-shadow-lg" style={{ color: 'var(--title-color, var(--hero-color, #ffffff))' }}>
             {site.title}
           </h1>
           
@@ -474,7 +495,7 @@ const PublicSiteContent = () => {
             <div className="flex items-center justify-center mb-6">
               <Heart className="h-8 w-8 text-primary" />
             </div>
-            <h2 className="text-4xl font-script mb-6 text-foreground">Nossa História</h2>
+            <h2 className="text-4xl font-script mb-6" style={{ color: 'var(--title-color, var(--foreground))' }}>Nossa História</h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
               Um amor que encontrou seu lar
             </p>
@@ -489,7 +510,9 @@ const PublicSiteContent = () => {
                     <div>
                       <div className="flex items-center gap-3 mb-4">
                         <Home className="h-6 w-6 text-primary" />
-                        <h3 className="text-2xl font-playfair font-semibold text-foreground">O Início de Tudo</h3>
+                        <h3 className="text-2xl font-playfair font-semibold" style={{ color: 'var(--title-color, var(--foreground))' }}>
+                          {site.section_title_1 || "O Início de Tudo"}
+                        </h3>
                       </div>
                       <p className="text-muted-foreground leading-relaxed">
                         {site.story_text || "Há alguns anos, duas vidas se encontraram e descobriram que juntas formavam algo muito especial. Após muitos momentos compartilhados, risadas, sonhos e planos, chegou o momento de dar o próximo grande passo: construir um lar juntos."}
@@ -499,7 +522,9 @@ const PublicSiteContent = () => {
                     <div>
                       <div className="flex items-center gap-3 mb-4">
                         <Home className="h-6 w-6 text-primary" />
-                        <h3 className="text-2xl font-playfair font-semibold text-foreground">Nossa Nova Casa</h3>
+                        <h3 className="text-2xl font-playfair font-semibold" style={{ color: 'var(--title-color, var(--foreground))' }}>
+                          {site.section_title_2 || "Nossa Nova Casa"}
+                        </h3>
                       </div>
                       <p className="text-muted-foreground leading-relaxed">
                         Agora, com as chaves da nossa primeira casa em mãos, queremos compartilhar esta alegria com vocês, pessoas especiais que fazem parte da nossa jornada.
@@ -544,7 +569,9 @@ const PublicSiteContent = () => {
                     <div>
                       <div className="flex items-center gap-3 mb-4">
                         <Home className="h-6 w-6 text-primary" />
-                        <h3 className="text-2xl font-playfair font-semibold text-foreground">O Início de Tudo</h3>
+                        <h3 className="text-2xl font-playfair font-semibold" style={{ color: 'var(--title-color, var(--foreground))' }}>
+                          {site.section_title_1 || "O Início de Tudo"}
+                        </h3>
                       </div>
                       <p className="text-muted-foreground leading-relaxed">
                         Há alguns anos, duas vidas se encontraram e descobriram que juntas formavam algo muito especial. Após muitos momentos compartilhados, risadas, sonhos e planos, chegou o momento de dar o próximo grande passo: construir um lar juntos.
@@ -554,7 +581,9 @@ const PublicSiteContent = () => {
                     <div>
                       <div className="flex items-center gap-3 mb-4">
                         <Home className="h-6 w-6 text-primary" />
-                        <h3 className="text-2xl font-playfair font-semibold text-foreground">Nossa Nova Casa</h3>
+                        <h3 className="text-2xl font-playfair font-semibold" style={{ color: 'var(--title-color, var(--foreground))' }}>
+                          {site.section_title_2 || "Nossa Nova Casa"}
+                        </h3>
                       </div>
                       <p className="text-muted-foreground leading-relaxed">
                         Agora, com as chaves da nossa primeira casa em mãos, queremos compartilhar esta alegria com vocês, pessoas especiais que fazem parte da nossa jornada.
@@ -578,7 +607,7 @@ const PublicSiteContent = () => {
         {/* RSVP Section within Story */}
         <div className="container mx-auto px-4 mt-16">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-script mb-4">Confirmação de Presença</h3>
+            <h3 className="text-2xl font-script mb-4" style={{ color: 'var(--title-color, var(--foreground))' }}>Confirmação de Presença</h3>
             <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
               Sua presença é muito importante para nós! Por favor, confirme sua participação.
             </p>
@@ -609,7 +638,7 @@ const PublicSiteContent = () => {
       <section id="gifts" className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-script mb-6">Lista de Presentes</h2>
+            <h2 className="text-4xl font-script mb-6" style={{ color: 'var(--title-color, var(--foreground))' }}>Lista de Presentes</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Escolha um presente especial para nos ajudar nesta nova etapa
             </p>
@@ -643,7 +672,7 @@ const PublicSiteContent = () => {
                 <div key={category} className="mb-16">
                   {/* Category Header */}
                   <div className="text-center mb-10">
-                    <h3 className="text-2xl font-playfair font-semibold text-foreground mb-2">{category}</h3>
+                    <h3 className="text-2xl font-playfair font-semibold mb-2" style={{ color: 'var(--title-color, var(--foreground))' }}>{category}</h3>
                     <div className="w-24 h-0.5 bg-primary mx-auto"></div>
                   </div>
                   

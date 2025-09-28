@@ -194,9 +194,9 @@ const ManageProducts = () => {
         });
       } else {
         // Criar novo produto
-        const productId = formData.name.toLowerCase()
+        const productId = `${formData.name.toLowerCase()
           .replace(/[^a-z0-9\s-]/g, '')
-          .replace(/\s+/g, '-');
+          .replace(/\s+/g, '-')}-${Date.now()}`;
 
         const { error } = await supabase
           .from('products')
@@ -223,9 +223,16 @@ const ManageProducts = () => {
       loadCategories();
     } catch (error: any) {
       console.error('Erro ao salvar produto:', error);
+      
+      // Mostrar erro mais específico
+      let errorMessage = "Não foi possível salvar o produto.";
+      if (error.code === '23505') {
+        errorMessage = "Já existe um produto com este nome. Tente um nome diferente.";
+      }
+      
       toast({
         title: "Erro",
-        description: error.message || "Não foi possível salvar o produto.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
