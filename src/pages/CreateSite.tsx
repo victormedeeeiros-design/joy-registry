@@ -25,6 +25,8 @@ const CreateSite = () => {
     description: "",
     eventType: "", 
     eventDate: "", 
+    eventTime: "",
+    eventLocation: "",
     hostNames: "", 
     heroImages: [] as File[], // Imagens do hero
     galleryImages: [] as File[], // Imagens da galeria/nossa história
@@ -131,6 +133,9 @@ const CreateSite = () => {
             is_active: true,
             hero_images: heroImageUrls,
             story_images: galleryImageUrls,
+            event_date: formData.eventDate || null,
+            event_time: formData.eventTime || null,
+            event_location: formData.eventLocation || null,
             color_scheme: formData.colorScheme,
             font_family: formData.fontFamily,
           }
@@ -254,17 +259,38 @@ const CreateSite = () => {
                   </p>
                 </div>
 
-                {/* Data do Evento (opcional) */}
+                {/* Informações do Evento */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="eventDate">Data do Evento (opcional)</Label>
+                    <Input
+                      id="eventDate"
+                      type="date"
+                      value={formData.eventDate}
+                      onChange={(e) => handleInputChange("eventDate", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="eventTime">Horário (opcional)</Label>
+                    <Input
+                      id="eventTime"
+                      type="time"
+                      value={formData.eventTime}
+                      onChange={(e) => handleInputChange("eventTime", e.target.value)}
+                    />
+                  </div>
+                </div>
+                
                 <div className="space-y-2">
-                  <Label htmlFor="eventDate">Data do Evento (opcional)</Label>
+                  <Label htmlFor="eventLocation">Local do Evento (opcional)</Label>
                   <Input
-                    id="eventDate"
-                    type="date"
-                    value={formData.eventDate}
-                    onChange={(e) => handleInputChange("eventDate", e.target.value)}
+                    id="eventLocation"
+                    value={formData.eventLocation}
+                    onChange={(e) => handleInputChange("eventLocation", e.target.value)}
+                    placeholder="Ex: Rua das Flores, 123 - Centro, São Paulo"
                   />
                   <p className="text-xs text-muted-foreground">
-                    Quando será a celebração?
+                    Onde será a celebração?
                   </p>
                 </div>
 

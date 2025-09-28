@@ -26,6 +26,9 @@ interface Site {
   story_text?: string;
   color_scheme?: string;
   font_family?: string;
+  event_date?: string;
+  event_time?: string;
+  event_location?: string;
 }
 
 interface Product {
@@ -88,6 +91,9 @@ const EditSite = () => {
     stripe_secret_key: "",
     hero_images: [] as string[],
     story_images: [] as string[],
+    event_date: "",
+    event_time: "",
+    event_location: "",
     custom_name: "",
     custom_price: 0,
     custom_description: "",
@@ -124,6 +130,9 @@ const EditSite = () => {
         stripe_secret_key: (siteData as any).stripe_secret_key || "",
         hero_images: siteData.hero_images || [],
         story_images: siteData.story_images || [],
+        event_date: (siteData as any).event_date || "",
+        event_time: (siteData as any).event_time || "",
+        event_location: (siteData as any).event_location || "",
         custom_name: "",
         custom_price: 0,
         custom_description: "",
@@ -178,6 +187,9 @@ const EditSite = () => {
         payment_method: formData.payment_method || 'stripe',
         stripe_publishable_key: formData.stripe_publishable_key || null,
         stripe_secret_key: formData.stripe_secret_key || null,
+        event_date: formData.event_date || null,
+        event_time: formData.event_time || null,
+        event_location: formData.event_location || null,
           updated_at: new Date().toISOString()
         })
         .eq('id', site.id);
@@ -447,6 +459,38 @@ const EditSite = () => {
                       onChange={(e) => setFormData({ ...formData, story_text: e.target.value })}
                       placeholder="Conte sua história..."
                       rows={4}
+                    />
+                  </div>
+                  
+                  {/* Campos do evento */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="event_date">Data do Evento</Label>
+                      <Input
+                        id="event_date"
+                        type="date"
+                        value={formData.event_date}
+                        onChange={(e) => setFormData({ ...formData, event_date: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="event_time">Horário do Evento</Label>
+                      <Input
+                        id="event_time"
+                        type="time"
+                        value={formData.event_time}
+                        onChange={(e) => setFormData({ ...formData, event_time: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="event_location">Local do Evento</Label>
+                    <Input
+                      id="event_location"
+                      value={formData.event_location}
+                      onChange={(e) => setFormData({ ...formData, event_location: e.target.value })}
+                      placeholder="Ex: Rua das Flores, 123 - Centro"
                     />
                   </div>
                 </CardContent>

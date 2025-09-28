@@ -15,6 +15,7 @@ import PublicSite from "./pages/PublicSite";
 import EditSite from "./pages/EditSite";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import GuestLogin from "./pages/GuestLogin";
+import ManageProducts from "./pages/ManageProducts";
 
 const queryClient = new QueryClient();
 
@@ -101,6 +102,14 @@ const App = () => (
             element={
               <ProtectedRoute userType="site_creator">
                 <EditSite />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/products" 
+            element={
+              <ProtectedRoute userType="platform_admin">
+                <ManageProducts />
               </ProtectedRoute>
             } 
           />

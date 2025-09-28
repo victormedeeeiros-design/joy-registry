@@ -499,6 +499,9 @@ export type Database = {
           creator_id: string
           custom_domain: string | null
           description: string | null
+          event_date: string | null
+          event_location: string | null
+          event_time: string | null
           font_family: string | null
           hero_images: string[] | null
           id: string
@@ -519,6 +522,9 @@ export type Database = {
           creator_id: string
           custom_domain?: string | null
           description?: string | null
+          event_date?: string | null
+          event_location?: string | null
+          event_time?: string | null
           font_family?: string | null
           hero_images?: string[] | null
           id?: string
@@ -539,6 +545,9 @@ export type Database = {
           creator_id?: string
           custom_domain?: string | null
           description?: string | null
+          event_date?: string | null
+          event_location?: string | null
+          event_time?: string | null
           font_family?: string | null
           hero_images?: string[] | null
           id?: string

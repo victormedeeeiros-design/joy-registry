@@ -55,6 +55,20 @@ const PublicSiteContent = () => {
   const { addItem } = useCart();
   const navigate = useNavigate();
 
+  const getProductImageFallback = (productId: string) => {
+    const imageMap: { [key: string]: string } = {
+      'microwave': '/src/assets/products/microwave.jpg',
+      'range-hood': '/src/assets/products/range-hood.jpg',
+      'grill': '/src/assets/products/grill.jpg',
+      'blender': '/src/assets/products/blender.jpg',
+      'mixer': '/src/assets/products/mixer.jpg',
+      'electric-oven': '/src/assets/products/electric-oven.jpg',
+      'air-fryer': '/src/assets/products/air-fryer.jpg',
+      'stove': '/src/assets/products/stove.jpg'
+    };
+    return imageMap[productId] || null;
+  };
+
   useEffect(() => {
     const loadSite = async () => {
       if (!id) {
@@ -405,7 +419,7 @@ const PublicSiteContent = () => {
                 const name = siteProduct.custom_name || product.name;
                 const price = siteProduct.custom_price || product.price;
                 const description = siteProduct.custom_description || product.description;
-                const imageUrl = siteProduct.custom_image_url || product.image_url;
+                const imageUrl = siteProduct.custom_image_url || product.image_url || getProductImageFallback(product.id);
                 
                 return (
                   <Card key={siteProduct.id} className="hover:shadow-elegant transition-all duration-300 group">

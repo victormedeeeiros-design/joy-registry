@@ -39,28 +39,8 @@ serve(async (req) => {
     let customerId;
     let customerEmail;
 
-    // Try to get authenticated user (optional for guest checkout)
-    try {
-      const authHeader = req.headers.get("Authorization");
-      if (authHeader) {
-        const token = authHeader.replace("Bearer ", "");
-        const { data } = await supabaseClient.auth.getUser(token);
-        const user = data.user;
-        
-        if (user?.email) {
-          customerEmail = user.email;
-          
-          // Check if a Stripe customer record exists for this user
-          const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-          if (customers.data.length > 0) {
-            customerId = customers.data[0].id;
-          }
-        }
-      }
-    } catch (authError) {
-      // User not authenticated - proceed with guest checkout
-      console.log("Proceeding with guest checkout");
-    }
+    // Always proceed with guest checkout (no authentication required)
+    // Users can provide their email during Stripe checkout
 
     // Prepare line items for Stripe
     const lineItems = [];
@@ -133,8 +113,6 @@ serve(async (req) => {
 
     // Create a one-time payment session
     const session = await stripe.checkout.sessions.create({
-      customer: customerId,
-      customer_email: customerId ? undefined : customerEmail,
       line_items: lineItems,
       mode: "payment",
       success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,

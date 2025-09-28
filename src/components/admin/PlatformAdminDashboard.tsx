@@ -4,13 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import { 
   Users, 
   Globe, 
   ShoppingBag, 
   TrendingUp,
   Plus,
-  Settings
+  Settings,
+  Package
 } from "lucide-react";
 
 interface DashboardStats {
@@ -22,6 +24,7 @@ interface DashboardStats {
 
 const PlatformAdminDashboard = () => {
   const { signOut } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState<DashboardStats>({
     totalSites: 0,
     totalUsers: 0,
@@ -145,15 +148,20 @@ const PlatformAdminDashboard = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Plus className="h-5 w-5" />
-                Gerenciar Layouts
+                <Package className="h-5 w-5" />
+                Gerenciar Produtos
               </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Criar e gerenciar layouts de sites para eventos
+                Gerenciar produtos disponíveis na plataforma
               </p>
-              <Button className="w-full">Acessar Layouts</Button>
+              <Button 
+                className="w-full"
+                onClick={() => navigate('/admin/products')}
+              >
+                Gerenciar Produtos
+              </Button>
             </CardContent>
           </Card>
 
