@@ -37,6 +37,7 @@ interface Site {
   story_text?: string;
   color_scheme?: string;
   font_family?: string;
+  font_color?: string;
   event_date?: string;
   event_time?: string;
   event_location?: string;
@@ -81,6 +82,28 @@ const fontFamilies = [
   { id: 'montserrat', name: 'Montserrat (Clean)', value: 'Montserrat, sans-serif' }
 ];
 
+const fontColors = [
+  { id: 'default', name: 'Padrão', value: 'var(--foreground)' },
+  { id: 'primary', name: 'Primária', value: 'var(--primary)' },
+  { id: 'secondary', name: 'Secundária', value: 'var(--muted-foreground)' },
+  { id: 'accent', name: 'Destaque', value: 'var(--accent-foreground)' },
+  { id: 'white', name: 'Branco', value: '#ffffff' },
+  { id: 'black', name: 'Preto', value: '#000000' },
+  { id: 'gold', name: 'Dourado', value: '#D4AF37' },
+  { id: 'rose', name: 'Rosa', value: '#E91E63' }
+];
+
+const categories = [
+  'Eletrodomésticos',
+  'Mesa e Decoração', 
+  'Brincadeiras',
+  'Casa e Jardim',
+  'Cozinha',
+  'Quarto',
+  'Banheiro',
+  'Sala de Estar'
+];
+
 // Catálogo padrão para fallback
 const DEFAULT_CATALOG = [
   { id: 'stove', name: 'Fogão', price: 1299.9, image_url: stoveImg, description: 'Fogão 4 bocas com forno', category: 'Eletrodomésticos' },
@@ -111,6 +134,7 @@ const EditSite = () => {
     price: number;
     description: string;
     image_url: string;
+    category?: string;
   } | null>(null);
   const [newProductOpen, setNewProductOpen] = useState(false);
   const [csvImportOpen, setCsvImportOpen] = useState(false);
@@ -118,7 +142,8 @@ const EditSite = () => {
     name: '',
     price: 0,
     description: '',
-    image_url: ''
+    image_url: '',
+    category: 'Eletrodomésticos'
   });
   
   const [formData, setFormData] = useState({
@@ -127,6 +152,7 @@ const EditSite = () => {
     story_text: "",
     color_scheme: "elegant-gold",
     font_family: "inter",
+    font_color: "default",
     payment_method: "stripe",
     stripe_publishable_key: "",
     stripe_secret_key: "",
@@ -312,7 +338,7 @@ const EditSite = () => {
             price: catalogProduct.price,
             image_url: catalogProduct.image_url,
             description: catalogProduct.description,
-            category: 'casa-nova',
+            category: catalogProduct.category || 'Eletrodomésticos',
             status: 'active'
           }])
           .select()
@@ -447,7 +473,7 @@ const EditSite = () => {
           price: newProduct.price,
           image_url: newProduct.image_url || null,
           description: newProduct.description || null,
-          category: 'custom',
+          category: newProduct.category || 'Eletrodomésticos',
           status: 'active'
         }])
         .select()
@@ -496,7 +522,7 @@ const EditSite = () => {
       });
       
       setNewProductOpen(false);
-      setNewProduct({ name: '', price: 0, description: '', image_url: '' });
+      setNewProduct({ name: '', price: 0, description: '', image_url: '', category: 'Eletrodomésticos' });
     } catch (error) {
       console.error('Erro ao criar produto:', error);
       toast({
@@ -528,7 +554,7 @@ const EditSite = () => {
             price: parseFloat(values[1]) || 0,
             description: values[2] || '',
             image_url: values[3] || null,
-            category: 'imported',
+            category: values[4] || 'Eletrodomésticos',
             status: 'active'
           });
         }
@@ -790,22 +816,50 @@ const EditSite = () => {
                 <CardHeader>
                   <CardTitle>Fonte</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <Select 
-                    value={formData.font_family} 
-                    onValueChange={(value) => setFormData({ ...formData, font_family: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fontFamilies.map((font) => (
-                        <SelectItem key={font.id} value={font.id}>
-                          <span style={{ fontFamily: font.value }}>{font.name}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <CardContent className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Família da Fonte</Label>
+                    <Select 
+                      value={formData.font_family} 
+                      onValueChange={(value) => setFormData({ ...formData, font_family: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fontFamilies.map((font) => (
+                          <SelectItem key={font.id} value={font.id}>
+                            <span style={{ fontFamily: font.value }}>{font.name}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label>Cor da Fonte</Label>
+                    <Select 
+                      value={formData.font_color} 
+                      onValueChange={(value) => setFormData({ ...formData, font_color: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fontColors.map((color) => (
+                          <SelectItem key={color.id} value={color.id}>
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-4 h-4 rounded border"
+                                style={{ backgroundColor: color.value }}
+                              />
+                              {color.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -1256,6 +1310,24 @@ const EditSite = () => {
                 />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="edit-category">Categoria</Label>
+                <Select 
+                  value={editing.category || 'Eletrodomésticos'} 
+                  onValueChange={(value) => setEditing({ ...editing, category: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="edit-image">URL da Imagem</Label>
                 <Input
                   id="edit-image"
@@ -1315,6 +1387,24 @@ const EditSite = () => {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="new-category">Categoria</Label>
+              <Select 
+                value={newProduct.category} 
+                onValueChange={(value) => setNewProduct({ ...newProduct, category: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="new-image">URL da Imagem</Label>
               <Input
                 id="new-image"
@@ -1348,9 +1438,9 @@ const EditSite = () => {
             <div className="p-4 bg-muted/30 rounded-lg">
               <h4 className="font-medium mb-2">Formato do arquivo CSV:</h4>
               <code className="text-sm text-muted-foreground">
-                nome,preco,descricao,imagem_url<br/>
-                Panela de Pressão,89.90,Panela 5L,https://...<br/>
-                Liquidificador,149.90,600W,https://...
+                nome,preco,descricao,imagem_url,categoria<br/>
+                Panela de Pressão,89.90,Panela 5L,https://...,Cozinha<br/>
+                Liquidificador,149.90,600W,https://...,Eletrodomésticos
               </code>
             </div>
             <div className="space-y-2">
