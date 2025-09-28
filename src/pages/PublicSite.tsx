@@ -360,7 +360,7 @@ const PublicSiteContent = () => {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
               <Heart className="h-6 w-6 text-primary" />
-              <span className="font-script text-xl text-primary">{site.title}</span>
+              <span className="font-script text-xl text-foreground">{site.title}</span>
             </div>
             
             <nav className="hidden md:flex items-center gap-6" style={{ color: 'var(--menu-color, var(--foreground))' }}>

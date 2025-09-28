@@ -183,6 +183,7 @@ const ManageProducts = () => {
             description: formData.description.trim() || null,
             category: formData.category.trim() || null,
             image_url: formData.image_url.trim() || null,
+            status: 'active', // Garantir que o produto continue ativo
           })
           .eq('id', editingProduct.id);
 
