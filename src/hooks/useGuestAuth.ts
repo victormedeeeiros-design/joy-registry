@@ -57,31 +57,24 @@ export const useGuestAuth = () => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const { data: userData, error } = await supabase
-        .from('guest_users')
-        .select('*')
-        .eq('email', email)
-        .single();
+      const { data, error } = await supabase.rpc('authenticate_guest_user', {
+        p_email: email,
+        p_password: password
+      });
 
-      if (error) throw new Error('Usuário não encontrado');
+      if (error) throw error;
 
-      // In production, verify password hash properly
-      if (userData.password_hash !== password) {
-        throw new Error('Senha incorreta');
+      if (!data.success) {
+        throw new Error(data.error || 'Erro na autenticação');
       }
 
-      const user = {
-        id: userData.id,
-        email: userData.email,
-        name: userData.name
-      };
-
+      const user = data.user;
       setGuestUser(user);
       localStorage.setItem('guestUser', JSON.stringify(user));
       
       return { error: null };
     } catch (error: any) {
-      return { error };
+      return { error: { message: error.message || 'Erro na autenticação' } };
     }
   };
 
