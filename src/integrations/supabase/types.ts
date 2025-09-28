@@ -35,6 +35,126 @@ export type Database = {
         }
         Relationships: []
       }
+      guest_order_items: {
+        Row: {
+          created_at: string | null
+          guest_order_id: string | null
+          id: string
+          price: number
+          quantity: number | null
+          site_product_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          guest_order_id?: string | null
+          id?: string
+          price: number
+          quantity?: number | null
+          site_product_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          guest_order_id?: string | null
+          id?: string
+          price?: number
+          quantity?: number | null
+          site_product_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_order_items_guest_order_id_fkey"
+            columns: ["guest_order_id"]
+            isOneToOne: false
+            referencedRelation: "guest_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_order_items_site_product_id_fkey"
+            columns: ["site_product_id"]
+            isOneToOne: false
+            referencedRelation: "site_products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guest_orders: {
+        Row: {
+          created_at: string | null
+          giver_message: string | null
+          guest_user_id: string | null
+          id: string
+          site_id: string | null
+          status: string | null
+          stripe_payment_intent_id: string | null
+          total_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          giver_message?: string | null
+          guest_user_id?: string | null
+          id?: string
+          site_id?: string | null
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          total_amount: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          giver_message?: string | null
+          guest_user_id?: string | null
+          id?: string
+          site_id?: string | null
+          status?: string | null
+          stripe_payment_intent_id?: string | null
+          total_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guest_orders_guest_user_id_fkey"
+            columns: ["guest_user_id"]
+            isOneToOne: false
+            referencedRelation: "guest_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "guest_orders_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guest_users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          password_hash: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          password_hash: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          password_hash?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       layouts: {
         Row: {
           category: string | null

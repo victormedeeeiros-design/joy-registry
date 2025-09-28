@@ -229,11 +229,11 @@ const PublicSiteContent = () => {
               </Button>
               <Button 
                 variant="ghost"
-                className={activeSection === 'rsvp' ? 'text-primary' : ''}
-                onClick={() => scrollToSection('rsvp')}
+                className={activeSection === 'story' ? 'text-primary' : ''}
+                onClick={() => scrollToSection('story')}
               >
                 <Heart className="h-4 w-4 mr-2" />
-                RSVP
+                Nossa História
               </Button>
               <Button 
                 variant="ghost"
@@ -250,7 +250,7 @@ const PublicSiteContent = () => {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => navigate('/auth')}
+                onClick={() => navigate('/guest-login')}
               >
                 <User className="h-4 w-4 mr-2" />
                 Login
@@ -285,7 +285,7 @@ const PublicSiteContent = () => {
             <Button 
               size="lg" 
               className="bg-primary text-white hover:bg-primary/90"
-              onClick={() => navigate('/auth?rsvp=yes')}
+              onClick={() => navigate('/guest-login?rsvp=yes')}
             >
               <Heart className="h-5 w-5 mr-2" />
               Vou comparecer
@@ -294,7 +294,7 @@ const PublicSiteContent = () => {
               variant="outline" 
               size="lg" 
               className="bg-white/10 text-white border-white/20 hover:bg-white/20"
-              onClick={() => navigate('/auth?rsvp=no')}
+              onClick={() => navigate('/guest-login?rsvp=no')}
             >
               Não poderei comparecer
             </Button>
@@ -310,46 +310,17 @@ const PublicSiteContent = () => {
         </section>
       </HeroCarousel>
 
-      {/* RSVP Section */}
-      <section id="rsvp" className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-script mb-4">Confirmação de Presença</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
-            Sua presença é muito importante para nós! Por favor, confirme sua participação.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto">
-            <Button 
-              size="lg" 
-              className="flex-1 w-full sm:w-auto"
-              onClick={() => navigate('/auth?rsvp=yes')}
-            >
-              <Heart className="h-5 w-5 mr-2" />
-              Vou comparecer
-            </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="flex-1 w-full sm:w-auto"
-              onClick={() => navigate('/auth?rsvp=no')}
-            >
-              Não poderei comparecer
-            </Button>
-          </div>
-        </div>
-      </section>
-
       {/* Story Section */}
-      {site.story_images && site.story_images.length > 0 && (
-        <section id="story" className="py-16 bg-muted/30">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-script mb-4">Nossa História</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto">
-                {site.story_text || "Momentos especiais que queremos compartilhar com vocês"}
-              </p>
-            </div>
-            
+      <section id="story" className="py-16 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-script mb-4">Nossa História</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              {site.story_text || "Momentos especiais que queremos compartilhar com vocês"}
+            </p>
+          </div>
+          
+          {site.story_images && site.story_images.length > 0 ? (
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-w-4xl mx-auto">
               {site.story_images.slice(0, 8).map((image, index) => (
                 <div 
@@ -364,9 +335,46 @@ const PublicSiteContent = () => {
                 </div>
               ))}
             </div>
+          ) : (
+            <div className="text-center py-12">
+              <Heart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Nossa história será contada aqui</h3>
+              <p className="text-muted-foreground">
+                Em breve compartilharemos nossos momentos especiais com vocês
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* RSVP Section within Story */}
+        <div className="container mx-auto px-4 mt-16">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-script mb-4">Confirmação de Presença</h3>
+            <p className="text-muted-foreground max-w-2xl mx-auto mb-8">
+              Sua presença é muito importante para nós! Por favor, confirme sua participação.
+            </p>
           </div>
-        </section>
-      )}
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center max-w-md mx-auto">
+            <Button 
+              size="lg" 
+              className="flex-1 w-full sm:w-auto"
+              onClick={() => navigate('/guest-login?rsvp=yes')}
+            >
+              <Heart className="h-5 w-5 mr-2" />
+              Vou comparecer
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg" 
+              className="flex-1 w-full sm:w-auto"
+              onClick={() => navigate('/guest-login?rsvp=no')}
+            >
+              Não poderei comparecer
+            </Button>
+          </div>
+        </div>
+      </section>
 
       {/* Products Section */}
       <section id="gifts" className="py-16">

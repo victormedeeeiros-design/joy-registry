@@ -86,6 +86,8 @@ const EditSite = () => {
     payment_method: "stripe",
     stripe_publishable_key: "",
     stripe_secret_key: "",
+    hero_images: [] as string[],
+    story_images: [] as string[],
     custom_name: "",
     custom_price: 0,
     custom_description: "",
@@ -120,6 +122,8 @@ const EditSite = () => {
         payment_method: (siteData as any).payment_method || "stripe",
         stripe_publishable_key: (siteData as any).stripe_publishable_key || "",
         stripe_secret_key: (siteData as any).stripe_secret_key || "",
+        hero_images: siteData.hero_images || [],
+        story_images: siteData.story_images || [],
         custom_name: "",
         custom_price: 0,
         custom_description: "",
@@ -444,6 +448,76 @@ const EditSite = () => {
                       placeholder="Conte sua história..."
                       rows={4}
                     />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Imagens do Hero</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {formData.hero_images?.map((image, index) => (
+                      <div key={index} className="relative group">
+                        <img 
+                          src={image} 
+                          alt={`Hero ${index + 1}`}
+                          className="w-full h-32 object-cover rounded-lg"
+                        />
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => {
+                            const newImages = formData.hero_images?.filter((_, i) => i !== index) || [];
+                            setFormData({ ...formData, hero_images: newImages });
+                          }}
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    ))}
+                    <div className="h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg flex items-center justify-center">
+                      <Button variant="outline" size="sm">
+                        + Adicionar Imagem
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Imagens da História</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {formData.story_images?.map((image, index) => (
+                      <div key={index} className="relative group">
+                        <img 
+                          src={image} 
+                          alt={`História ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-lg"
+                        />
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 h-6 w-6"
+                          onClick={() => {
+                            const newImages = formData.story_images?.filter((_, i) => i !== index) || [];
+                            setFormData({ ...formData, story_images: newImages });
+                          }}
+                        >
+                          ✕
+                        </Button>
+                      </div>
+                    ))}
+                    <div className="h-24 border-2 border-dashed border-muted-foreground/25 rounded-lg flex items-center justify-center">
+                      <Button variant="outline" size="sm">
+                        + Adicionar
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

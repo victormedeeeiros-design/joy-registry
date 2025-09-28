@@ -14,6 +14,7 @@ import CreateSite from "./pages/CreateSite";
 import PublicSite from "./pages/PublicSite";
 import EditSite from "./pages/EditSite";
 import PaymentSuccess from "./pages/PaymentSuccess";
+import GuestLogin from "./pages/GuestLogin";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/guest-login" element={<GuestLogin />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route 
             path="/admin" 
