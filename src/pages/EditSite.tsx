@@ -147,7 +147,6 @@ const EditSite = () => {
         .order('position', { ascending: true });
 
       if (siteProductsError) throw siteProductsError;
-      setSiteProducts(siteProductsData || []);
 
       // Carregar todos os produtos disponíveis
       const { data: productsData, error: productsError } = await supabase
@@ -157,6 +156,46 @@ const EditSite = () => {
 
       if (productsError) throw productsError;
       setProducts(productsData || []);
+
+      // Se não há produtos no site, adicionar produtos padrão do layout
+      if ((!siteProductsData || siteProductsData.length === 0) && productsData && productsData.length > 0) {
+        console.log('Adicionando produtos padrão do layout ao site...');
+        
+        // Pegar os primeiros 8 produtos como padrão para o layout
+        const defaultProducts = productsData.slice(0, 8);
+        const defaultSiteProducts = [];
+        
+        for (let i = 0; i < defaultProducts.length; i++) {
+          const product = defaultProducts[i];
+          try {
+            const { data: newSiteProduct, error: insertError } = await supabase
+              .from('site_products')
+              .insert([{
+                site_id: siteData.id,
+                product_id: product.id,
+                position: i + 1,
+                is_available: true
+              }])
+              .select()
+              .single();
+
+            if (!insertError && newSiteProduct) {
+              defaultSiteProducts.push(newSiteProduct);
+            }
+          } catch (err) {
+            console.error('Erro ao adicionar produto padrão:', product.id, err);
+          }
+        }
+        
+        setSiteProducts(defaultSiteProducts);
+        
+        toast({
+          title: "Lista de presentes criada!",
+          description: "Produtos padrão foram adicionados à sua lista de presentes.",
+        });
+      } else {
+        setSiteProducts(siteProductsData || []);
+      }
 
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
@@ -176,11 +215,9 @@ const EditSite = () => {
     
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from('sites')
-        .update({
-          title: formData.title,
-          description: formData.description,
+      const updateData = {
+        title: formData.title,
+        description: formData.description,
         story_text: formData.story_text || null,
         color_scheme: formData.color_scheme || 'elegant-gold',
         font_family: formData.font_family || 'inter',
@@ -190,8 +227,12 @@ const EditSite = () => {
         event_date: formData.event_date || null,
         event_time: formData.event_time || null,
         event_location: formData.event_location || null,
-          updated_at: new Date().toISOString()
-        })
+        updated_at: new Date().toISOString()
+      };
+
+      const { error } = await supabase
+        .from('sites')
+        .update(updateData)
         .eq('id', site.id);
 
       if (error) throw error;
@@ -201,7 +242,17 @@ const EditSite = () => {
         description: "Site atualizado com sucesso.",
       });
       
-      setSite({ ...site, ...formData });
+      // Atualizar o estado do site com os dados salvos
+      setSite({ 
+        ...site, 
+        ...updateData,
+        // Manter campos que não estão no formData
+        id: site.id,
+        creator_id: site.creator_id,
+        layout_id: site.layout_id,
+        is_active: site.is_active,
+        created_at: site.created_at
+      });
     } catch (error) {
       console.error('Erro ao salvar:', error);
       toast({

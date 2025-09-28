@@ -20,6 +20,11 @@ interface Site {
   hero_images?: string[];
   story_images?: string[];
   story_text?: string;
+  event_date?: string;
+  event_time?: string;
+  event_location?: string;
+  color_scheme?: string;
+  font_family?: string;
 }
 
 interface SiteProduct {
@@ -293,6 +298,36 @@ const PublicSiteContent = () => {
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto text-white/90 drop-shadow-md">
               {site.description}
             </p>
+          )}
+          
+          {/* Event Information */}
+          {(site.event_date || site.event_time || site.event_location) && (
+            <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-8 max-w-2xl mx-auto">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Calendar className="h-5 w-5 text-white" />
+                <h3 className="text-lg font-semibold text-white">Informações do Evento</h3>
+              </div>
+              <div className="space-y-2 text-white/90">
+                {site.event_date && (
+                  <div className="flex items-center justify-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>{new Date(site.event_date + 'T00:00:00').toLocaleDateString('pt-BR')}</span>
+                  </div>
+                )}
+                {site.event_time && (
+                  <div className="flex items-center justify-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    <span>{site.event_time}</span>
+                  </div>
+                )}
+                {site.event_location && (
+                  <div className="flex items-center justify-center gap-2">
+                    <ExternalLink className="h-4 w-4" />
+                    <span>{site.event_location}</span>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
