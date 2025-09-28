@@ -81,14 +81,14 @@ const fontFamilies = [
 
 // Catálogo padrão para fallback
 const DEFAULT_CATALOG = [
-  { id: 'stove', name: 'Fogão', price: 1299.9, image_url: stoveImg },
-  { id: 'microwave', name: 'Micro-ondas', price: 599.9, image_url: microwaveImg },
-  { id: 'blender', name: 'Liquidificador', price: 199.9, image_url: blenderImg },
-  { id: 'mixer', name: 'Batedeira', price: 349.9, image_url: mixerImg },
-  { id: 'electric-oven', name: 'Forno Elétrico', price: 899.9, image_url: electricOvenImg },
-  { id: 'air-fryer', name: 'Air Fryer', price: 499.9, image_url: airFryerImg },
-  { id: 'grill', name: 'Grill Elétrico', price: 279.9, image_url: grillImg },
-  { id: 'range-hood', name: 'Coifa', price: 799.9, image_url: rangeHoodImg },
+  { id: 'stove', name: 'Fogão', price: 1299.9, image_url: stoveImg, description: 'Fogão 4 bocas com forno' },
+  { id: 'microwave', name: 'Micro-ondas', price: 599.9, image_url: microwaveImg, description: 'Micro-ondas 20 litros' },
+  { id: 'blender', name: 'Liquidificador', price: 199.9, image_url: blenderImg, description: 'Liquidificador 3 velocidades' },
+  { id: 'mixer', name: 'Batedeira', price: 349.9, image_url: mixerImg, description: 'Batedeira planetária' },
+  { id: 'electric-oven', name: 'Forno Elétrico', price: 899.9, image_url: electricOvenImg, description: 'Forno elétrico 45 litros' },
+  { id: 'air-fryer', name: 'Air Fryer', price: 499.9, image_url: airFryerImg, description: 'Fritadeira sem óleo 4L' },
+  { id: 'grill', name: 'Grill Elétrico', price: 279.9, image_url: grillImg, description: 'Grill elétrico antiaderente' },
+  { id: 'range-hood', name: 'Coifa', price: 799.9, image_url: rangeHoodImg, description: 'Coifa 60cm inox' },
 ];
 
 const EditSite = () => {
@@ -110,6 +110,14 @@ const EditSite = () => {
     description: string;
     image_url: string;
   } | null>(null);
+  const [newProductOpen, setNewProductOpen] = useState(false);
+  const [csvImportOpen, setCsvImportOpen] = useState(false);
+  const [newProduct, setNewProduct] = useState({
+    name: '',
+    price: 0,
+    description: '',
+    image_url: ''
+  });
   
   const [formData, setFormData] = useState({
     title: "",
@@ -297,7 +305,7 @@ const EditSite = () => {
       
       // Se não encontrar, usa o catálogo padrão
       if (!product) {
-        const catalogProduct = DEFAULT_CATALOG['cha-casa-nova'].find(p => p.id === productId);
+        const catalogProduct = DEFAULT_CATALOG.find(p => p.id === productId);
         if (!catalogProduct) {
           toast({
             title: "Erro",
@@ -434,6 +442,177 @@ const EditSite = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const createNewProduct = async () => {
+    if (!newProduct.name || !newProduct.price || !site) return;
+    
+    try {
+      const productId = `custom-${Date.now()}`;
+      
+      // Cria o produto na tabela products
+      const { data: createdProduct, error: productError } = await supabase
+        .from('products')
+        .insert([{
+          id: productId,
+          name: newProduct.name,
+          price: newProduct.price,
+          image_url: newProduct.image_url || null,
+          description: newProduct.description || null,
+          category: 'custom',
+          status: 'active'
+        }])
+        .select()
+        .single();
+        
+      if (productError) {
+        console.error('Erro ao criar produto:', productError);
+        toast({
+          title: "Erro",
+          description: "Não foi possível criar o produto.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      setProducts([...products, createdProduct]);
+      
+      // Adiciona automaticamente à lista do site
+      const position = Math.max(...siteProducts.map(sp => sp.position), 0) + 1;
+      
+      const { data: siteProduct, error: siteError } = await supabase
+        .from('site_products')
+        .insert([{
+          site_id: site.id,
+          product_id: createdProduct.id,
+          position,
+          is_available: true
+        }])
+        .select()
+        .single();
+
+      if (siteError) {
+        console.error('Erro ao adicionar produto ao site:', siteError);
+        toast({
+          title: "Erro",
+          description: "Produto criado mas não foi possível adicioná-lo à lista.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSiteProducts([...siteProducts, siteProduct]);
+      toast({
+        title: "Produto criado!",
+        description: "O produto foi criado e adicionado à lista de presentes.",
+      });
+      
+      setNewProductOpen(false);
+      setNewProduct({ name: '', price: 0, description: '', image_url: '' });
+    } catch (error) {
+      console.error('Erro ao criar produto:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível criar o produto.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCsvImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !site) return;
+
+    try {
+      const text = await file.text();
+      const lines = text.split('\n');
+      const headers = lines[0].split(',').map(h => h.trim());
+      
+      // Espera colunas: nome, preco, descricao, imagem_url
+      const products = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        const values = lines[i].split(',').map(v => v.trim());
+        if (values.length >= 2 && values[0] && values[1]) {
+          products.push({
+            id: `csv-${Date.now()}-${i}`,
+            name: values[0],
+            price: parseFloat(values[1]) || 0,
+            description: values[2] || '',
+            image_url: values[3] || null,
+            category: 'imported',
+            status: 'active'
+          });
+        }
+      }
+
+      if (products.length === 0) {
+        toast({
+          title: "Erro",
+          description: "Nenhum produto válido encontrado no arquivo CSV.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Insere produtos no banco
+      const { data: createdProducts, error: productError } = await supabase
+        .from('products')
+        .insert(products)
+        .select();
+        
+      if (productError) {
+        console.error('Erro ao importar produtos:', productError);
+        toast({
+          title: "Erro",
+          description: "Não foi possível importar os produtos.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Adiciona todos à lista do site
+      const siteProductsToInsert = createdProducts.map((product, index) => ({
+        site_id: site.id,
+        product_id: product.id,
+        position: Math.max(...siteProducts.map(sp => sp.position), 0) + index + 1,
+        is_available: true
+      }));
+
+      const { data: newSiteProducts, error: siteError } = await supabase
+        .from('site_products')
+        .insert(siteProductsToInsert)
+        .select();
+
+      if (siteError) {
+        console.error('Erro ao adicionar produtos importados ao site:', siteError);
+        toast({
+          title: "Parcialmente importado",
+          description: "Produtos criados mas alguns não foram adicionados à lista.",
+          variant: "destructive",
+        });
+      } else {
+        setSiteProducts([...siteProducts, ...newSiteProducts]);
+      }
+
+      setProducts([...products, ...createdProducts]);
+      toast({
+        title: "Produtos importados!",
+        description: `${createdProducts.length} produtos foram importados com sucesso.`,
+      });
+      
+      setCsvImportOpen(false);
+    } catch (error) {
+      console.error('Erro ao processar CSV:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível processar o arquivo CSV.",
+        variant: "destructive",
+      });
+    }
+    
+    // Limpa o input
+    event.target.value = '';
   };
 
   const deleteSite = async () => {
@@ -864,8 +1043,25 @@ const EditSite = () => {
               </Card>
 
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle>Adicionar Produtos</CardTitle>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNewProductOpen(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Novo
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCsvImportOpen(true)}
+                    >
+                      📄 CSV
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -1088,6 +1284,103 @@ const EditSite = () => {
             </Button>
             <Button onClick={updateSiteProduct}>
               Salvar Alterações
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Criar Novo Produto */}
+      <Dialog open={newProductOpen} onOpenChange={setNewProductOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Criar Novo Produto</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-name">Nome do Produto *</Label>
+              <Input
+                id="new-name"
+                value={newProduct.name}
+                onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
+                placeholder="Ex: Panela de Pressão"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-price">Preço (R$) *</Label>
+              <Input
+                id="new-price"
+                type="number"
+                step="0.01"
+                value={newProduct.price}
+                onChange={(e) => setNewProduct({ ...newProduct, price: parseFloat(e.target.value) || 0 })}
+                placeholder="0.00"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-description">Descrição</Label>
+              <Textarea
+                id="new-description"
+                value={newProduct.description}
+                onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
+                placeholder="Descrição opcional do produto"
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="new-image">URL da Imagem</Label>
+              <Input
+                id="new-image"
+                value={newProduct.image_url}
+                onChange={(e) => setNewProduct({ ...newProduct, image_url: e.target.value })}
+                placeholder="https://exemplo.com/imagem.jpg"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewProductOpen(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={createNewProduct}
+              disabled={!newProduct.name || !newProduct.price}
+            >
+              Criar Produto
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Importar CSV */}
+      <Dialog open={csvImportOpen} onOpenChange={setCsvImportOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Importar Produtos via CSV</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-4 bg-muted/30 rounded-lg">
+              <h4 className="font-medium mb-2">Formato do arquivo CSV:</h4>
+              <code className="text-sm text-muted-foreground">
+                nome,preco,descricao,imagem_url<br/>
+                Panela de Pressão,89.90,Panela 5L,https://...<br/>
+                Liquidificador,149.90,600W,https://...
+              </code>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="csv-file">Selecionar arquivo CSV</Label>
+              <Input
+                id="csv-file"
+                type="file"
+                accept=".csv"
+                onChange={handleCsvImport}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              Os produtos serão automaticamente adicionados à sua lista de presentes.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCsvImportOpen(false)}>
+              Fechar
             </Button>
           </DialogFooter>
         </DialogContent>
