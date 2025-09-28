@@ -35,6 +35,39 @@ export type Database = {
         }
         Relationships: []
       }
+      layouts: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          features: string[] | null
+          id: string
+          is_available: boolean
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          features?: string[] | null
+          id: string
+          is_available?: boolean
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          features?: string[] | null
+          id?: string
+          is_available?: boolean
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           created_at: string
