@@ -398,7 +398,10 @@ const PublicSiteContent = () => {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => navigate(`/guest-login?siteId=${site.id}`)}
+                onClick={() => {
+                  localStorage.setItem('currentSiteId', site.id);
+                  navigate(`/guest-login?siteId=${site.id}`);
+                }}
               >
                 <User className="h-4 w-4 mr-2" />
                 Login
@@ -463,7 +466,10 @@ const PublicSiteContent = () => {
             <Button 
               size="lg" 
               className="bg-primary text-white hover:bg-primary/90"
-              onClick={() => navigate(`/guest-login?siteId=${site.id}&rsvp=yes`)}
+              onClick={() => {
+                localStorage.setItem('currentSiteId', site.id);
+                navigate(`/guest-login?siteId=${site.id}&rsvp=yes`);
+              }}
             >
               <Heart className="h-5 w-5 mr-2" />
               Vou comparecer
@@ -472,7 +478,10 @@ const PublicSiteContent = () => {
               variant="outline" 
               size="lg" 
               className="bg-white/10 text-white border-white/20 hover:bg-white/20"
-              onClick={() => navigate(`/guest-login?siteId=${site.id}&rsvp=no`)}
+              onClick={() => {
+                localStorage.setItem('currentSiteId', site.id);
+                navigate(`/guest-login?siteId=${site.id}&rsvp=no`);
+              }}
             >
               Não poderei comparecer
             </Button>
@@ -617,7 +626,10 @@ const PublicSiteContent = () => {
             <Button 
               size="lg" 
               className="flex-1 w-full sm:w-auto"
-              onClick={() => navigate(`/guest-login?siteId=${site.id}&rsvp=yes`)}
+              onClick={() => {
+                localStorage.setItem('currentSiteId', site.id);
+                navigate(`/guest-login?siteId=${site.id}&rsvp=yes`);
+              }}
             >
               <Heart className="h-5 w-5 mr-2" />
               Vou comparecer
@@ -626,7 +638,10 @@ const PublicSiteContent = () => {
               variant="outline" 
               size="lg" 
               className="flex-1 w-full sm:w-auto"
-              onClick={() => navigate(`/guest-login?siteId=${site.id}&rsvp=no`)}
+              onClick={() => {
+                localStorage.setItem('currentSiteId', site.id);
+                navigate(`/guest-login?siteId=${site.id}&rsvp=no`);
+              }}
             >
               Não poderei comparecer
             </Button>

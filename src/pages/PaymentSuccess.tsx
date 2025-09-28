@@ -8,11 +8,17 @@ const PaymentSuccess = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [sessionId, setSessionId] = useState<string | null>(null);
+  const [siteId, setSiteId] = useState<string | null>(null);
 
   useEffect(() => {
     const sessionIdParam = searchParams.get('session_id');
+    const siteIdParam = searchParams.get('siteId') || localStorage.getItem('currentSiteId');
+    
     if (sessionIdParam) {
       setSessionId(sessionIdParam);
+    }
+    if (siteIdParam) {
+      setSiteId(siteIdParam);
     }
   }, [searchParams]);
 
@@ -46,11 +52,11 @@ const PaymentSuccess = () => {
               </p>
               
               <Button 
-                onClick={() => navigate('/')} 
+                onClick={() => navigate(siteId ? `/site/${siteId}` : '/')} 
                 className="w-full"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                Voltar ao Início
+                Voltar ao Site
               </Button>
             </div>
           </CardContent>

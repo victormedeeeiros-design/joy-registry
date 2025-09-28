@@ -35,12 +35,26 @@ const GuestLogin = () => {
 
   useEffect(() => {
     if (!authLoading && guestUser) {
-      // Get the return URL from localStorage or default to home
-      const returnUrl = localStorage.getItem('returnUrl') || '/';
-      localStorage.removeItem('returnUrl');
-      navigate(returnUrl, { replace: true });
+      // Get the siteId from URL params to redirect back to the correct site
+      const siteId = searchParams.get('siteId');
+      if (siteId) {
+        navigate(`/site/${siteId}`, { replace: true });
+      } else {
+        // Fallback to localStorage returnUrl, but default to current site if available
+        const returnUrl = localStorage.getItem('returnUrl');
+        const currentSiteId = localStorage.getItem('currentSiteId');
+        localStorage.removeItem('returnUrl');
+        
+        if (returnUrl) {
+          navigate(returnUrl, { replace: true });
+        } else if (currentSiteId) {
+          navigate(`/site/${currentSiteId}`, { replace: true });
+        } else {
+          navigate('/', { replace: true });
+        }
+      }
     }
-  }, [authLoading, guestUser, navigate]);
+  }, [authLoading, guestUser, navigate, searchParams]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,7 +103,7 @@ const GuestLogin = () => {
     setLoading(true);
 
     try {
-      const siteId = searchParams.get('site') || localStorage.getItem('currentSiteId');
+      const siteId = searchParams.get('siteId') || searchParams.get('site') || localStorage.getItem('currentSiteId');
       
       if (!siteId) {
         throw new Error('ID do site não encontrado');

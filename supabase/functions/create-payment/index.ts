@@ -134,7 +134,7 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       line_items: lineItems,
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${req.headers.get("origin")}/payment-success?session_id={CHECKOUT_SESSION_ID}&siteId=${siteId}`,
       cancel_url: `${req.headers.get("origin")}/site/${siteId}`,
       metadata: {
         site_id: siteId,
