@@ -11,6 +11,7 @@ import PlatformAdminDashboard from "@/components/admin/PlatformAdminDashboard";
 import SiteCreatorDashboard from "@/components/creator/SiteCreatorDashboard";
 import LayoutSelection from "./pages/LayoutSelection";
 import CreateSite from "./pages/CreateSite";
+import PublicSite from "./pages/PublicSite";
 
 const queryClient = new QueryClient();
 
@@ -88,7 +89,7 @@ const App = () => (
           />
           <Route 
             path="/site/:id" 
-            element={<Navigate to="/dashboard" replace />} 
+            element={<PublicSite />} 
           />
           <Route 
             path="/edit-site/:id" 
