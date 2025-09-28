@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Loader2, Home } from "lucide-react";
+import { ArrowLeft, Loader2, Home, Palette, Type } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,11 +28,29 @@ const CreateSite = () => {
     hostNames: "", 
     heroImages: [] as File[], // Imagens do hero
     galleryImages: [] as File[], // Imagens da galeria/nossa história
+    colorScheme: "elegant-gold",
+    fontFamily: "inter"
   });
 
   const layoutNames = {
     "cha-casa-nova": "Chá de Casa Nova"
   };
+
+  const colorSchemes = [
+    { id: 'elegant-gold', name: 'Elegante Dourado', colors: ['#D4AF37', '#F5F5DC', '#8B4513'] },
+    { id: 'romantic-pink', name: 'Rosa Romântico', colors: ['#FFB6C1', '#FFF0F5', '#8B4B61'] },
+    { id: 'modern-blue', name: 'Azul Moderno', colors: ['#4A90E2', '#E8F4FD', '#2C5AA0'] },
+    { id: 'natural-green', name: 'Verde Natural', colors: ['#90EE90', '#F0FFF0', '#228B22'] },
+    { id: 'classic-navy', name: 'Azul Marinho Clássico', colors: ['#000080', '#F0F8FF', '#483D8B'] }
+  ];
+
+  const fontFamilies = [
+    { id: 'inter', name: 'Inter (Moderna)', value: 'Inter, sans-serif' },
+    { id: 'playfair', name: 'Playfair Display (Elegante)', value: 'Playfair Display, serif' },
+    { id: 'dancing', name: 'Dancing Script (Manuscrita)', value: 'Dancing Script, cursive' },
+    { id: 'sloop', name: 'Sloop Script Pro (Premium)', value: 'Sloop Script Pro, cursive' },
+    { id: 'montserrat', name: 'Montserrat (Clean)', value: 'Montserrat, sans-serif' }
+  ];
 
   const handleInputChange = (field: string, value: string | File[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -113,6 +131,8 @@ const CreateSite = () => {
             is_active: true,
             hero_images: heroImageUrls,
             story_images: galleryImageUrls,
+            color_scheme: formData.colorScheme,
+            font_family: formData.fontFamily,
           }
         ])
         .select()
@@ -303,6 +323,61 @@ const CreateSite = () => {
                       {formData.galleryImages.length} imagen{formData.galleryImages.length > 1 ? 's' : ''} selecionada{formData.galleryImages.length > 1 ? 's' : ''}
                     </p>
                   )}
+                </div>
+
+                {/* Paleta de Cores */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Palette className="h-4 w-4" />
+                    Paleta de Cores
+                  </Label>
+                  <div className="grid gap-3">
+                    {colorSchemes.map((scheme) => (
+                      <div key={scheme.id} className="flex items-center space-x-3">
+                        <input
+                          type="radio"
+                          id={scheme.id}
+                          name="colorScheme"
+                          value={scheme.id}
+                          checked={formData.colorScheme === scheme.id}
+                          onChange={(e) => handleInputChange("colorScheme", e.target.value)}
+                          className="w-4 h-4"
+                        />
+                        <label htmlFor={scheme.id} className="flex items-center gap-3 cursor-pointer flex-1">
+                          <div className="flex gap-1">
+                            {scheme.colors.map((color, index) => (
+                              <div
+                                key={index}
+                                className="w-5 h-5 rounded-full border border-gray-300"
+                                style={{ backgroundColor: color }}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-sm font-medium">{scheme.name}</span>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Fonte */}
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Type className="h-4 w-4" />
+                    Fonte
+                  </Label>
+                  <Select value={formData.fontFamily} onValueChange={(value) => handleInputChange("fontFamily", value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fontFamilies.map((font) => (
+                        <SelectItem key={font.id} value={font.id}>
+                          <span style={{ fontFamily: font.value }}>{font.name}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 {/* Layout Preview */}

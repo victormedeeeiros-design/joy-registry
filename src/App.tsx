@@ -12,6 +12,7 @@ import SiteCreatorDashboard from "@/components/creator/SiteCreatorDashboard";
 import LayoutSelection from "./pages/LayoutSelection";
 import CreateSite from "./pages/CreateSite";
 import PublicSite from "./pages/PublicSite";
+import EditSite from "./pages/EditSite";
 
 const queryClient = new QueryClient();
 

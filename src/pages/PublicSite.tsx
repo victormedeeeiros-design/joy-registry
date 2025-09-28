@@ -312,13 +312,19 @@ const PublicSiteContent = () => {
               {allProducts.map((product) => (
                 <Card key={product.id} className="hover:shadow-elegant transition-all duration-300 group">
                   <CardHeader className="p-4">
-                    {product.image_url && (
-                      <div className="aspect-square rounded-lg overflow-hidden mb-4 bg-muted">
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Gift className="h-16 w-16 text-muted-foreground/50" />
-                        </div>
-                      </div>
-                    )}
+                     <div className="aspect-square rounded-lg overflow-hidden mb-4 bg-muted">
+                       {product.image_url ? (
+                         <img 
+                           src={product.image_url} 
+                           alt={product.name}
+                           className="w-full h-full object-cover"
+                         />
+                       ) : (
+                         <div className="w-full h-full flex items-center justify-center">
+                           <Gift className="h-16 w-16 text-muted-foreground/50" />
+                         </div>
+                       )}
+                     </div>
                     <CardTitle className="text-lg group-hover:text-primary transition-colors">
                       {product.name}
                     </CardTitle>
