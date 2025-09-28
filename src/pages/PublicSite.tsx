@@ -180,6 +180,14 @@ const PublicSiteContent = () => {
     });
   };
 
+  const scrollToSection = (sectionId: string) => {
+    setActiveSection(sectionId);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   const handleCreatePayment = async (items: { id: string; quantity: number }[]) => {
     try {
       const { data, error } = await supabase.functions.invoke('create-payment', {
