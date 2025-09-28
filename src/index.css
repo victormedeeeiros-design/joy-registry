@@ -160,6 +160,18 @@
   .font-inter {
     font-family: 'Inter', sans-serif;
   }
+  
+  .font-script {
+    font-family: 'Dancing Script', cursive;
+  }
+  
+  .font-elegant {
+    font-family: 'Great Vibes', cursive;
+  }
+  
+  .font-handwriting {
+    font-family: 'Caveat', cursive;
+  }
 
   .gradient-primary {
     background: var(--gradient-primary);

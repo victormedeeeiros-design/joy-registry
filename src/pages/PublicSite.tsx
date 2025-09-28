@@ -1,10 +1,13 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Home, Calendar, ExternalLink, Gift } from "lucide-react";
+import { Heart, Home, Calendar, ExternalLink, Gift, User, ShoppingCart, BookOpen } from "lucide-react";
+import { HeroCarousel } from "@/components/HeroCarousel";
+import { CartSidebar } from "@/components/CartSidebar";
+import { CartProvider, useCart } from "@/hooks/useCart";
 
 interface Site {
   id: string;
@@ -31,12 +34,26 @@ interface SiteProduct {
   position: number;
 }
 
-const PublicSite = () => {
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  image_url?: string;
+  description?: string;
+  category?: string;
+}
+
+const PublicSiteContent = () => {
+
   const { id } = useParams<{ id: string }>();
   const [site, setSite] = useState<Site | null>(null);
   const [products, setProducts] = useState<SiteProduct[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeSection, setActiveSection] = useState<string>('home');
+  const { addItem } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const loadSite = async () => {
@@ -79,6 +96,18 @@ const PublicSite = () => {
           console.error('Erro ao carregar produtos:', productsError);
         } else {
           setProducts(productsData || []);
+        }
+
+        // Buscar todos os produtos disponíveis
+        const { data: allProductsData, error: allProductsError } = await supabase
+          .from('products')
+          .select('*')
+          .eq('status', 'active');
+
+        if (allProductsError) {
+          console.error('Erro ao carregar produtos gerais:', allProductsError);
+        } else {
+          setAllProducts(allProductsData || []);
         }
 
       } catch (error) {
@@ -129,28 +158,84 @@ const PublicSite = () => {
     );
   }
 
-  const heroImage = site.hero_images && site.hero_images.length > 0 ? site.hero_images[0] : null;
+  const handleAddToCart = (product: Product) => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      image: product.image_url
+    });
+  };
+
+  const scrollToSection = (sectionId: string) => {
+    setActiveSection(sectionId);
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section 
-        className="relative h-[60vh] min-h-[500px] flex items-center justify-center text-white overflow-hidden"
-        style={{
-          backgroundImage: heroImage 
-            ? `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${heroImage})`
-            : 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary)) 50%, hsl(var(--accent)) 100%)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
+      {/* Navigation Header */}
+      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-2">
+              <Heart className="h-6 w-6 text-primary" />
+              <span className="font-script text-xl text-primary">{site.title}</span>
+            </div>
+            
+            <nav className="hidden md:flex items-center gap-6">
+              <Button 
+                variant="ghost" 
+                className={activeSection === 'home' ? 'text-primary' : ''}
+                onClick={() => scrollToSection('home')}
+              >
+                <Home className="h-4 w-4 mr-2" />
+                Início
+              </Button>
+              <Button 
+                variant="ghost"
+                className={activeSection === 'story' ? 'text-primary' : ''}
+                onClick={() => scrollToSection('story')}
+              >
+                <BookOpen className="h-4 w-4 mr-2" />
+                Nossa História
+              </Button>
+              <Button 
+                variant="ghost"
+                className={activeSection === 'gifts' ? 'text-primary' : ''}
+                onClick={() => scrollToSection('gifts')}
+              >
+                <Gift className="h-4 w-4 mr-2" />
+                Lista de Presentes
+              </Button>
+            </nav>
+
+            <div className="flex items-center gap-3">
+              <CartSidebar />
+              <Button variant="outline" size="sm">
+                <User className="h-4 w-4 mr-2" />
+                Login
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Hero Section with Carousel */}
+      <HeroCarousel
+        images={site.hero_images || []}
+        className="h-[70vh] min-h-[600px] flex items-center justify-center text-white"
       >
-        <div className="container mx-auto px-4 text-center z-10">
+        <section id="home" className="container mx-auto px-4 text-center">
           <Badge variant="outline" className="mb-4 bg-white/10 text-white border-white/20">
             <Home className="h-4 w-4 mr-2" />
             {site.layout_id === 'cha-casa-nova' ? 'Chá de Casa Nova' : 'Celebração Especial'}
           </Badge>
           
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-white drop-shadow-lg">
+          <h1 className="text-4xl md:text-6xl font-script mb-6 text-white drop-shadow-lg">
             {site.title}
           </h1>
           
@@ -161,23 +246,24 @@ const PublicSite = () => {
           )}
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button size="lg" className="bg-white text-primary hover:bg-white/90">
+            <Button 
+              size="lg" 
+              className="bg-white text-primary hover:bg-white/90"
+              onClick={() => scrollToSection('gifts')}
+            >
               <Gift className="h-5 w-5 mr-2" />
               Ver Lista de Presentes
             </Button>
           </div>
-        </div>
-        
-        {/* Decorative overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent pointer-events-none"></div>
-      </section>
+        </section>
+      </HeroCarousel>
 
       {/* Story Section */}
       {site.story_images && site.story_images.length > 0 && (
-        <section className="py-16 bg-muted/30">
+        <section id="story" className="py-16 bg-muted/30">
           <div className="container mx-auto px-4">
             <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Nossa História</h2>
+              <h2 className="text-3xl font-script mb-4">Nossa História</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
                 {site.story_text || "Momentos especiais que queremos compartilhar com vocês"}
               </p>
@@ -187,7 +273,7 @@ const PublicSite = () => {
               {site.story_images.slice(0, 8).map((image, index) => (
                 <div 
                   key={index}
-                  className="aspect-square rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow"
+                  className="aspect-square rounded-lg overflow-hidden shadow-soft hover:shadow-elegant transition-all duration-300"
                 >
                   <img 
                     src={image} 
@@ -202,16 +288,16 @@ const PublicSite = () => {
       )}
 
       {/* Products Section */}
-      <section className="py-16">
+      <section id="gifts" className="py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">Lista de Presentes</h2>
+            <h2 className="text-3xl font-script mb-4">Lista de Presentes</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
               Escolha um presente especial para nos ajudar nesta nova etapa
             </p>
           </div>
 
-          {products.length === 0 ? (
+          {allProducts.length === 0 ? (
             <Card className="max-w-md mx-auto text-center">
               <CardContent className="p-8">
                 <Gift className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -223,35 +309,35 @@ const PublicSite = () => {
             </Card>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {products.map((product) => (
-                <Card key={product.id} className="hover:shadow-lg transition-shadow">
+              {allProducts.map((product) => (
+                <Card key={product.id} className="hover:shadow-elegant transition-all duration-300 group">
                   <CardHeader className="p-4">
-                    {product.custom_image_url && (
-                      <div className="aspect-square rounded-lg overflow-hidden mb-4">
-                        <img 
-                          src={product.custom_image_url} 
-                          alt={product.custom_name || "Produto"}
-                          className="w-full h-full object-cover"
-                        />
+                    {product.image_url && (
+                      <div className="aspect-square rounded-lg overflow-hidden mb-4 bg-muted">
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Gift className="h-16 w-16 text-muted-foreground/50" />
+                        </div>
                       </div>
                     )}
-                    <CardTitle className="text-lg">
-                      {product.custom_name || `Produto ${product.product_id}`}
+                    <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                      {product.name}
                     </CardTitle>
-                    {product.custom_description && (
+                    {product.description && (
                       <CardDescription className="text-sm">
-                        {product.custom_description}
+                        {product.description}
                       </CardDescription>
                     )}
                   </CardHeader>
                   <CardContent className="p-4 pt-0">
                     <div className="flex items-center justify-between">
-                      {product.custom_price && (
-                        <div className="text-lg font-semibold text-primary">
-                          R$ {product.custom_price.toFixed(2).replace('.', ',')}
-                        </div>
-                      )}
-                      <Button size="sm" className="ml-auto">
+                      <div className="text-lg font-semibold text-primary">
+                        R$ {product.price.toFixed(2).replace('.', ',')}
+                      </div>
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleAddToCart(product)}
+                        className="ml-auto"
+                      >
                         <Gift className="h-4 w-4 mr-2" />
                         Presentear
                       </Button>
@@ -268,7 +354,7 @@ const PublicSite = () => {
       <footer className="border-t bg-muted/30 py-8">
         <div className="container mx-auto px-4 text-center">
           <p className="text-muted-foreground">
-            Site criado com ❤️ para {site.title}
+            Site criado com ❤️ para <span className="font-script text-primary">{site.title}</span>
           </p>
           <p className="text-xs text-muted-foreground mt-2">
             Powered by Lista de Presentes
@@ -276,6 +362,14 @@ const PublicSite = () => {
         </div>
       </footer>
     </div>
+  );
+};
+
+const PublicSite = () => {
+  return (
+    <CartProvider>
+      <PublicSiteContent />
+    </CartProvider>
   );
 };
 
