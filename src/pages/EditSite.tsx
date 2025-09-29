@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { generateSiteUrl } from "@/lib/slug";
-import { ArrowLeft, Save, Eye, Palette, Type, Package, Settings, Trash2, Plus, Edit, Users, Calendar } from "lucide-react";
+import { ArrowLeft, Save, Eye, Palette, Type, Package, Settings, Trash2, Plus, Edit, Users, Calendar, Loader2 } from "lucide-react";
 
 // Product images for fallbacks
 import stoveImg from "@/assets/products/stove.jpg";
@@ -157,6 +157,9 @@ const EditSite = () => {
   const [siteProducts, setSiteProducts] = useState<SiteProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [heroImageFit, setHeroImageFit] = useState<'cover' | 'contain' | 'fill'>('cover');
+  const [storyImageFit, setStoryImageFit] = useState<'cover' | 'contain' | 'fill'>('cover');
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState<{
     id: string;
@@ -196,6 +199,33 @@ const EditSite = () => {
     event_time: "",
     event_location: "",
   });
+
+  const handleFileUpload = async (files: File[], userId: string): Promise<string[]> => {
+    const uploadedUrls: string[] = [];
+    
+    for (const file of files) {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}/${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('site-images')
+        .upload(fileName, file);
+      
+      if (error) {
+        console.error('Error uploading file:', error);
+        throw error;
+      }
+      
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('site-images')
+        .getPublicUrl(fileName);
+      
+      uploadedUrls.push(publicUrl);
+    }
+    
+    return uploadedUrls;
+  };
 
   useEffect(() => {
     if (id && profile) {
@@ -305,6 +335,93 @@ const EditSite = () => {
       navigate('/dashboard');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleHeroImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !profile) return;
+
+    setUploading(true);
+    try {
+      const uploadedUrls = await handleFileUpload(Array.from(files), profile.id);
+      setFormData(prev => ({
+        ...prev,
+        hero_images: [...(prev.hero_images || []), ...uploadedUrls]
+      }));
+      toast({
+        title: "Imagens enviadas!",
+        description: `${uploadedUrls.length} imagem(ns) adicionada(s) ao hero.`,
+      });
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      toast({
+        title: "Erro no upload",
+        description: "Não foi possível enviar as imagens. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+      e.target.value = ''; // Reset input
+    }
+  };
+
+  const handleStoryImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !profile) return;
+
+    setUploading(true);
+    try {
+      const uploadedUrls = await handleFileUpload(Array.from(files), profile.id);
+      setFormData(prev => ({
+        ...prev,
+        story_images: [...(prev.story_images || []), ...uploadedUrls]
+      }));
+      toast({
+        title: "Imagens enviadas!",
+        description: `${uploadedUrls.length} imagem(ns) adicionada(s) à história.`,
+      });
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      toast({
+        title: "Erro no upload",
+        description: "Não foi possível enviar as imagens. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+      e.target.value = ''; // Reset input
+    }
+  };
+
+  const handleProductImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEditing: boolean = false) => {
+    const files = e.target.files;
+    if (!files || files.length === 0 || !profile) return;
+
+    setUploading(true);
+    try {
+      const uploadedUrls = await handleFileUpload(Array.from(files), profile.id);
+      
+      if (isEditing) {
+        setEditing(prev => ({ ...prev, image_url: uploadedUrls[0] }));
+      } else {
+        setNewProduct(prev => ({ ...prev, image_url: uploadedUrls[0] }));
+      }
+      
+      toast({
+        title: "Imagem enviada!",
+        description: "Imagem do produto foi enviada com sucesso.",
+      });
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      toast({
+        title: "Erro no upload",
+        description: "Não foi possível enviar a imagem. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+      e.target.value = ''; // Reset input
     }
   };
 
@@ -829,11 +946,12 @@ const EditSite = () => {
               </Button>
               <Button 
                 onClick={handleSave} 
-                disabled={saving}
+                disabled={saving || uploading}
                 className="gap-2"
               >
+                {(saving || uploading) && <Loader2 className="h-4 w-4 animate-spin" />}
                 <Save className="h-4 w-4" />
-                {saving ? "Salvando..." : "Salvar"}
+                {uploading ? "Enviando imagens..." : saving ? "Salvando..." : "Salvar"}
               </Button>
             </div>
           </div>
@@ -1098,7 +1216,22 @@ const EditSite = () => {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Imagens do Hero</CardTitle>
+                  <CardTitle className="flex items-center justify-between">
+                    Imagens do Hero
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="hero-fit" className="text-sm font-normal">Enquadramento:</Label>
+                      <Select value={heroImageFit} onValueChange={(value: 'cover' | 'contain' | 'fill') => setHeroImageFit(value)}>
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cover">Cobrir</SelectItem>
+                          <SelectItem value="contain">Caber</SelectItem>
+                          <SelectItem value="fill">Preencher</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -1107,7 +1240,11 @@ const EditSite = () => {
                         <img 
                           src={image} 
                           alt={`Hero ${index + 1}`}
-                          className="w-full h-32 object-cover rounded-lg"
+                          className={`w-full h-32 rounded-lg transition-all ${
+                            heroImageFit === 'cover' ? 'object-cover' :
+                            heroImageFit === 'contain' ? 'object-contain bg-muted' : 
+                            'object-fill'
+                          }`}
                         />
                         <Button
                           size="sm"
@@ -1123,17 +1260,52 @@ const EditSite = () => {
                       </div>
                     ))}
                     <div className="h-32 border-2 border-dashed border-muted-foreground/25 rounded-lg flex items-center justify-center">
-                      <Button variant="outline" size="sm">
-                        + Adicionar Imagem
-                      </Button>
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleHeroImageUpload}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          disabled={uploading}
+                        />
+                        <Button variant="outline" size="sm" disabled={uploading}>
+                          {uploading ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              Enviando...
+                            </>
+                          ) : (
+                            "+ Adicionar Imagem"
+                          )}
+                        </Button>
+                      </div>
                     </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    <strong>Cobrir:</strong> Imagem cobre toda a área (pode cortar). <strong>Caber:</strong> Imagem inteira visível (pode ter bordas). <strong>Preencher:</strong> Imagem estica para preencher.
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Imagens da História</CardTitle>
+                  <CardTitle className="flex items-center justify-between">
+                    Imagens da História
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="story-fit" className="text-sm font-normal">Enquadramento:</Label>
+                      <Select value={storyImageFit} onValueChange={(value: 'cover' | 'contain' | 'fill') => setStoryImageFit(value)}>
+                        <SelectTrigger className="w-32">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="cover">Cobrir</SelectItem>
+                          <SelectItem value="contain">Caber</SelectItem>
+                          <SelectItem value="fill">Preencher</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -1142,7 +1314,11 @@ const EditSite = () => {
                         <img 
                           src={image} 
                           alt={`História ${index + 1}`}
-                          className="w-full h-24 object-cover rounded-lg"
+                          className={`w-full h-24 rounded-lg transition-all ${
+                            storyImageFit === 'cover' ? 'object-cover' :
+                            storyImageFit === 'contain' ? 'object-contain bg-muted' : 
+                            'object-fill'
+                          }`}
                         />
                         <Button
                           size="sm"
@@ -1158,10 +1334,30 @@ const EditSite = () => {
                       </div>
                     ))}
                     <div className="h-24 border-2 border-dashed border-muted-foreground/25 rounded-lg flex items-center justify-center">
-                      <Button variant="outline" size="sm">
-                        + Adicionar
-                      </Button>
+                      <div className="relative">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleStoryImageUpload}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          disabled={uploading}
+                        />
+                        <Button variant="outline" size="sm" disabled={uploading}>
+                          {uploading ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              Enviando...
+                            </>
+                          ) : (
+                            "+ Adicionar"
+                          )}
+                        </Button>
+                      </div>
                     </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    <strong>Cobrir:</strong> Imagem cobre toda a área (pode cortar). <strong>Caber:</strong> Imagem inteira visível (pode ter bordas). <strong>Preencher:</strong> Imagem estica para preencher.
                   </div>
                 </CardContent>
               </Card>
@@ -1496,13 +1692,43 @@ const EditSite = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="edit-image">URL da Imagem</Label>
-                <Input
-                  id="edit-image"
-                  value={editing.image_url}
-                  onChange={(e) => setEditing({ ...editing, image_url: e.target.value })}
-                  placeholder="https://exemplo.com/imagem.jpg"
-                />
+                <Label htmlFor="edit-image">Imagem do Produto</Label>
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      id="edit-image"
+                      value={editing.image_url}
+                      onChange={(e) => setEditing({ ...editing, image_url: e.target.value })}
+                      placeholder="https://exemplo.com/imagem.jpg ou faça upload"
+                      className="flex-1"
+                    />
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => handleProductImageUpload(e, true)}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        disabled={uploading}
+                      />
+                      <Button type="button" variant="outline" disabled={uploading}>
+                        {uploading ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "Upload"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                  {editing.image_url && (
+                    <div className="mt-2">
+                      <img 
+                        src={editing.image_url} 
+                        alt="Preview" 
+                        className="w-20 h-20 object-cover rounded border"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -1590,13 +1816,43 @@ const EditSite = () => {
                 </div>
               </div>
             <div className="space-y-2">
-              <Label htmlFor="new-image">URL da Imagem</Label>
-              <Input
-                id="new-image"
-                value={newProduct.image_url}
-                onChange={(e) => setNewProduct({ ...newProduct, image_url: e.target.value })}
-                placeholder="https://exemplo.com/imagem.jpg"
-              />
+              <Label htmlFor="new-image">Imagem do Produto</Label>
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Input
+                    id="new-image"
+                    value={newProduct.image_url}
+                    onChange={(e) => setNewProduct({ ...newProduct, image_url: e.target.value })}
+                    placeholder="https://exemplo.com/imagem.jpg ou faça upload"
+                    className="flex-1"
+                  />
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleProductImageUpload(e, false)}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      disabled={uploading}
+                    />
+                    <Button type="button" variant="outline" disabled={uploading}>
+                      {uploading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        "Upload"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                {newProduct.image_url && (
+                  <div className="mt-2">
+                    <img 
+                      src={newProduct.image_url} 
+                      alt="Preview" 
+                      className="w-20 h-20 object-cover rounded border"
+                    />
+                  </div>
+                )}
+              </div>
             </div>
           </div>
           <DialogFooter>

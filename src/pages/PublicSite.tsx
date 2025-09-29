@@ -100,7 +100,7 @@ const PublicSiteContent = () => {
   const { siteUser, signOut } = useSiteAuth();
   const { toast } = useToast();
 
-  const getProductImageFallback = (productId: string) => {
+  const getProductImageFallback = (productId: string, productName?: string) => {
     const imageMap: { [key: string]: string } = {
       'microwave': microwaveImg,
       'range-hood': rangeHoodImg,
@@ -111,7 +111,33 @@ const PublicSiteContent = () => {
       'air-fryer': airFryerImg,
       'stove': stoveImg
     };
-    return imageMap[productId] || undefined;
+    
+    // Try exact match first
+    if (imageMap[productId]) {
+      return imageMap[productId];
+    }
+    
+    // Try partial matches for UUIDs or different naming conventions
+    for (const key in imageMap) {
+      if (productId.toLowerCase().includes(key) || key.includes(productId.toLowerCase())) {
+        return imageMap[key];
+      }
+    }
+    
+    // Try matching by product name if available
+    if (productName) {
+      const name = productName.toLowerCase();
+      if (name.includes('micro') || name.includes('ondas')) return microwaveImg;
+      if (name.includes('coifa')) return rangeHoodImg;
+      if (name.includes('grill') || name.includes('churrasco')) return grillImg;
+      if (name.includes('liquidificador') || name.includes('blender')) return blenderImg;
+      if (name.includes('batedeira') || name.includes('mixer')) return mixerImg;
+      if (name.includes('forno') && name.includes('elétrico')) return electricOvenImg;
+      if (name.includes('air') && name.includes('fryer')) return airFryerImg;
+      if (name.includes('fogão') || name.includes('stove')) return stoveImg;
+    }
+    
+    return undefined;
   };
 
   useEffect(() => {
@@ -132,7 +158,7 @@ const PublicSiteContent = () => {
           .select('*')
           .eq(isUUID ? 'id' : 'slug', siteIdentifier)
           .eq('is_active', true)
-          .single();
+          .single() as { data: any; error: any };
 
         if (siteError) {
           if (siteError.code === 'PGRST116') {
@@ -855,8 +881,19 @@ const PublicSiteContent = () => {
                       
                       const name = siteProduct.custom_name || product.name;
                       const price = siteProduct.custom_price || product.price;
-                      const image = siteProduct.custom_image_url || product.image_url || getProductImageFallback(product.id);
+                      const image = siteProduct.custom_image_url || product.image_url || getProductImageFallback(product.id, product.name);
                       const description = siteProduct.custom_description || product.description;
+                      
+                      // Debug log for image issues
+                      if (!image) {
+                        console.log('No image found for product:', {
+                          productId: product.id,
+                          productName: product.name,
+                          customImageUrl: siteProduct.custom_image_url,
+                          productImageUrl: product.image_url,
+                          fallback: getProductImageFallback(product.id, product.name)
+                        });
+                      }
                       
                       return (
                         <Card key={siteProduct.id} className="group hover:shadow-elegant transition-all duration-300 overflow-hidden border-0 shadow-soft">
