@@ -23,6 +23,7 @@ const CreateSite = () => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    story_text: "",
     eventType: "", 
     eventDate: "", 
     eventTime: "",
@@ -31,7 +32,12 @@ const CreateSite = () => {
     heroImages: [] as File[], // Imagens do hero
     galleryImages: [] as File[], // Imagens da galeria/nossa história
     colorScheme: "elegant-gold",
-    fontFamily: "inter"
+    fontFamily: "inter",
+    font_color_menu: "default",
+    font_color_hero: "white",
+    title_color: "default",
+    section_title_1: "O Início de Tudo",
+    section_title_2: "Nossa Nova Casa"
   });
 
   const layoutNames = {
@@ -43,7 +49,9 @@ const CreateSite = () => {
     { id: 'romantic-pink', name: 'Rosa Romântico', colors: ['#FFB6C1', '#FFF0F5', '#8B4B61'] },
     { id: 'modern-blue', name: 'Azul Moderno', colors: ['#4A90E2', '#E8F4FD', '#2C5AA0'] },
     { id: 'natural-green', name: 'Verde Natural', colors: ['#90EE90', '#F0FFF0', '#228B22'] },
-    { id: 'classic-navy', name: 'Azul Marinho Clássico', colors: ['#000080', '#F0F8FF', '#483D8B'] }
+    { id: 'classic-navy', name: 'Azul Marinho Clássico', colors: ['#000080', '#F0F8FF', '#483D8B'] },
+    { id: 'dark-elegance', name: 'Elegância Escura', colors: ['#1a1a1a', '#2d2d2d', '#f5f5f5'] },
+    { id: 'midnight-black', name: 'Preto Midnight', colors: ['#000000', '#1c1c1c', '#ffffff'] }
   ];
 
   const fontFamilies = [
@@ -52,6 +60,40 @@ const CreateSite = () => {
     { id: 'dancing', name: 'Dancing Script (Manuscrita)', value: 'Dancing Script, cursive' },
     { id: 'sloop', name: 'Sloop Script Pro (Premium)', value: 'Sloop Script Pro, cursive' },
     { id: 'montserrat', name: 'Montserrat (Clean)', value: 'Montserrat, sans-serif' }
+  ];
+
+  const fontColors = [
+    { id: 'default', name: 'Padrão', value: 'var(--foreground)' },
+    { id: 'primary', name: 'Primária', value: 'var(--primary)' },
+    { id: 'secondary', name: 'Secundária', value: 'var(--muted-foreground)' },
+    { id: 'accent', name: 'Destaque', value: 'var(--accent-foreground)' },
+    { id: 'white', name: 'Branco', value: '#ffffff' },
+    { id: 'black', name: 'Preto', value: '#000000' },
+    { id: 'gold', name: 'Dourado', value: '#D4AF37' },
+    { id: 'rose', name: 'Rosa', value: '#E91E63' },
+    { id: 'cream', name: 'Creme Suave', value: '#F5F5DC' },
+    { id: 'navy', name: 'Azul Marinho', value: '#1e3a8a' },
+    { id: 'emerald', name: 'Verde Esmeralda', value: '#059669' },
+    { id: 'purple', name: 'Roxo Real', value: '#7c3aed' },
+    { id: 'brown', name: 'Marrom Chocolate', value: '#8B4513' },
+    { id: 'teal', name: 'Azul Petróleo', value: '#008080' },
+    { id: 'coral', name: 'Coral', value: '#FF6B6B' },
+    { id: 'indigo', name: 'Índigo', value: '#6366F1' },
+    { id: 'orange', name: 'Laranja', value: '#FF8C00' },
+    { id: 'pink', name: 'Rosa Claro', value: '#FF69B4' },
+    { id: 'mint', name: 'Verde Menta', value: '#00CED1' },
+    { id: 'burgundy', name: 'Borgonha', value: '#800020' }
+  ];
+
+  const heroFontColors = [
+    { id: 'white', name: 'Branco (contraste escuro)', value: '#ffffff' },
+    { id: 'black', name: 'Preto (contraste claro)', value: '#000000' },
+    { id: 'gold', name: 'Dourado Elegante', value: '#D4AF37' },
+    { id: 'cream', name: 'Creme Suave', value: '#F5F5DC' },
+    { id: 'navy', name: 'Azul Marinho', value: '#1e3a8a' },
+    { id: 'emerald', name: 'Verde Esmeralda', value: '#059669' },
+    { id: 'rose', name: 'Rosa Elegante', value: '#E91E63' },
+    { id: 'purple', name: 'Roxo Real', value: '#7c3aed' }
   ];
 
   const handleInputChange = (field: string, value: string | File[]) => {
@@ -128,6 +170,7 @@ const CreateSite = () => {
           {
             title: formData.title.trim(),
             description: formData.description.trim() || null,
+            story_text: formData.story_text.trim() || null,
             layout_id: layoutId,
             creator_id: profile.id,
             is_active: true,
@@ -138,6 +181,11 @@ const CreateSite = () => {
             event_location: formData.eventLocation || null,
             color_scheme: formData.colorScheme,
             font_family: formData.fontFamily,
+            font_color_menu: formData.font_color_menu,
+            font_color_hero: formData.font_color_hero,
+            title_color: formData.title_color,
+            section_title_1: formData.section_title_1,
+            section_title_2: formData.section_title_2,
           }
         ])
         .select()
@@ -351,8 +399,52 @@ const CreateSite = () => {
                   )}
                 </div>
 
-                {/* Paleta de Cores */}
+                {/* Texto da Nossa História */}
                 <div className="space-y-2">
+                  <Label htmlFor="story_text">Texto da Nossa História (opcional)</Label>
+                  <Textarea
+                    id="story_text"
+                    placeholder="Conte sua história... Ex: Há alguns anos, duas vidas se encontraram e descobriram que juntas formavam algo muito especial."
+                    value={formData.story_text}
+                    onChange={(e) => handleInputChange("story_text", e.target.value)}
+                    rows={4}
+                    maxLength={1000}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Este texto aparecerá na seção "Nossa História" do seu site
+                  </p>
+                </div>
+
+                {/* Títulos das Seções */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="section_title_1">Título da Primeira Seção</Label>
+                    <Input
+                      id="section_title_1"
+                      value={formData.section_title_1}
+                      onChange={(e) => handleInputChange("section_title_1", e.target.value)}
+                      placeholder="Ex: O Início de Tudo"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Título da primeira parte da história
+                    </p>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="section_title_2">Título da Segunda Seção</Label>
+                    <Input
+                      id="section_title_2"
+                      value={formData.section_title_2}
+                      onChange={(e) => handleInputChange("section_title_2", e.target.value)}
+                      placeholder="Ex: Nossa Nova Casa"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Título da segunda parte da história
+                    </p>
+                  </div>
+                </div>
+
+                {/* Paleta de Cores */}
+                <div className="space-y-4">
                   <Label className="flex items-center gap-2">
                     <Palette className="h-4 w-4" />
                     Paleta de Cores
@@ -386,24 +478,107 @@ const CreateSite = () => {
                   </div>
                 </div>
 
-                {/* Fonte */}
-                <div className="space-y-2">
+                {/* Configurações de Fonte */}
+                <div className="space-y-4">
                   <Label className="flex items-center gap-2">
                     <Type className="h-4 w-4" />
-                    Fonte
+                    Configurações de Fonte
                   </Label>
-                  <Select value={formData.fontFamily} onValueChange={(value) => handleInputChange("fontFamily", value)}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fontFamilies.map((font) => (
-                        <SelectItem key={font.id} value={font.id}>
-                          <span style={{ fontFamily: font.value }}>{font.name}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  
+                  {/* Família da Fonte */}
+                  <div className="space-y-2">
+                    <Label>Família da Fonte</Label>
+                    <Select value={formData.fontFamily} onValueChange={(value) => handleInputChange("fontFamily", value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fontFamilies.map((font) => (
+                          <SelectItem key={font.id} value={font.id}>
+                            <span style={{ fontFamily: font.value }}>{font.name}</span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Cor da Fonte do Menu */}
+                  <div className="space-y-2">
+                    <Label>Cor da Fonte do Menu</Label>
+                    <Select 
+                      value={formData.font_color_menu} 
+                      onValueChange={(value) => handleInputChange("font_color_menu", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fontColors.map((color) => (
+                          <SelectItem key={color.id} value={color.id}>
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-4 h-4 rounded border"
+                                style={{ backgroundColor: color.value }}
+                              />
+                              {color.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Cor da Fonte do Hero */}
+                  <div className="space-y-2">
+                    <Label>Cor da Fonte do Hero (Fundo Principal)</Label>
+                    <Select 
+                      value={formData.font_color_hero} 
+                      onValueChange={(value) => handleInputChange("font_color_hero", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {heroFontColors.map((color) => (
+                          <SelectItem key={color.id} value={color.id}>
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-4 h-4 rounded border"
+                                style={{ backgroundColor: color.value }}
+                              />
+                              {color.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Cor dos Títulos das Seções */}
+                  <div className="space-y-2">
+                    <Label>Cor dos Títulos das Seções</Label>
+                    <Select 
+                      value={formData.title_color} 
+                      onValueChange={(value) => handleInputChange("title_color", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {fontColors.map((color) => (
+                          <SelectItem key={color.id} value={color.id}>
+                            <div className="flex items-center gap-2">
+                              <div 
+                                className="w-4 h-4 rounded border"
+                                style={{ backgroundColor: color.value }}
+                              />
+                              {color.name}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 {/* Layout Preview */}
