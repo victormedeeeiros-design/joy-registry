@@ -83,6 +83,24 @@ const DEFAULT_CATALOG: Record<string, Array<{ id: string; name: string; price: n
     { id: 'tapete-diferentao', name: 'Tapete de porta diferentão', price: 65.00, image_url: '', category: 'Brincadeiras', description: 'Tapete com mensagens divertidas' },
     { id: 'manual-sobrevivencia', name: 'Manual de sobrevivência doméstica', price: 45.00, image_url: '', category: 'Brincadeiras', description: 'Guia humorístico para vida doméstica' }
   ],
+  'modern-grid': [
+    { id: 'laptop', name: 'Notebook', price: 2499.9, image_url: '', category: 'Tecnologia', description: 'Notebook para trabalho' },
+    { id: 'monitor', name: 'Monitor', price: 899.9, image_url: '', category: 'Tecnologia', description: 'Monitor 24 polegadas' },
+    { id: 'headphones', name: 'Fones de Ouvido', price: 299.9, image_url: '', category: 'Tecnologia', description: 'Fones de ouvido premium' },
+    { id: 'smartphone', name: 'Smartphone', price: 1599.9, image_url: '', category: 'Tecnologia', description: 'Smartphone top de linha' }
+  ],
+  'story-driven': [
+    { id: 'camera', name: 'Câmera Digital', price: 1899.9, image_url: '', category: 'Fotografia', description: 'Câmera para capturar momentos' },
+    { id: 'photo-album', name: 'Álbum de Fotos', price: 89.9, image_url: '', category: 'Fotografia', description: 'Álbum para guardar memórias' },
+    { id: 'frame', name: 'Porta Retratos', price: 45.9, image_url: '', category: 'Decoração', description: 'Porta retratos elegante' },
+    { id: 'diary', name: 'Diário', price: 65.9, image_url: '', category: 'Pessoal', description: 'Diário para registrar histórias' }
+  ],
+  'minimal-elegant': [
+    { id: 'vase', name: 'Vaso Decorativo', price: 149.9, image_url: '', category: 'Decoração', description: 'Vaso minimalista' },
+    { id: 'candle', name: 'Vela Aromática', price: 39.9, image_url: '', category: 'Decoração', description: 'Vela com aroma relaxante' },
+    { id: 'book', name: 'Livro de Arte', price: 89.9, image_url: '', category: 'Literatura', description: 'Livro de arte moderna' },
+    { id: 'plant', name: 'Planta Decorativa', price: 59.9, image_url: '', category: 'Natureza', description: 'Planta para decoração' }
+  ]
 };
 
 const PublicSiteContent = () => {
@@ -590,6 +608,7 @@ const PublicSiteContent = () => {
       {/* Hero Section with Carousel */}
       <HeroCarousel
         images={site.hero_images || []}
+        imageFit={(site as any).hero_image_fit || 'cover'}
         className="h-[85vh] min-h-[700px] flex items-center justify-center text-white"
       >
         <section id="home" className="container mx-auto px-4 text-center" style={{ color: 'var(--hero-color, #ffffff)' }}>
@@ -730,7 +749,11 @@ const PublicSiteContent = () => {
                           <img 
                             src={image} 
                             alt={`Nossa história - ${index + 1}`}
-                            className="w-full h-full object-cover"
+                            className={`w-full h-full ${
+                              (site as any).story_image_fit === 'cover' ? 'object-cover' :
+                              (site as any).story_image_fit === 'contain' ? 'object-contain bg-muted' : 
+                              'object-fill'
+                            }`}
                           />
                         </div>
                       ))}

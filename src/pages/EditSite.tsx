@@ -135,16 +135,31 @@ const categories = [
 ];
 
 // Catálogo padrão para fallback
-const DEFAULT_CATALOG = [
-  { id: 'stove', name: 'Fogão', price: 1299.9, image_url: stoveImg, description: 'Fogão 4 bocas com forno', category: 'Eletrodomésticos' },
-  { id: 'microwave', name: 'Micro-ondas', price: 599.9, image_url: microwaveImg, description: 'Micro-ondas 20 litros', category: 'Eletrodomésticos' },
-  { id: 'blender', name: 'Liquidificador', price: 199.9, image_url: blenderImg, description: 'Liquidificador 3 velocidades', category: 'Eletrodomésticos' },
-  { id: 'mixer', name: 'Batedeira', price: 349.9, image_url: mixerImg, description: 'Batedeira planetária', category: 'Eletrodomésticos' },
-  { id: 'electric-oven', name: 'Forno Elétrico', price: 899.9, image_url: electricOvenImg, description: 'Forno elétrico 45 litros', category: 'Eletrodomésticos' },
-  { id: 'air-fryer', name: 'Air Fryer', price: 499.9, image_url: airFryerImg, description: 'Fritadeira sem óleo 4L', category: 'Eletrodomésticos' },
-  { id: 'grill', name: 'Grill Elétrico', price: 279.9, image_url: grillImg, description: 'Grill elétrico antiaderente', category: 'Eletrodomésticos' },
-  { id: 'range-hood', name: 'Coifa', price: 799.9, image_url: rangeHoodImg, description: 'Coifa 60cm inox', category: 'Eletrodomésticos' },
-];
+const DEFAULT_CATALOG_BY_LAYOUT: Record<string, Array<{ id: string; name: string; price: number; image_url: string; description?: string; category?: string }>> = {
+  'cha-casa-nova': [
+    { id: 'stove', name: 'Fogão', price: 1299.9, image_url: stoveImg, description: 'Fogão 4 bocas com forno', category: 'Eletrodomésticos' },
+    { id: 'microwave', name: 'Micro-ondas', price: 599.9, image_url: microwaveImg, description: 'Micro-ondas 20 litros', category: 'Eletrodomésticos' },
+    { id: 'blender', name: 'Liquidificador', price: 199.9, image_url: blenderImg, description: 'Liquidificador 3 velocidades', category: 'Eletrodomésticos' },
+    { id: 'mixer', name: 'Batedeira', price: 349.9, image_url: mixerImg, description: 'Batedeira planetária', category: 'Eletrodomésticos' },
+    { id: 'electric-oven', name: 'Forno Elétrico', price: 899.9, image_url: electricOvenImg, description: 'Forno elétrico 45 litros', category: 'Eletrodomésticos' },
+    { id: 'air-fryer', name: 'Air Fryer', price: 499.9, image_url: airFryerImg, description: 'Fritadeira sem óleo 4L', category: 'Eletrodomésticos' },
+    { id: 'grill', name: 'Grill Elétrico', price: 279.9, image_url: grillImg, description: 'Grill elétrico antiaderente', category: 'Eletrodomésticos' },
+    { id: 'range-hood', name: 'Coifa', price: 799.9, image_url: rangeHoodImg, description: 'Coifa 60cm inox', category: 'Eletrodomésticos' }
+  ],
+  'modern-grid': [
+    { id: 'laptop', name: 'Notebook', price: 2499.9, image_url: '', description: 'Notebook para trabalho', category: 'Tecnologia' },
+    { id: 'monitor', name: 'Monitor', price: 899.9, image_url: '', description: 'Monitor 24 polegadas', category: 'Tecnologia' },
+    { id: 'headphones', name: 'Fones de Ouvido', price: 299.9, image_url: '', description: 'Fones de ouvido premium', category: 'Tecnologia' }
+  ],
+  'story-driven': [
+    { id: 'camera', name: 'Câmera Digital', price: 1899.9, image_url: '', description: 'Câmera para capturar momentos', category: 'Fotografia' },
+    { id: 'photo-album', name: 'Álbum de Fotos', price: 89.9, image_url: '', description: 'Álbum para guardar memórias', category: 'Fotografia' }
+  ],
+  'minimal-elegant': [
+    { id: 'vase', name: 'Vaso Decorativo', price: 149.9, image_url: '', description: 'Vaso minimalista', category: 'Decoração' },
+    { id: 'candle', name: 'Vela Aromática', price: 39.9, image_url: '', description: 'Vela com aroma relaxante', category: 'Decoração' }
+  ]
+};
 
 const EditSite = () => {
   const { id } = useParams<{ id: string }>();
@@ -195,6 +210,8 @@ const EditSite = () => {
     stripe_secret_key: "",
     hero_images: [] as string[],
     story_images: [] as string[],
+    hero_image_fit: 'cover' as 'cover' | 'contain' | 'fill',
+    story_image_fit: 'cover' as 'cover' | 'contain' | 'fill',
     event_date: "",
     event_time: "",
     event_location: "",
@@ -262,10 +279,16 @@ const EditSite = () => {
         stripe_secret_key: (siteData as any).stripe_secret_key || "",
         hero_images: siteData.hero_images || [],
         story_images: siteData.story_images || [],
+        hero_image_fit: (siteData as any).hero_image_fit || 'cover',
+        story_image_fit: (siteData as any).story_image_fit || 'cover',
         event_date: (siteData as any).event_date || "",
         event_time: (siteData as any).event_time || "",
         event_location: (siteData as any).event_location || "",
       });
+
+      // Sincronizar estados locais de enquadramento com formData
+      setHeroImageFit((siteData as any).hero_image_fit || 'cover');
+      setStoryImageFit((siteData as any).story_image_fit || 'cover');
 
       // Carregar produtos do site
       const { data: siteProductsData, error: siteProductsError } = await supabase
@@ -443,6 +466,8 @@ const EditSite = () => {
         section_title_2: formData.section_title_2 || 'Nossa Nova Casa',
         hero_images: formData.hero_images || [],
         story_images: formData.story_images || [],
+        hero_image_fit: formData.hero_image_fit || 'cover',
+        story_image_fit: formData.story_image_fit || 'cover',
         event_date: formData.event_date || null,
         event_time: formData.event_time || null,
         event_location: formData.event_location || null,
@@ -480,7 +505,8 @@ const EditSite = () => {
       
       // Se não encontrar, usa o catálogo padrão
       if (!product) {
-        const catalogProduct = DEFAULT_CATALOG.find(p => p.id === productId);
+        const catalog = DEFAULT_CATALOG_BY_LAYOUT[site?.layout_id || 'cha-casa-nova'] || DEFAULT_CATALOG_BY_LAYOUT['cha-casa-nova'];
+        const catalogProduct = catalog.find(p => p.id === productId);
         if (!catalogProduct) {
           toast({
             title: "Erro",
@@ -1220,7 +1246,10 @@ const EditSite = () => {
                     Imagens do Hero
                     <div className="flex items-center gap-2">
                       <Label htmlFor="hero-fit" className="text-sm font-normal">Enquadramento:</Label>
-                      <Select value={heroImageFit} onValueChange={(value: 'cover' | 'contain' | 'fill') => setHeroImageFit(value)}>
+                      <Select value={heroImageFit} onValueChange={(value: 'cover' | 'contain' | 'fill') => {
+                        setHeroImageFit(value);
+                        setFormData(prev => ({ ...prev, hero_image_fit: value }));
+                      }}>
                         <SelectTrigger className="w-32">
                           <SelectValue />
                         </SelectTrigger>
@@ -1294,7 +1323,10 @@ const EditSite = () => {
                     Imagens da História
                     <div className="flex items-center gap-2">
                       <Label htmlFor="story-fit" className="text-sm font-normal">Enquadramento:</Label>
-                      <Select value={storyImageFit} onValueChange={(value: 'cover' | 'contain' | 'fill') => setStoryImageFit(value)}>
+                      <Select value={storyImageFit} onValueChange={(value: 'cover' | 'contain' | 'fill') => {
+                        setStoryImageFit(value);
+                        setFormData(prev => ({ ...prev, story_image_fit: value }));
+                      }}>
                         <SelectTrigger className="w-32">
                           <SelectValue />
                         </SelectTrigger>
@@ -1367,8 +1399,25 @@ const EditSite = () => {
           <TabsContent value="products" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle>Produtos na Lista ({siteProducts.length})</CardTitle>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setNewProductOpen(true)}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Novo Produto
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCsvImportOpen(true)}
+                    >
+                      📄 CSV
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 max-h-96 overflow-y-auto">
@@ -1435,98 +1484,6 @@ const EditSite = () => {
                     {siteProducts.length === 0 && (
                       <p className="text-center text-muted-foreground py-8">
                         Nenhum produto adicionado ainda
-                      </p>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle>Adicionar Produtos</CardTitle>
-                  <div className="flex gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setNewProductOpen(true)}
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Novo
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCsvImportOpen(true)}
-                    >
-                      📄 CSV
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {/* Produtos existentes do banco */}
-                    {products
-                      .filter(product => !siteProducts.some(sp => sp.product_id === product.id))
-                      .map((product) => (
-                        <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-                              {product.image_url ? (
-                                <img src={product.image_url} alt={product.name} className="w-full h-full object-cover rounded-lg" />
-                              ) : (
-                                <Package className="h-6 w-6 text-muted-foreground" />
-                              )}
-                            </div>
-                            <div>
-                              <p className="font-medium">{product.name}</p>
-                              <p className="text-sm text-muted-foreground">R$ {product.price.toFixed(2)}</p>
-                            </div>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => addProductToSite(product.id)}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    
-                    {/* Produtos do catálogo padrão */}
-                    {DEFAULT_CATALOG
-                      .filter(catalogProduct => 
-                        !products.some(p => p.id === catalogProduct.id) &&
-                        !siteProducts.some(sp => sp.product_id === catalogProduct.id)
-                      )
-                      .map((catalogProduct) => (
-                        <div key={catalogProduct.id} className="flex items-center justify-between p-3 border rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-                              <img src={catalogProduct.image_url} alt={catalogProduct.name} className="w-full h-full object-cover rounded-lg" />
-                            </div>
-                            <div>
-                              <p className="font-medium">{catalogProduct.name}</p>
-                              <p className="text-sm text-muted-foreground">R$ {catalogProduct.price.toFixed(2)}</p>
-                              <Badge variant="secondary" className="text-xs mt-1">Catálogo</Badge>
-                            </div>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => addProductToSite(catalogProduct.id)}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                      
-                    {products.filter(product => !siteProducts.some(sp => sp.product_id === product.id)).length === 0 && 
-                     DEFAULT_CATALOG.filter(catalogProduct => 
-                       !products.some(p => p.id === catalogProduct.id) &&
-                       !siteProducts.some(sp => sp.product_id === catalogProduct.id)
-                     ).length === 0 && (
-                      <p className="text-center text-muted-foreground py-8">
-                        Todos os produtos disponíveis já foram adicionados
                       </p>
                     )}
                   </div>

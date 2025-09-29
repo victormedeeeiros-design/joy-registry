@@ -152,46 +152,60 @@ const CreateSite = () => {
     setUploading(true);
 
     try {
+      console.log('Iniciando criação de site...', { formData, profile });
+      
       // Upload das imagens primeiro
       let heroImageUrls: string[] = [];
       let galleryImageUrls: string[] = [];
       
       if (formData.heroImages.length > 0) {
+        console.log('Fazendo upload das hero images...');
         heroImageUrls = await handleFileUpload(formData.heroImages, profile.id);
+        console.log('Hero images uploaded:', heroImageUrls);
       }
       
       if (formData.galleryImages.length > 0) {
+        console.log('Fazendo upload das gallery images...');
         galleryImageUrls = await handleFileUpload(formData.galleryImages, profile.id);
+        console.log('Gallery images uploaded:', galleryImageUrls);
       }
 
+      console.log('Inserindo site no banco de dados...');
+      const siteData = {
+        title: formData.title.trim(),
+        description: formData.description.trim() || null,
+        story_text: formData.story_text.trim() || null,
+        layout_id: layoutId,
+        creator_id: profile.id,
+        is_active: true,
+        hero_images: heroImageUrls,
+        story_images: galleryImageUrls,
+        event_date: formData.eventDate || null,
+        event_time: formData.eventTime || null,
+        event_location: formData.eventLocation || null,
+        color_scheme: formData.colorScheme,
+        font_family: formData.fontFamily,
+        font_color_menu: formData.font_color_menu,
+        font_color_hero: formData.font_color_hero,
+        title_color: formData.title_color,
+        section_title_1: formData.section_title_1,
+        section_title_2: formData.section_title_2,
+      };
+      
+      console.log('Site data to insert:', siteData);
+      
       const { data, error } = await supabase
         .from('sites')
-        .insert([
-          {
-            title: formData.title.trim(),
-            description: formData.description.trim() || null,
-            story_text: formData.story_text.trim() || null,
-            layout_id: layoutId,
-            creator_id: profile.id,
-            is_active: true,
-            hero_images: heroImageUrls,
-            story_images: galleryImageUrls,
-            event_date: formData.eventDate || null,
-            event_time: formData.eventTime || null,
-            event_location: formData.eventLocation || null,
-            color_scheme: formData.colorScheme,
-            font_family: formData.fontFamily,
-            font_color_menu: formData.font_color_menu,
-            font_color_hero: formData.font_color_hero,
-            title_color: formData.title_color,
-            section_title_1: formData.section_title_1,
-            section_title_2: formData.section_title_2,
-          }
-        ])
+        .insert([siteData])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao inserir site:', error);
+        throw error;
+      }
+      
+      console.log('Site criado com sucesso:', data);
 
       toast({
         title: "Site criado com sucesso!",

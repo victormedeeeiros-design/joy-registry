@@ -6,9 +6,10 @@ interface HeroCarouselProps {
   images: string[];
   className?: string;
   children?: React.ReactNode;
+  imageFit?: 'cover' | 'contain' | 'fill';
 }
 
-export const HeroCarousel = ({ images, className = "", children }: HeroCarouselProps) => {
+export const HeroCarousel = ({ images, className = "", children, imageFit = 'cover' }: HeroCarouselProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   useEffect(() => {
@@ -50,7 +51,7 @@ export const HeroCarousel = ({ images, className = "", children }: HeroCarouselP
             }`}
             style={{
               backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url(${image})`,
-              backgroundSize: 'cover',
+              backgroundSize: imageFit,
               backgroundPosition: 'center',
             }}
           />
