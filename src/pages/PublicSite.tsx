@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Home, Calendar, ExternalLink, Gift, User, ShoppingCart, BookOpen, LogOut, CheckCircle } from "lucide-react";
+import { Heart, Home, Calendar, ExternalLink, Gift, User, ShoppingCart, BookOpen, LogOut, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { CartSidebar } from "@/components/CartSidebar";
 import { CartProvider, useCart } from "@/hooks/useCart";
@@ -93,6 +93,8 @@ const PublicSiteContent = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<string>('home');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isSlideShowPaused, setIsSlideShowPaused] = useState(false);
   const { addItem } = useCart();
   const navigate = useNavigate();
   const { siteUser, signOut } = useSiteAuth();
@@ -310,6 +312,19 @@ const PublicSiteContent = () => {
     };
   }, [slug, id]);
 
+  // Auto slideshow for story images
+  useEffect(() => {
+    if (site?.story_images && site.story_images.length > 1 && !isSlideShowPaused) {
+      const interval = setInterval(() => {
+        setCurrentImageIndex((prev) => 
+          (prev + 1) % site.story_images!.length
+        );
+      }, 4000); // Change image every 4 seconds
+
+      return () => clearInterval(interval);
+    }
+  }, [site?.story_images, isSlideShowPaused]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
@@ -367,6 +382,26 @@ const PublicSiteContent = () => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const nextImage = () => {
+    if (site?.story_images) {
+      setCurrentImageIndex((prev) => 
+        (prev + 1) % site.story_images!.length
+      );
+      setIsSlideShowPaused(true);
+      setTimeout(() => setIsSlideShowPaused(false), 8000); // Resume after 8 seconds
+    }
+  };
+
+  const previousImage = () => {
+    if (site?.story_images) {
+      setCurrentImageIndex((prev) => 
+        prev === 0 ? site.story_images!.length - 1 : prev - 1
+      );
+      setIsSlideShowPaused(true);
+      setTimeout(() => setIsSlideShowPaused(false), 8000); // Resume after 8 seconds
     }
   };
 
@@ -625,31 +660,69 @@ const PublicSiteContent = () => {
                     </div>
                   </div>
                   
-                  {/* Image */}
+                  {/* Image Slideshow */}
                   <div className="relative">
-                    <div className="aspect-[4/3] rounded-xl overflow-hidden shadow-soft">
-                      <img 
-                        src={site.story_images[0]} 
-                        alt="Nossa história"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    {site.story_images.length > 1 && (
-                      <div className="absolute -bottom-4 -right-4 grid grid-cols-3 gap-2">
-                        {site.story_images.slice(1, 4).map((image, index) => (
-                          <div 
-                            key={index}
-                            className="w-16 h-16 rounded-lg overflow-hidden shadow-soft border-2 border-white"
+                    <div className="aspect-[5/4] rounded-xl overflow-hidden shadow-soft relative">
+                      {site.story_images.map((image, index) => (
+                        <div
+                          key={index}
+                          className={`absolute inset-0 transition-opacity duration-1000 ${
+                            index === currentImageIndex ? 'opacity-100' : 'opacity-0'
+                          }`}
+                        >
+                          <img 
+                            src={image} 
+                            alt={`Nossa história - ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ))}
+                      
+                      {/* Navigation arrows */}
+                      {site.story_images.length > 1 && (
+                        <>
+                          <button
+                            onClick={previousImage}
+                            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all"
+                            aria-label="Imagem anterior"
                           >
-                            <img 
-                              src={image} 
-                              alt={`Momento ${index + 2}`}
-                              className="w-full h-full object-cover"
+                            <ChevronLeft className="h-5 w-5" />
+                          </button>
+                          <button
+                            onClick={nextImage}
+                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full transition-all"
+                            aria-label="Próxima imagem"
+                          >
+                            <ChevronRight className="h-5 w-5" />
+                          </button>
+                        </>
+                      )}
+                      
+                      {/* Indicators */}
+                      {site.story_images.length > 1 && (
+                        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+                          {site.story_images.map((_, index) => (
+                            <button
+                              key={index}
+                              onClick={() => setCurrentImageIndex(index)}
+                              className={`w-2 h-2 rounded-full transition-all ${
+                                index === currentImageIndex 
+                                  ? 'bg-white shadow-lg' 
+                                  : 'bg-white/50 hover:bg-white/80'
+                              }`}
+                              aria-label={`Ir para imagem ${index + 1}`}
                             />
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                          ))}
+                        </div>
+                      )}
+                      
+                      {/* Image counter */}
+                      {site.story_images.length > 1 && (
+                        <div className="absolute top-4 right-4 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                          {currentImageIndex + 1} / {site.story_images.length}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
