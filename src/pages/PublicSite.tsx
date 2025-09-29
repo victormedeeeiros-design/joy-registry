@@ -24,6 +24,7 @@ import { RSVPSection } from "@/components/RSVPSection";
 
 interface Site {
   id: string;
+  slug?: string;
   title: string;
   description?: string;
   layout_id: string;
@@ -86,7 +87,7 @@ const DEFAULT_CATALOG: Record<string, Array<{ id: string; name: string; price: n
 
 const PublicSiteContent = () => {
 
-  const { id } = useParams<{ id: string }>();
+  const { slug, id } = useParams<{ slug?: string; id?: string }>();
   const [site, setSite] = useState<Site | null>(null);
   const [products, setProducts] = useState<SiteProduct[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,18 +114,21 @@ const PublicSiteContent = () => {
 
   useEffect(() => {
     const loadSite = async () => {
-      if (!id) {
-        setError("ID do site não encontrado");
+      const siteIdentifier = slug || id;
+      if (!siteIdentifier) {
+        setError("Identificador do site não encontrado");
         setLoading(false);
         return;
       }
 
       try {
-        // Buscar dados do site
+        // Buscar dados do site - primeiro por slug, depois por ID
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(siteIdentifier);
+        
         const { data: siteData, error: siteError } = await supabase
           .from('sites')
           .select('*')
-          .eq('id', id)
+          .eq(isUUID ? 'id' : 'slug', siteIdentifier)
           .eq('is_active', true)
           .single();
 
@@ -304,7 +308,7 @@ const PublicSiteContent = () => {
       root.style.removeProperty('--hero-color');
       root.style.removeProperty('--title-color');
     };
-  }, [id]);
+  }, [slug, id]);
 
   if (loading) {
     return (
@@ -823,7 +827,7 @@ const PublicSiteContent = () => {
             Site criado com ❤️ para <span className="font-script text-primary">{site.title}</span>
           </p>
           <p className="text-xs text-muted-foreground mt-2">
-            Powered by Lista de Presentes
+            Powered by Amor&Presente® 
           </p>
         </div>
       </footer>

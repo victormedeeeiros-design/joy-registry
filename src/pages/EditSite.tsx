@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { generateSiteUrl } from "@/lib/slug";
 import { ArrowLeft, Save, Eye, Palette, Type, Package, Settings, Trash2, Plus, Edit, Users, Calendar } from "lucide-react";
 
 // Product images for fallbacks
@@ -27,6 +28,7 @@ import { RSVPList } from "@/components/RSVPList";
 
 interface Site {
   id: string;
+  slug?: string;
   title: string;
   description?: string;
   layout_id: string;
@@ -801,10 +803,16 @@ const EditSite = () => {
             </div>
             
             <div className="flex items-center gap-3">
+              <div className="text-right">
+                <div className="text-xs text-muted-foreground">URL do site:</div>
+                <div className="text-xs font-mono text-primary">
+                  {generateSiteUrl(site)}
+                </div>
+              </div>
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => window.open(`/site/${site.id}`, '_blank')}
+                onClick={() => window.open(generateSiteUrl(site), '_blank')}
                 className="gap-2"
               >
                 <Eye className="h-4 w-4" />

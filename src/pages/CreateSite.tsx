@@ -150,8 +150,8 @@ const CreateSite = () => {
         description: "Seu site de presentes foi criado e já está ativo.",
       });
 
-      // Redirecionar para o dashboard ou para a página de edição do site
-      navigate('/dashboard');
+      // Redirecionar para a página de edição do site - o slug será gerado automaticamente
+      navigate(`/edit-site/${data.id}?success=created`);
       
     } catch (error) {
       console.error('Erro ao criar site:', error);

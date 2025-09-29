@@ -33,7 +33,7 @@ WITH CHECK (auth.uid() = id);
 CREATE TABLE public.sites (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   creator_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
-  layout_id TEXT NOT NULL REFERENCES public.products(id),
+  layout_id TEXT NOT NULL,
   title TEXT NOT NULL,
   description TEXT,
   hero_images TEXT[] DEFAULT '{}',
@@ -65,7 +65,7 @@ USING (is_active = true);
 CREATE TABLE public.site_products (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   site_id UUID NOT NULL REFERENCES public.sites(id) ON DELETE CASCADE,
-  product_id TEXT NOT NULL REFERENCES public.products(id),
+  product_id TEXT NOT NULL,
   custom_name TEXT,
   custom_description TEXT,
   custom_price NUMERIC,

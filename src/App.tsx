@@ -94,7 +94,11 @@ const App = () => (
             } 
           />
           <Route 
-            path="/site/:id" 
+            path="/site/:slug" 
+            element={<PublicSite />} 
+          />
+          <Route 
+            path="/s/:slug" 
             element={<PublicSite />} 
           />
           <Route 

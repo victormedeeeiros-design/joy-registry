@@ -15,8 +15,11 @@ import {
   Edit
 } from "lucide-react";
 
+import { generateSiteUrl } from "@/lib/slug";
+
 interface Site {
   id: string;
+  slug?: string;
   title: string;
   description: string;
   is_active: boolean;
@@ -160,12 +163,15 @@ const SiteCreatorDashboard = () => {
                   <p className="text-muted-foreground mb-4 text-sm">
                     {site.description || "Sem descrição"}
                   </p>
+                  <div className="mb-3 text-xs text-muted-foreground">
+                    URL: {generateSiteUrl(site).replace(window.location.origin, "")}
+                  </div>
                   <div className="flex gap-2">
                     <Button 
                       size="sm" 
                       variant="outline" 
                       className="flex-1 gap-1"
-                      onClick={() => window.open(`/site/${site.id}`, '_blank')}
+                      onClick={() => window.open(generateSiteUrl(site), '_blank')}
                     >
                       <Eye className="h-3 w-3" />
                       Ver
