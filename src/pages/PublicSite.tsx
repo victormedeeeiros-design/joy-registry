@@ -214,6 +214,22 @@ const PublicSiteContent = () => {
           if (titleColorMap[siteData.title_color]) {
             root.style.setProperty('--title-color', titleColorMap[siteData.title_color]);
           }
+        } else {
+          // Se não há cor específica definida, usar cor contrastante baseada no tema
+          if (siteData.color_scheme === 'dark-elegance' || siteData.color_scheme === 'midnight-black') {
+            root.style.setProperty('--title-color', '#ffffff');
+          } else {
+            root.style.setProperty('--title-color', 'var(--foreground)');
+          }
+        }
+        
+        // Garantir que o menu tenha contraste adequado
+        if (!siteData.font_color_menu || siteData.font_color_menu === 'default') {
+          if (siteData.color_scheme === 'dark-elegance' || siteData.color_scheme === 'midnight-black') {
+            root.style.setProperty('--menu-color', '#ffffff');
+          } else {
+            root.style.setProperty('--menu-color', 'var(--foreground)');
+          }
         }
 
         // Buscar produtos do site com dados dos produtos
@@ -372,20 +388,37 @@ const PublicSiteContent = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation Header */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b">
+      <header className={`sticky top-0 z-50 backdrop-blur-sm border-b ${
+        site.color_scheme === 'dark-elegance' || site.color_scheme === 'midnight-black' 
+          ? 'bg-black/95 border-white/10' 
+          : 'bg-white/95 border-gray-200'
+      }`}>
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
               <Heart className="h-6 w-6 text-primary" />
-              <span className="font-script text-xl text-foreground">{site.title}</span>
+              <span 
+                className="font-script text-xl font-semibold" 
+                style={{ 
+                  color: site.color_scheme === 'dark-elegance' || site.color_scheme === 'midnight-black'
+                    ? 'var(--menu-color, #ffffff)'
+                    : 'var(--menu-color, var(--foreground))'
+                }}
+              >
+                {site.title}
+              </span>
             </div>
             
-            <nav className="hidden md:flex items-center gap-6" style={{ color: 'var(--menu-color, var(--foreground))' }}>
+            <nav className="hidden md:flex items-center gap-6">
               <Button 
                 variant="ghost" 
                 className={`${activeSection === 'home' ? 'text-primary' : ''} hover:text-primary transition-colors`}
                 onClick={() => scrollToSection('home')}
-                style={{ color: 'inherit' }}
+                style={{ 
+                  color: site.color_scheme === 'dark-elegance' || site.color_scheme === 'midnight-black'
+                    ? 'var(--menu-color, #ffffff)'
+                    : 'var(--menu-color, var(--foreground))'
+                }}
               >
                 <Home className="h-4 w-4 mr-2" />
                 Início
@@ -394,7 +427,11 @@ const PublicSiteContent = () => {
                 variant="ghost"
                 className={`${activeSection === 'story' ? 'text-primary' : ''} hover:text-primary transition-colors`}
                 onClick={() => scrollToSection('story')}
-                style={{ color: 'inherit' }}
+                style={{ 
+                  color: site.color_scheme === 'dark-elegance' || site.color_scheme === 'midnight-black'
+                    ? 'var(--menu-color, #ffffff)'
+                    : 'var(--menu-color, var(--foreground))'
+                }}
               >
                 <Heart className="h-4 w-4 mr-2" />
                 Nossa História
@@ -403,7 +440,11 @@ const PublicSiteContent = () => {
                 variant="ghost"
                 className={`${activeSection === 'gifts' ? 'text-primary' : ''} hover:text-primary transition-colors`}
                 onClick={() => scrollToSection('gifts')}
-                style={{ color: 'inherit' }}
+                style={{ 
+                  color: site.color_scheme === 'dark-elegance' || site.color_scheme === 'midnight-black'
+                    ? 'var(--menu-color, #ffffff)'
+                    : 'var(--menu-color, var(--foreground))'
+                }}
               >
                 <Gift className="h-4 w-4 mr-2" />
                 Lista de Presentes

@@ -193,6 +193,37 @@
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 0 0% 20%;
     --sidebar-ring: 0 0% 85%;
+    
+    /* Cores específicas para melhor contraste */
+    --menu-text-color: #ffffff;
+    --title-text-color: #ffffff;
+    --header-bg: rgba(0, 0, 0, 0.95);
+  }
+    --destructive-foreground: 0 0% 95%;
+    
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 85%;
+    
+    /* Black elegance gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(0 0% 8%), hsl(0 0% 15%));
+    --gradient-hero: linear-gradient(135deg, hsl(0 0% 6%), hsl(0 0% 12%));
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 10%), hsl(0 0% 12%));
+    --gradient-accent: linear-gradient(135deg, hsl(0 0% 15%), hsl(0 0% 20%));
+    
+    /* Black elegance shadows */
+    --shadow-elegant: 0 10px 30px -10px hsl(0 0% 0% / 0.9);
+    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.7);
+    --shadow-glow: 0 0 40px hsl(0 0% 40% / 0.3);
+
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 0 0% 85%;
+    --sidebar-primary-foreground: 0 0% 6%;
+    --sidebar-accent: 0 0% 15%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 0 0% 85%;
   }
 
   /* Midnight Black Theme */
@@ -252,7 +283,6 @@
     --sidebar-border: 0 0% 15%;
     --sidebar-ring: 0 0% 100%;
   }
-}
 
 @layer base {
   * {
