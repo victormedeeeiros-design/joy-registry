@@ -210,8 +210,8 @@ const EditSite = () => {
     stripe_secret_key: "",
     hero_images: [] as string[],
     story_images: [] as string[],
-    hero_image_fit: 'cover' as 'cover' | 'contain' | 'fill',
-    story_image_fit: 'cover' as 'cover' | 'contain' | 'fill',
+    // hero_image_fit: 'cover' as 'cover' | 'contain' | 'fill',
+    // story_image_fit: 'cover' as 'cover' | 'contain' | 'fill',
     event_date: "",
     event_time: "",
     event_location: "",
@@ -242,6 +242,46 @@ const EditSite = () => {
     }
     
     return uploadedUrls;
+  };
+
+  const getProductImageFallback = (productId: string, productName?: string) => {
+    const imageMap: { [key: string]: string } = {
+      'microwave': microwaveImg,
+      'range-hood': rangeHoodImg,
+      'grill': grillImg,
+      'blender': blenderImg,
+      'mixer': mixerImg,
+      'electric-oven': electricOvenImg,
+      'air-fryer': airFryerImg,
+      'stove': stoveImg
+    };
+    
+    // Try exact match first
+    if (imageMap[productId]) {
+      return imageMap[productId];
+    }
+    
+    // Try partial matches for UUIDs or different naming conventions
+    for (const key in imageMap) {
+      if (productId.toLowerCase().includes(key) || key.includes(productId.toLowerCase())) {
+        return imageMap[key];
+      }
+    }
+    
+    // Try matching by product name if available
+    if (productName) {
+      const name = productName.toLowerCase();
+      if (name.includes('micro') || name.includes('ondas')) return microwaveImg;
+      if (name.includes('coifa')) return rangeHoodImg;
+      if (name.includes('grill') || name.includes('churrasco')) return grillImg;
+      if (name.includes('liquidificador') || name.includes('blender')) return blenderImg;
+      if (name.includes('batedeira') || name.includes('mixer')) return mixerImg;
+      if (name.includes('forno') && name.includes('elétrico')) return electricOvenImg;
+      if (name.includes('air') && name.includes('fryer')) return airFryerImg;
+      if (name.includes('fogão') || name.includes('stove')) return stoveImg;
+    }
+    
+    return undefined;
   };
 
   useEffect(() => {
@@ -279,16 +319,16 @@ const EditSite = () => {
         stripe_secret_key: (siteData as any).stripe_secret_key || "",
         hero_images: siteData.hero_images || [],
         story_images: siteData.story_images || [],
-        hero_image_fit: (siteData as any).hero_image_fit || 'cover',
-        story_image_fit: (siteData as any).story_image_fit || 'cover',
+        // hero_image_fit: (siteData as any).hero_image_fit || 'cover',
+        // story_image_fit: (siteData as any).story_image_fit || 'cover',
         event_date: (siteData as any).event_date || "",
         event_time: (siteData as any).event_time || "",
         event_location: (siteData as any).event_location || "",
       });
 
       // Sincronizar estados locais de enquadramento com formData
-      setHeroImageFit((siteData as any).hero_image_fit || 'cover');
-      setStoryImageFit((siteData as any).story_image_fit || 'cover');
+      // setHeroImageFit((siteData as any).hero_image_fit || 'cover');
+      // setStoryImageFit((siteData as any).story_image_fit || 'cover');
 
       // Carregar produtos do site
       const { data: siteProductsData, error: siteProductsError } = await supabase
@@ -466,8 +506,8 @@ const EditSite = () => {
         section_title_2: formData.section_title_2 || 'Nossa Nova Casa',
         hero_images: formData.hero_images || [],
         story_images: formData.story_images || [],
-        hero_image_fit: formData.hero_image_fit || 'cover',
-        story_image_fit: formData.story_image_fit || 'cover',
+        // hero_image_fit: formData.hero_image_fit || 'cover',
+        // story_image_fit: formData.story_image_fit || 'cover',
         event_date: formData.event_date || null,
         event_time: formData.event_time || null,
         event_location: formData.event_location || null,
@@ -517,13 +557,17 @@ const EditSite = () => {
         }
         
         // Cria o produto na tabela products primeiro
+        const imageUrl = catalogProduct.image_url.includes('/src/assets/') 
+          ? catalogProduct.image_url 
+          : catalogProduct.image_url || getProductImageFallback(catalogProduct.id, catalogProduct.name);
+          
         const { data: newProduct, error: productError } = await supabase
           .from('products')
           .insert([{
             id: catalogProduct.id,
             name: catalogProduct.name,
             price: catalogProduct.price,
-            image_url: catalogProduct.image_url,
+            image_url: imageUrl,
             description: catalogProduct.description,
             category: catalogProduct.category || 'Eletrodomésticos',
             status: 'active'
@@ -1248,7 +1292,7 @@ const EditSite = () => {
                       <Label htmlFor="hero-fit" className="text-sm font-normal">Enquadramento:</Label>
                       <Select value={heroImageFit} onValueChange={(value: 'cover' | 'contain' | 'fill') => {
                         setHeroImageFit(value);
-                        setFormData(prev => ({ ...prev, hero_image_fit: value }));
+                        // setFormData(prev => ({ ...prev, hero_image_fit: value }));
                       }}>
                         <SelectTrigger className="w-32">
                           <SelectValue />
@@ -1325,7 +1369,7 @@ const EditSite = () => {
                       <Label htmlFor="story-fit" className="text-sm font-normal">Enquadramento:</Label>
                       <Select value={storyImageFit} onValueChange={(value: 'cover' | 'contain' | 'fill') => {
                         setStoryImageFit(value);
-                        setFormData(prev => ({ ...prev, story_image_fit: value }));
+                        // setFormData(prev => ({ ...prev, story_image_fit: value }));
                       }}>
                         <SelectTrigger className="w-32">
                           <SelectValue />
@@ -1484,6 +1528,84 @@ const EditSite = () => {
                     {siteProducts.length === 0 && (
                       <p className="text-center text-muted-foreground py-8">
                         Nenhum produto adicionado ainda
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Sugestões de Produtos</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Produtos disponíveis para adicionar à sua lista
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 max-h-96 overflow-y-auto">
+                    {/* Produtos existentes do banco que não estão na lista */}
+                    {products
+                      .filter(product => !siteProducts.some(sp => sp.product_id === product.id))
+                      .map((product) => (
+                        <div key={product.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                              {product.image_url ? (
+                                <img src={product.image_url} alt={product.name} className="w-full h-full object-cover rounded-lg" />
+                              ) : (
+                                <Package className="h-6 w-6 text-muted-foreground" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="font-medium">{product.name}</p>
+                              <p className="text-sm text-muted-foreground">R$ {product.price.toFixed(2)}</p>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => addProductToSite(product.id)}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    
+                    {/* Produtos do catálogo padrão do layout */}
+                    {(DEFAULT_CATALOG_BY_LAYOUT[site?.layout_id || 'cha-casa-nova'] || [])
+                      .filter(catalogProduct => 
+                        !products.some(p => p.id === catalogProduct.id) &&
+                        !siteProducts.some(sp => sp.product_id === catalogProduct.id)
+                      )
+                      .map((catalogProduct) => (
+                        <div key={catalogProduct.id} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                              <img src={catalogProduct.image_url} alt={catalogProduct.name} className="w-full h-full object-cover rounded-lg" />
+                            </div>
+                            <div>
+                              <p className="font-medium">{catalogProduct.name}</p>
+                              <p className="text-sm text-muted-foreground">R$ {catalogProduct.price.toFixed(2)}</p>
+                              <Badge variant="secondary" className="text-xs mt-1">Catálogo</Badge>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => addProductToSite(catalogProduct.id)}
+                          >
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                      
+                    {products.filter(product => !siteProducts.some(sp => sp.product_id === product.id)).length === 0 && 
+                     (DEFAULT_CATALOG_BY_LAYOUT[site?.layout_id || 'cha-casa-nova'] || []).filter(catalogProduct => 
+                       !products.some(p => p.id === catalogProduct.id) &&
+                       !siteProducts.some(sp => sp.product_id === catalogProduct.id)
+                     ).length === 0 && (
+                      <p className="text-center text-muted-foreground py-8">
+                        Todos os produtos disponíveis já foram adicionados
                       </p>
                     )}
                   </div>
