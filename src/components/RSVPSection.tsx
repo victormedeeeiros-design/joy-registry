@@ -5,9 +5,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Heart, CheckCircle, UserCheck } from "lucide-react";
+import { Heart, CheckCircle, UserCheck, Phone, Users, Baby } from "lucide-react";
 
 interface Site {
   id: string;
@@ -31,6 +32,9 @@ export const RSVPSection = ({ site, siteUser, navigate }: RSVPSectionProps) => {
   const [showRSVPForm, setShowRSVPForm] = useState(false);
   const [rsvpStatus, setRsvpStatus] = useState<'yes' | 'no' | null>(null);
   const [message, setMessage] = useState("");
+  const [phone, setPhone] = useState("");
+  const [adultsCount, setAdultsCount] = useState("1");
+  const [childrenCount, setChildrenCount] = useState("0");
   const [loading, setLoading] = useState(false);
   const [hasRSVP, setHasRSVP] = useState(false);
   const { toast } = useToast();
@@ -63,6 +67,9 @@ export const RSVPSection = ({ site, siteUser, navigate }: RSVPSectionProps) => {
             site_user_id: siteUser.id,
             guest_name: siteUser.name,
             message: message.trim() || null,
+            phone: phone.trim() || null,
+            adults_count: willAttend ? parseInt(adultsCount) : null,
+            children_count: willAttend ? parseInt(childrenCount) : null,
             will_attend: willAttend,
             updated_at: new Date().toISOString()
           })
@@ -78,6 +85,9 @@ export const RSVPSection = ({ site, siteUser, navigate }: RSVPSectionProps) => {
             guest_name: siteUser.name,
             guest_email: siteUser.email,
             message: message.trim() || null,
+            phone: phone.trim() || null,
+            adults_count: willAttend ? parseInt(adultsCount) : null,
+            children_count: willAttend ? parseInt(childrenCount) : null,
             will_attend: willAttend
           });
         error = insertError;
@@ -176,6 +186,65 @@ export const RSVPSection = ({ site, siteUser, navigate }: RSVPSectionProps) => {
               </div>
 
               <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="flex items-center gap-2">
+                    <Phone className="h-4 w-4" />
+                    Telefone para contato
+                  </Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="(11) 99999-9999"
+                    required
+                  />
+                </div>
+
+                {rsvpStatus === 'yes' && (
+                  <>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="adults" className="flex items-center gap-2">
+                          <Users className="h-4 w-4" />
+                          Adultos
+                        </Label>
+                        <Select value={adultsCount} onValueChange={setAdultsCount}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[1, 2, 3, 4, 5, 6].map((num) => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num} {num === 1 ? 'pessoa' : 'pessoas'}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="children" className="flex items-center gap-2">
+                          <Baby className="h-4 w-4" />
+                          Crianças
+                        </Label>
+                        <Select value={childrenCount} onValueChange={setChildrenCount}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[0, 1, 2, 3, 4, 5, 6].map((num) => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num} {num === 1 ? 'criança' : 'crianças'}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </>
+                )}
+
                 <div className="space-y-2">
                   <Label htmlFor="message">Mensagem (opcional)</Label>
                   <Textarea

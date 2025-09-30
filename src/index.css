@@ -299,6 +299,37 @@
 }
 
 @layer utilities {
+  /* Smooth transitions for modern interactions */
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Enhanced backdrop blur */
+  .backdrop-blur-enhanced {
+    backdrop-filter: blur(12px) saturate(180%);
+  }
+  
+  /* Custom gradient overlays */
+  .gradient-overlay {
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.5) 100%);
+  }
+  
+  /* Modern glass effect */
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Smooth scale animation */
+  .scale-hover:hover {
+    transform: scale(1.02);
+  }
   .font-playfair {
     font-family: 'Playfair Display', serif;
   }

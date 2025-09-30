@@ -10,6 +10,8 @@ import { CartSidebar } from "@/components/CartSidebar";
 import { CartProvider, useCart } from "@/hooks/useCart";
 import { useSiteAuth } from "@/hooks/useSiteAuth";
 import { useToast } from "@/hooks/use-toast";
+import { Countdown } from "@/components/Countdown";
+import { CategoryFilter } from "@/components/CategoryFilter";
 
 // Product images (ESM imports ensure correct URLs in build)
 import stoveImg from "@/assets/products/stove.jpg";
@@ -113,6 +115,7 @@ const PublicSiteContent = () => {
   const [activeSection, setActiveSection] = useState<string>('home');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isSlideShowPaused, setIsSlideShowPaused] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { addItem } = useCart();
   const navigate = useNavigate();
   const { siteUser, signOut } = useSiteAuth();
@@ -546,7 +549,7 @@ const PublicSiteContent = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation Header */}
-      <header className={`sticky top-0 z-50 backdrop-blur-sm border-b ${
+      <header className={`sticky top-0 z-50 backdrop-blur-md border-b transition-all duration-300 ${
         site.color_scheme === 'dark-elegance' || site.color_scheme === 'midnight-black' 
           ? 'bg-black/95 border-white/10' 
           : 'bg-white/95 border-gray-200'
@@ -571,7 +574,7 @@ const PublicSiteContent = () => {
             <nav className="hidden md:flex items-center gap-6">
               <Button 
                 variant="ghost" 
-                className={`${activeSection === 'home' ? 'text-primary' : ''} hover:text-primary transition-colors`}
+                className={`${activeSection === 'home' ? 'text-primary bg-primary/10' : ''} hover:text-primary hover:bg-primary/5 transition-all duration-200 hover:scale-105`}
                 onClick={() => scrollToSection('home')}
                 style={{ 
                   color: site.color_scheme === 'dark-elegance' || site.color_scheme === 'midnight-black'
@@ -584,7 +587,7 @@ const PublicSiteContent = () => {
               </Button>
               <Button 
                 variant="ghost"
-                className={`${activeSection === 'story' ? 'text-primary' : ''} hover:text-primary transition-colors`}
+                className={`${activeSection === 'story' ? 'text-primary bg-primary/10' : ''} hover:text-primary hover:bg-primary/5 transition-all duration-200 hover:scale-105`}
                 onClick={() => scrollToSection('story')}
                 style={{ 
                   color: site.color_scheme === 'dark-elegance' || site.color_scheme === 'midnight-black'
@@ -597,7 +600,7 @@ const PublicSiteContent = () => {
               </Button>
               <Button 
                 variant="ghost"
-                className={`${activeSection === 'gifts' ? 'text-primary' : ''} hover:text-primary transition-colors`}
+                className={`${activeSection === 'gifts' ? 'text-primary bg-primary/10' : ''} hover:text-primary hover:bg-primary/5 transition-all duration-200 hover:scale-105`}
                 onClick={() => scrollToSection('gifts')}
                 style={{ 
                   color: site.color_scheme === 'dark-elegance' || site.color_scheme === 'midnight-black'
@@ -682,7 +685,9 @@ const PublicSiteContent = () => {
             {site.layout_id === 'cha-casa-nova' ? 'Chá de Casa Nova' : 'Celebração Especial'}
           </Badge>
           
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-script mb-6 drop-shadow-lg text-center px-4" style={{ color: 'var(--title-color, var(--hero-color, #ffffff))' }}>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-script mb-6 drop-shadow-2xl text-center px-4 text-white" style={{ 
+            textShadow: '2px 2px 4px rgba(0,0,0,0.7), 0 0 20px rgba(0,0,0,0.5)'
+          }}>
             {site.title}
           </h1>
           
@@ -692,6 +697,15 @@ const PublicSiteContent = () => {
             </p>
           )}
           
+          {/* Countdown */}
+          {site.event_date && (
+            <div className="mb-8">
+              <Countdown 
+                targetDate={`${site.event_date}${site.event_time ? `T${site.event_time}` : 'T00:00:00'}`}
+              />
+            </div>
+          )}
+
           {/* Event Information */}
           {(site.event_date || site.event_time || site.event_location) && (
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-8 max-w-2xl mx-auto">
@@ -725,7 +739,7 @@ const PublicSiteContent = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button 
               size="lg" 
-              className="bg-primary text-white hover:bg-primary/90"
+              className="bg-primary text-white hover:bg-primary/90 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl backdrop-blur-sm"
               onClick={() => {
                 localStorage.setItem('currentSiteId', site.id);
                 navigate(`/guest-login?siteId=${site.id}&rsvp=yes`);
@@ -737,7 +751,7 @@ const PublicSiteContent = () => {
             <Button 
               variant="outline" 
               size="lg" 
-              className="bg-white/10 text-white border-white/20 hover:bg-white/20"
+              className="bg-white/10 text-white border-white/30 hover:bg-white/20 transition-all duration-300 hover:scale-105 backdrop-blur-sm"
               onClick={() => {
                 localStorage.setItem('currentSiteId', site.id);
                 navigate(`/guest-login?siteId=${site.id}&rsvp=no`);
@@ -747,7 +761,7 @@ const PublicSiteContent = () => {
             </Button>
             <Button 
               size="lg" 
-              className="bg-white text-primary hover:bg-white/90"
+              className="bg-white text-primary hover:bg-white/90 transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl"
               onClick={() => scrollToSection('gifts')}
             >
               <Gift className="h-5 w-5 mr-2" />
@@ -817,8 +831,15 @@ const PublicSiteContent = () => {
                             className={`w-full h-full ${
                               (site as any).story_image_fit === 'cover' ? 'object-cover' :
                               (site as any).story_image_fit === 'contain' ? 'object-contain bg-muted' : 
-                              'object-fill'
+                              'object-cover'
                             }`}
+                            style={{
+                              imageRendering: 'high-quality',
+                              maxWidth: '100%',
+                              height: 'auto'
+                            }}
+                            loading="lazy"
+                            decoding="async"
                           />
                         </div>
                       ))}
@@ -986,9 +1007,24 @@ const PublicSiteContent = () => {
 
               console.log('🔍 Produtos categorizados:', categorizedProducts);
 
+              // Filtrar categorias se uma categoria específica for selecionada
+              const filteredCategories = selectedCategory 
+                ? { [selectedCategory]: categorizedProducts[selectedCategory] || [] }
+                : categorizedProducts;
+
+              // Obter lista de todas as categorias para o filtro
+              const allCategories = Object.keys(categorizedProducts);
+
               return (
                 <div className="space-y-8 sm:space-y-12">
-                  {Object.entries(categorizedProducts).map(([category, categoryProducts]) => (
+                  {/* Filtro de Categorias */}
+                  <CategoryFilter 
+                    categories={allCategories}
+                    selectedCategory={selectedCategory}
+                    onCategorySelect={setSelectedCategory}
+                  />
+
+                  {Object.entries(filteredCategories).map(([category, categoryProducts]) => (
                     <div key={category} className="space-y-4 sm:space-y-6">
                       <div className="text-center">
                         <h3 className="text-xl sm:text-2xl font-playfair font-semibold text-foreground mb-2">
