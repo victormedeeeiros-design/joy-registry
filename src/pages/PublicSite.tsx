@@ -284,6 +284,7 @@ const PublicSiteContent = () => {
         }
 
         // Buscar produtos do site com dados dos produtos
+        console.log('Tentando carregar produtos para site_id:', siteData.id);
         const { data: siteProductsData, error: siteProductsError } = await supabase
           .from('site_products')
           .select('*')
@@ -291,8 +292,37 @@ const PublicSiteContent = () => {
           .eq('is_available', true)
           .order('position', { ascending: true });
 
-        if (siteProductsError) {
-          console.error('Erro ao carregar produtos:', siteProductsError);
+        console.log('Resultado site_products:', { data: siteProductsData, error: siteProductsError });
+
+        // Se há erro OU se não há produtos específicos do site, usar fallback
+        if (siteProductsError || !siteProductsData || siteProductsData.length === 0) {
+          console.log('Usando fallback - erro:', siteProductsError, 'produtos encontrados:', siteProductsData?.length || 0);
+          
+          // FALLBACK IMEDIATO: usar catálogo padrão
+          console.log('Usando catálogo padrão hardcoded');
+          const catalog = DEFAULT_CATALOG[siteData.layout_id] || DEFAULT_CATALOG['cha-casa-nova'];
+          const fallback = (catalog || []).map((p, idx) => ({
+            id: `fallback-${p.id}`,
+            product_id: p.id,
+            site_id: siteData.id,
+            custom_name: p.name,
+            custom_description: p.description,
+            custom_image_url: p.image_url,
+            custom_price: p.price,
+            is_available: true,
+            position: idx + 1,
+            product: {
+              id: p.id,
+              name: p.name,
+              price: p.price,
+              image_url: p.image_url,
+              description: p.description,
+              category: p.category || 'Eletrodomésticos',
+            } as Product
+          }));
+          console.log('Fallback products set:', fallback.length, fallback);
+          setProducts(fallback);
+          
         } else if (siteProductsData && siteProductsData.length > 0) {
           console.log('Site products found:', siteProductsData.length, siteProductsData);
           const productIds = siteProductsData.map(sp => sp.product_id);
@@ -311,56 +341,6 @@ const PublicSiteContent = () => {
             }));
             console.log('Combined products data:', combinedData.length, combinedData);
             setProducts(combinedData);
-          }
-        } else {
-          console.log('No site products found, using fallback catalog');
-          
-          // Tentar buscar produtos da tabela products primeiro para usar o catálogo completo
-          const { data: allProducts, error: allProductsError } = await supabase
-            .from('products')
-            .select('*')
-            .eq('status', 'active')
-            .limit(12);
-
-          if (!allProductsError && allProducts && allProducts.length > 0) {
-            console.log('Using products from database:', allProducts.length);
-            const fallbackFromDb = allProducts.map((p, idx) => ({
-              id: `db-fallback-${p.id}`,
-              product_id: p.id,
-              site_id: siteData.id,
-              custom_name: null,
-              custom_description: null,
-              custom_image_url: null,
-              custom_price: null,
-              is_available: true,
-              position: idx + 1,
-              product: p
-            }));
-            setProducts(fallbackFromDb);
-          } else {
-            // Fallback final: usar catálogo padrão por layout quando não há produtos no banco
-            console.log('Using hardcoded catalog fallback');
-            const catalog = DEFAULT_CATALOG[siteData.layout_id] || DEFAULT_CATALOG['cha-casa-nova'];
-            const fallback = (catalog || []).map((p, idx) => ({
-              id: `fallback-${p.id}`,
-              product_id: p.id,
-              site_id: siteData.id,
-              custom_name: p.name,
-              custom_description: p.description,
-              custom_image_url: p.image_url,
-              custom_price: p.price,
-              is_available: true,
-              position: idx + 1,
-              product: {
-                id: p.id,
-                name: p.name,
-                price: p.price,
-                image_url: p.image_url,
-                description: p.description,
-                category: p.category || 'Eletrodomésticos',
-              } as Product
-            }));
-            setProducts(fallback);
           }
         }
 
