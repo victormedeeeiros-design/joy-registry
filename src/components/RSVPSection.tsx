@@ -288,7 +288,7 @@ export const RSVPSection = ({ site, siteUser, navigate }: RSVPSectionProps) => {
   return (
     <div className="container mx-auto px-4 mt-16">
       <div className="text-center mb-8">
-        <h3 className="text-2xl font-script mb-4" style={{ color: 'var(--title-color, var(--foreground))' }}>
+        <h3 className="text-3xl font-sloop mb-4" style={{ color: 'var(--title-color, var(--foreground))' }}>
           Confirmação de Presença
         </h3>
         {siteUser ? (

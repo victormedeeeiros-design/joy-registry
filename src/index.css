@@ -1,5 +1,5 @@
 /* Elegant Gift Registry Platform Design System */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Dancing+Script:wght@400;500;600;700&family=Great+Vibes&family=Caveat:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=Dancing+Script:wght@400;500;600;700&family=Great+Vibes&family=Caveat:wght@400;500;600;700&family=Tangerine:wght@400;700&family=Pacifico&family=Satisfy&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -299,6 +299,12 @@
 }
 
 @layer utilities {
+  /* Primary script font similar to Sloop Script Pro Bold */
+  .font-sloop {
+    font-family: 'Tangerine', 'Dancing Script', cursive;
+    font-weight: 700;
+  }
+  
   /* Smooth transitions for modern interactions */
   .transition-smooth {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);

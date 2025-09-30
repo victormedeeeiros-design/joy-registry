@@ -53,20 +53,20 @@ export const Countdown = ({ targetDate, className = "" }: CountdownProps) => {
   return (
     <div className={`w-full ${className}`}>
       <div className="text-center mb-6">
-        <h3 className="text-2xl md:text-3xl font-script text-white mb-2 tracking-wide">
+        <h3 className="text-2xl md:text-3xl font-sloop text-primary mb-2 tracking-wide">
           CONTAGEM REGRESSIVA
         </h3>
       </div>
       
-      <div className="flex flex-wrap justify-center gap-3 md:gap-4 max-w-2xl mx-auto">
+      <div className="flex flex-wrap justify-center gap-3 md:gap-6 max-w-4xl mx-auto">
         {timeUnits.map((unit, index) => (
-          <div key={unit.key} className="flex-1 min-w-[70px] max-w-[120px]">
-            <Card className="bg-white/95 backdrop-blur-md border-0 shadow-xl hover:shadow-2xl transition-all duration-300">
-              <CardContent className="p-3 md:p-4 text-center">
-                <div className="text-2xl md:text-3xl lg:text-4xl font-bold bg-gradient-to-br from-amber-800 to-amber-600 bg-clip-text text-transparent mb-1">
+          <div key={unit.key} className="flex-1 min-w-[80px] max-w-[140px]">
+            <Card className="bg-white border border-primary/20 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+              <CardContent className="p-4 md:p-6 text-center">
+                <div className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary mb-2">
                   {unit.value.toString().padStart(2, '0')}
                 </div>
-                <div className="text-xs md:text-sm font-semibold text-amber-700 tracking-wide uppercase">
+                <div className="text-xs md:text-sm font-semibold text-primary/70 tracking-widest uppercase">
                   {unit.label}
                 </div>
               </CardContent>

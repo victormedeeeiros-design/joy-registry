@@ -559,7 +559,7 @@ const PublicSiteContent = () => {
             <div className="flex items-center gap-2">
               <Heart className="h-6 w-6 text-primary" />
               <span 
-                className="font-script text-sm sm:text-lg md:text-xl font-semibold truncate max-w-[180px] block" 
+                className="font-sloop text-lg sm:text-xl md:text-2xl font-bold truncate max-w-[200px] block" 
                 title={site.title}
                 style={{ 
                   color: site.color_scheme === 'dark-elegance' || site.color_scheme === 'midnight-black'
@@ -685,7 +685,7 @@ const PublicSiteContent = () => {
             {site.layout_id === 'cha-casa-nova' ? 'Chá de Casa Nova' : 'Celebração Especial'}
           </Badge>
           
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-script mb-6 drop-shadow-2xl text-center px-4 text-white" style={{ 
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-sloop mb-6 drop-shadow-2xl text-center px-4 text-white" style={{ 
             textShadow: '2px 2px 4px rgba(0,0,0,0.7), 0 0 20px rgba(0,0,0,0.5)'
           }}>
             {site.title}
@@ -697,15 +697,6 @@ const PublicSiteContent = () => {
             </p>
           )}
           
-          {/* Countdown */}
-          {site.event_date && (
-            <div className="mb-8">
-              <Countdown 
-                targetDate={`${site.event_date}${site.event_time ? `T${site.event_time}` : 'T00:00:00'}`}
-              />
-            </div>
-          )}
-
           {/* Event Information */}
           {(site.event_date || site.event_time || site.event_location) && (
             <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6 mb-8 max-w-2xl mx-auto">
@@ -729,7 +720,14 @@ const PublicSiteContent = () => {
                 {site.event_location && (
                   <div className="flex items-center justify-center gap-2">
                     <ExternalLink className="h-4 w-4" />
-                    <span>{site.event_location}</span>
+                    <a 
+                      href={`https://www.google.com/maps/search/${encodeURIComponent(site.event_location)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline cursor-pointer transition-colors hover:text-white/80"
+                    >
+                      {site.event_location}
+                    </a>
                   </div>
                 )}
               </div>
@@ -771,6 +769,17 @@ const PublicSiteContent = () => {
         </section>
       </HeroCarousel>
 
+      {/* Countdown Section */}
+      {site.event_date && (
+        <section className="py-12 bg-gradient-to-r from-primary/10 via-background to-primary/10 border-y border-primary/20 shadow-inner">
+          <div className="container mx-auto px-4">
+            <Countdown 
+              targetDate={`${site.event_date}${site.event_time ? `T${site.event_time}` : 'T00:00:00'}`}
+            />
+          </div>
+        </section>
+      )}
+
       {/* Story Section */}
       <section id="story" className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
@@ -778,7 +787,7 @@ const PublicSiteContent = () => {
             <div className="flex items-center justify-center mb-6">
               <Heart className="h-8 w-8 text-primary" />
             </div>
-            <h2 className="text-4xl font-script mb-6" style={{ color: 'var(--title-color, var(--foreground))' }}>Nossa História</h2>
+            <h2 className="text-5xl font-sloop mb-6" style={{ color: 'var(--title-color, var(--foreground))' }}>Nossa História</h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
               Um amor que encontrou seu lar
             </p>
@@ -817,7 +826,7 @@ const PublicSiteContent = () => {
                   
                   {/* Image Slideshow */}
                   <div className="relative">
-                    <div className="aspect-[5/4] rounded-xl overflow-hidden shadow-soft relative">
+                    <div className="aspect-[4/3] rounded-xl overflow-hidden shadow-soft relative bg-gradient-to-br from-muted/10 to-muted/30">
                       {site.story_images.map((image, index) => (
                         <div
                           key={index}
@@ -828,13 +837,8 @@ const PublicSiteContent = () => {
                           <img 
                             src={image} 
                             alt={`Nossa história - ${index + 1}`}
-                            className={`w-full h-full ${
-                              (site as any).story_image_fit === 'cover' ? 'object-cover' :
-                              (site as any).story_image_fit === 'contain' ? 'object-contain bg-muted' : 
-                              'object-cover'
-                            }`}
+                            className={`w-full h-full object-contain bg-gradient-to-br from-muted/20 to-muted/40`}
                             style={{
-                              imageRendering: 'high-quality',
                               maxWidth: '100%',
                               height: 'auto'
                             }}
@@ -946,7 +950,7 @@ const PublicSiteContent = () => {
           <div className="text-center mb-12 sm:mb-16">
             <div className="flex items-center justify-center mb-4">
               <Gift className="h-6 w-6 sm:h-8 sm:w-8 text-primary mr-2" />
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-script text-center" style={{ color: 'var(--title-color, var(--foreground))' }}>Lista de Presentes</h2>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-sloop text-center" style={{ color: 'var(--title-color, var(--foreground))' }}>Lista de Presentes</h2>
             </div>
             <div className="w-16 sm:w-24 h-1 bg-primary mx-auto mb-4"></div>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
