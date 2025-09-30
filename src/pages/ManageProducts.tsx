@@ -34,6 +34,7 @@ const ManageProducts = () => {
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [showCategoryManager, setShowCategoryManager] = useState(false);
+  const [sortBy, setSortBy] = useState<'name-asc' | 'price-asc' | 'price-desc'>('name-asc');
   const [formData, setFormData] = useState({
     id: "",
     name: "",
@@ -342,6 +343,21 @@ const ManageProducts = () => {
     });
   };
 
+  const getSortedProducts = () => {
+    const sortedProducts = [...products];
+    
+    switch (sortBy) {
+      case 'name-asc':
+        return sortedProducts.sort((a, b) => a.name.localeCompare(b.name, 'pt-BR'));
+      case 'price-asc':
+        return sortedProducts.sort((a, b) => a.price - b.price);
+      case 'price-desc':
+        return sortedProducts.sort((a, b) => b.price - a.price);
+      default:
+        return sortedProducts;
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -375,6 +391,17 @@ const ManageProducts = () => {
             </div>
             
             <div className="flex gap-2">
+              <Select value={sortBy} onValueChange={(value: 'name-asc' | 'price-asc' | 'price-desc') => setSortBy(value)}>
+                <SelectTrigger className="w-48">
+                  <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name-asc">A-Z</SelectItem>
+                  <SelectItem value="price-asc">Menor preço</SelectItem>
+                  <SelectItem value="price-desc">Maior preço</SelectItem>
+                </SelectContent>
+              </Select>
+              
               <Button 
                 variant="outline"
                 onClick={exportToCSV}
@@ -407,7 +434,7 @@ const ManageProducts = () => {
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((product) => {
+          {getSortedProducts().map((product) => {
             const imageUrl = getProductImage(product);
             
             return (

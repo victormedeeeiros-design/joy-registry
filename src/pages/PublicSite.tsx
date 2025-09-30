@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Heart, Home, Calendar, ExternalLink, Gift, User, ShoppingCart, BookOpen, LogOut, CheckCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { HeroCarousel } from "@/components/HeroCarousel";
 import { CartSidebar } from "@/components/CartSidebar";
@@ -117,6 +118,7 @@ const PublicSiteContent = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isSlideShowPaused, setIsSlideShowPaused] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [sortBy, setSortBy] = useState<'name-asc' | 'price-asc' | 'price-desc'>('name-asc');
   const { addItem } = useCart();
   const navigate = useNavigate();
   const { siteUser, signOut } = useSiteAuth();
@@ -644,7 +646,7 @@ const PublicSiteContent = () => {
                   activeSection={activeSection} 
                   scrollToSection={scrollToSection} 
                   siteUser={siteUser} 
-                  signOut={signOut}
+                  signOut={async () => { await signOut(); }}
                   navigate={navigate}
                   toast={toast}
                 />
@@ -1000,6 +1002,33 @@ const PublicSiteContent = () => {
             (() => {
               console.log('🔍 Total de produtos para categorizar:', products.length);
               
+              // Função para ordenar produtos
+              const sortProducts = (productsToSort: any[]) => {
+                const sorted = [...productsToSort];
+                switch (sortBy) {
+                  case 'name-asc':
+                    return sorted.sort((a, b) => {
+                      const nameA = a.custom_name || a.product?.name || '';
+                      const nameB = b.custom_name || b.product?.name || '';
+                      return nameA.localeCompare(nameB, 'pt-BR');
+                    });
+                  case 'price-asc':
+                    return sorted.sort((a, b) => {
+                      const priceA = a.custom_price || a.product?.price || 0;
+                      const priceB = b.custom_price || b.product?.price || 0;
+                      return priceA - priceB;
+                    });
+                  case 'price-desc':
+                    return sorted.sort((a, b) => {
+                      const priceA = a.custom_price || a.product?.price || 0;
+                      const priceB = b.custom_price || b.product?.price || 0;
+                      return priceB - priceA;
+                    });
+                  default:
+                    return sorted;
+                }
+              };
+
               // Agrupar produtos por categoria
               const categorizedProducts = products.reduce((acc, siteProduct) => {
                 const product = siteProduct.product;
@@ -1041,12 +1070,28 @@ const PublicSiteContent = () => {
 
               return (
                 <div className="space-y-8 sm:space-y-12">
-                  {/* Filtro de Categorias */}
-                  <CategoryFilter 
-                    categories={allCategories}
-                    selectedCategory={selectedCategory}
-                    onCategorySelect={setSelectedCategory}
-                  />
+                  {/* Filtros */}
+                  <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
+                    <CategoryFilter 
+                      categories={allCategories}
+                      selectedCategory={selectedCategory}
+                      onCategorySelect={setSelectedCategory}
+                    />
+                    
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground whitespace-nowrap">Ordenar por:</span>
+                      <Select value={sortBy} onValueChange={(value: 'name-asc' | 'price-asc' | 'price-desc') => setSortBy(value)}>
+                        <SelectTrigger className="w-36">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="name-asc">A-Z</SelectItem>
+                          <SelectItem value="price-asc">Menor preço</SelectItem>
+                          <SelectItem value="price-desc">Maior preço</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
                   {Object.entries(filteredCategories).map(([category, categoryProducts]) => (
                     <div key={category} className="space-y-4 sm:space-y-6">
@@ -1059,7 +1104,7 @@ const PublicSiteContent = () => {
                         </p>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-                        {categoryProducts.map((siteProduct, index) => {
+                        {sortProducts(categoryProducts).map((siteProduct, index) => {
                           console.log(`🔍 Renderizando produto ${index} da categoria ${category}:`, siteProduct.custom_name);
                           
                           const product = siteProduct.product;

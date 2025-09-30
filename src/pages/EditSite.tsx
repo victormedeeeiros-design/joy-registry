@@ -187,6 +187,7 @@ const EditSite = () => {
   } | null>(null);
   const [newProductOpen, setNewProductOpen] = useState(false);
   const [csvImportOpen, setCsvImportOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<'name-asc' | 'price-asc' | 'price-desc'>('name-asc');
   const [newProduct, setNewProduct] = useState({
     name: '',
     price: 0,
@@ -796,6 +797,39 @@ const EditSite = () => {
         description: "Não foi possível criar o produto.",
         variant: "destructive",
       });
+    }
+  };
+
+  const getSortedSiteProducts = () => {
+    const sorted = [...siteProducts];
+    
+    switch (sortBy) {
+      case 'name-asc':
+        return sorted.sort((a, b) => {
+          const productA = products.find(p => p.id === a.product_id);
+          const productB = products.find(p => p.id === b.product_id);
+          const nameA = a.custom_name || productA?.name || '';
+          const nameB = b.custom_name || productB?.name || '';
+          return nameA.localeCompare(nameB, 'pt-BR');
+        });
+      case 'price-asc':
+        return sorted.sort((a, b) => {
+          const productA = products.find(p => p.id === a.product_id);
+          const productB = products.find(p => p.id === b.product_id);
+          const priceA = a.custom_price || productA?.price || 0;
+          const priceB = b.custom_price || productB?.price || 0;
+          return priceA - priceB;
+        });
+      case 'price-desc':
+        return sorted.sort((a, b) => {
+          const productA = products.find(p => p.id === a.product_id);
+          const productB = products.find(p => p.id === b.product_id);
+          const priceA = a.custom_price || productA?.price || 0;
+          const priceB = b.custom_price || productB?.price || 0;
+          return priceB - priceA;
+        });
+      default:
+        return sorted;
     }
   };
 
@@ -1521,6 +1555,17 @@ const EditSite = () => {
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle>Produtos na Lista ({siteProducts.length})</CardTitle>
                   <div className="flex gap-2">
+                    <Select value={sortBy} onValueChange={(value: 'name-asc' | 'price-asc' | 'price-desc') => setSortBy(value)}>
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="name-asc">A-Z</SelectItem>
+                        <SelectItem value="price-asc">Menor preço</SelectItem>
+                        <SelectItem value="price-desc">Maior preço</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    
                     <Button
                       variant="outline"
                       size="sm"
@@ -1548,7 +1593,7 @@ const EditSite = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 max-h-96 overflow-y-auto">
-                    {siteProducts.map((siteProduct) => {
+                    {getSortedSiteProducts().map((siteProduct) => {
                       const product = products.find(p => p.id === siteProduct.product_id);
                       if (!product) return null;
                       
