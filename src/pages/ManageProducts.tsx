@@ -353,7 +353,7 @@ const ManageProducts = () => {
                       <img 
                         src={imageUrl} 
                         alt={product.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain bg-white"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
