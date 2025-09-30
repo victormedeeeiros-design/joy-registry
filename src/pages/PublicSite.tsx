@@ -512,7 +512,8 @@ const PublicSiteContent = () => {
             <div className="flex items-center gap-2">
               <Heart className="h-6 w-6 text-primary" />
               <span 
-                className="font-script text-xl font-semibold" 
+                className="font-script text-sm sm:text-lg md:text-xl font-semibold truncate max-w-[180px] block" 
+                title={site.title}
                 style={{ 
                   color: site.color_scheme === 'dark-elegance' || site.color_scheme === 'midnight-black'
                     ? 'var(--menu-color, #ffffff)'
@@ -617,7 +618,7 @@ const PublicSiteContent = () => {
             {site.layout_id === 'cha-casa-nova' ? 'Chá de Casa Nova' : 'Celebração Especial'}
           </Badge>
           
-          <h1 className="text-4xl md:text-6xl font-script mb-6 drop-shadow-lg" style={{ color: 'var(--title-color, var(--hero-color, #ffffff))' }}>
+          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-6xl font-script mb-6 drop-shadow-lg text-center px-4" style={{ color: 'var(--title-color, var(--hero-color, #ffffff))' }}>
             {site.title}
           </h1>
           
@@ -858,7 +859,7 @@ const PublicSiteContent = () => {
       <section id="gifts" className="py-20">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-4xl font-script mb-6" style={{ color: 'var(--title-color, var(--foreground))' }}>Lista de Presentes</h2>
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-script mb-6 text-center px-4" style={{ color: 'var(--title-color, var(--foreground))' }}>Lista de Presentes</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Escolha um presente especial para nos ajudar nesta nova etapa
             </p>
