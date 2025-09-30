@@ -570,6 +570,26 @@ const PublicSiteContent = () => {
             </nav>
 
             <div className="flex items-center gap-3">
+              {/* Botão rápido para Lista de Presentes no mobile */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="md:hidden"
+                onClick={() => {
+                  const element = document.getElementById('gifts');
+                  if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                style={{ 
+                  color: site.color_scheme === 'dark-elegance' || site.color_scheme === 'midnight-black'
+                    ? 'var(--menu-color, #ffffff)'
+                    : 'var(--menu-color, var(--foreground))'
+                }}
+              >
+                <Gift className="h-4 w-4" />
+              </Button>
+              
               <CartSidebar siteId={site.id} />
               {siteUser ? (
                 <div className="flex items-center gap-2">
@@ -859,15 +879,27 @@ const PublicSiteContent = () => {
       </section>
 
       {/* Products Section */}
-      <section id="gifts" className="py-20">
+      <section id="gifts" className="py-12 sm:py-20 bg-gradient-to-br from-background to-muted/20">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-script mb-6 text-center px-4" style={{ color: 'var(--title-color, var(--foreground))' }}>Lista de Presentes</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <div className="flex items-center justify-center mb-4">
+              <Gift className="h-6 w-6 sm:h-8 sm:w-8 text-primary mr-2" />
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-script text-center" style={{ color: 'var(--title-color, var(--foreground))' }}>Lista de Presentes</h2>
+            </div>
+            <div className="w-16 sm:w-24 h-1 bg-primary mx-auto mb-4"></div>
+            <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
               Escolha um presente especial para nos ajudar nesta nova etapa
             </p>
           </div>
 
+          {/* Status info for mobile debugging */}
+          <div className="mb-6 text-center">
+            <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs sm:text-sm">
+              <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+              {products.length > 0 ? `${products.length} produtos disponíveis` : 'Carregando produtos...'}
+            </div>
+          </div>
+          
           {products.length === 0 ? (
             <Card className="max-w-md mx-auto text-center">
               <CardContent className="p-8">
@@ -900,8 +932,8 @@ const PublicSiteContent = () => {
                     <div className="w-24 h-0.5 bg-primary mx-auto"></div>
                   </div>
                   
-                  {/* Products Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                  {/* Products Grid - Otimizado para Android */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
                     {categoryProducts.map((siteProduct) => {
                       const product = siteProduct.product;
                       if (!product) return null;
@@ -923,46 +955,47 @@ const PublicSiteContent = () => {
                       }
                       
                       return (
-                        <Card key={siteProduct.id} className="group hover:shadow-elegant transition-all duration-300 overflow-hidden border-0 shadow-soft">
-                          <div className="w-full h-48 overflow-hidden bg-muted/20 flex items-center justify-center">
+                        <Card key={siteProduct.id} className="group hover:shadow-elegant transition-all duration-300 overflow-hidden border shadow-sm">
+                          <div className="w-full h-40 sm:h-48 overflow-hidden bg-muted/20 flex items-center justify-center">
                             {image ? (
                               <img
                                 src={image}
                                 alt={name}
                                 className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                                loading="lazy"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
-                                <Gift className="h-16 w-16 text-muted-foreground/50" />
+                                <Gift className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/50" />
                               </div>
                             )}
                           </div>
-                          <CardContent className="p-6">
+                          <CardContent className="p-4 sm:p-6">
                             <div className="flex items-start justify-between mb-3">
-                              <h3 className="font-playfair font-semibold text-lg leading-tight text-foreground">{name}</h3>
-                              <Badge variant="secondary" className="text-xs">{category}</Badge>
+                              <h3 className="font-playfair font-semibold text-base sm:text-lg leading-tight text-foreground pr-2 flex-1">{name}</h3>
+                              <Badge variant="secondary" className="text-xs flex-shrink-0">{category}</Badge>
                             </div>
                             {description && (
-                              <p className="text-sm text-muted-foreground mb-4 line-clamp-2 leading-relaxed">{description}</p>
+                              <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2 leading-relaxed">{description}</p>
                             )}
-                            <div className="mb-6">
-                              <span className="text-2xl font-bold text-primary">
+                            <div className="mb-4 sm:mb-6">
+                              <span className="text-xl sm:text-2xl font-bold text-primary">
                                 R$ {price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                               </span>
                             </div>
-                            <div className="space-y-3">
+                            <div className="space-y-2 sm:space-y-3">
                               <Button
                                 variant="outline"
-                                size="lg"
-                                className="w-full h-12 border-primary/20 hover:border-primary hover:bg-primary/5"
+                                size="sm"
+                                className="w-full h-10 sm:h-12 border-primary/20 hover:border-primary hover:bg-primary/5 text-xs sm:text-sm"
                                 onClick={() => handleAddToCart(siteProduct)}
                               >
-                                <ShoppingCart className="h-4 w-4 mr-2" />
+                                <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                                 Adicionar à Lista
                               </Button>
                               <Button
-                                size="lg"
-                                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold"
+                                size="sm"
+                                className="w-full h-10 sm:h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm"
                                 onClick={() => handleCreatePayment([{
                                   id: siteProduct.id,
                                   quantity: 1,
