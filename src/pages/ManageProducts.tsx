@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, Plus, Pencil, Trash2, Package, Image, DollarSign } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Package, Image, DollarSign, Download } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 interface Product {
@@ -288,6 +288,60 @@ const ManageProducts = () => {
     return imageMap[product.id] || null;
   };
 
+  const exportToCSV = () => {
+    if (products.length === 0) {
+      toast({
+        title: "Nenhum produto para exportar",
+        description: "Adicione alguns produtos antes de exportar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Preparar dados para CSV
+    const csvData = products.map(product => ({
+      'Nome': product.name,
+      'Preço (R$)': product.price.toFixed(2).replace('.', ','),
+      'Categoria': product.category || 'Sem categoria',
+      'Descrição': product.description || '',
+      'Status': product.status === 'active' ? 'Ativo' : 'Inativo',
+      'URL da Imagem': product.image_url || '',
+      'Data de Criação': new Date(product.created_at).toLocaleDateString('pt-BR')
+    }));
+
+    // Converter para CSV
+    const headers = Object.keys(csvData[0]);
+    const csvContent = [
+      headers.join(';'), // Cabeçalho
+      ...csvData.map(row => 
+        headers.map(header => {
+          const value = row[header as keyof typeof row];
+          // Escapar aspas duplas e envolver em aspas se contiver ponto e vírgula
+          const escapedValue = String(value).replace(/"/g, '""');
+          return escapedValue.includes(';') || escapedValue.includes('\n') 
+            ? `"${escapedValue}"` 
+            : escapedValue;
+        }).join(';')
+      )
+    ].join('\n');
+
+    // Criar e baixar arquivo
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `lista-presentes-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "CSV exportado com sucesso!",
+      description: `${products.length} produtos foram exportados.`,
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -320,22 +374,33 @@ const ManageProducts = () => {
               </div>
             </div>
             
-            <Button 
-              onClick={() => handleOpenDialog()}
-              className="gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Novo Produto
-            </Button>
-            
-            <Button 
-              variant="outline"
-              onClick={() => setShowCategoryManager(true)}
-              className="gap-2"
-            >
-              <Package className="h-4 w-4" />
-              Gerenciar Categorias
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline"
+                onClick={exportToCSV}
+                className="gap-2"
+              >
+                <Download className="h-4 w-4" />
+                Exportar CSV
+              </Button>
+              
+              <Button 
+                onClick={() => handleOpenDialog()}
+                className="gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Novo Produto
+              </Button>
+              
+              <Button 
+                variant="outline"
+                onClick={() => setShowCategoryManager(true)}
+                className="gap-2"
+              >
+                <Package className="h-4 w-4" />
+                Gerenciar Categorias
+              </Button>
+            </div>
           </div>
         </div>
       </header>

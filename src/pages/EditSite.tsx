@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { generateSiteUrl } from "@/lib/slug";
-import { ArrowLeft, Save, Eye, Palette, Type, Package, Settings, Trash2, Plus, Edit, Users, Calendar, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Eye, Palette, Type, Package, Settings, Trash2, Plus, Edit, Users, Calendar, Loader2, Download } from "lucide-react";
 
 // Product images for fallbacks
 import stoveImg from "@/assets/products/stove.jpg";
@@ -799,6 +799,80 @@ const EditSite = () => {
     }
   };
 
+  const exportSiteProductsToCSV = () => {
+    if (siteProducts.length === 0) {
+      toast({
+        title: "Nenhum produto para exportar",
+        description: "Adicione alguns produtos à sua lista de presentes antes de exportar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Preparar dados para CSV com produtos do site
+    const csvData = siteProducts.map(siteProduct => {
+      const product = products.find(p => p.id === siteProduct.product_id);
+      if (!product) return null;
+      
+      const name = siteProduct.custom_name || product.name;
+      const price = siteProduct.custom_price || product.price;
+      const description = siteProduct.custom_description || product.description;
+      const imageUrl = siteProduct.custom_image_url || product.image_url;
+      
+      return {
+        'Nome': name,
+        'Preço (R$)': price.toFixed(2).replace('.', ','),
+        'Categoria': product.category || 'Sem categoria',
+        'Descrição': description || '',
+        'Disponível': siteProduct.is_available ? 'Sim' : 'Não',
+        'URL da Imagem': imageUrl || '',
+        'Posição na Lista': siteProduct.position || ''
+      };
+    }).filter(Boolean); // Remove valores null
+
+    if (csvData.length === 0) {
+      toast({
+        title: "Erro ao exportar",
+        description: "Não foi possível processar os produtos para exportação.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Converter para CSV
+    const headers = Object.keys(csvData[0]);
+    const csvContent = [
+      headers.join(';'), // Cabeçalho
+      ...csvData.map(row => 
+        headers.map(header => {
+          const value = row[header as keyof typeof row];
+          // Escapar aspas duplas e envolver em aspas se contiver ponto e vírgula
+          const escapedValue = String(value).replace(/"/g, '""');
+          return escapedValue.includes(';') || escapedValue.includes('\n') 
+            ? `"${escapedValue}"` 
+            : escapedValue;
+        }).join(';')
+      )
+    ].join('\n');
+
+    // Criar e baixar arquivo
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    const siteName = site?.title?.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() || 'site';
+    link.setAttribute('download', `lista-presentes-${siteName}-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "CSV exportado com sucesso!",
+      description: `${csvData.length} produtos da lista de presentes foram exportados.`,
+    });
+  };
+
   const handleCsvImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !site) return;
@@ -1450,6 +1524,14 @@ const EditSite = () => {
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={exportSiteProductsToCSV}
+                    >
+                      <Download className="h-4 w-4 mr-1" />
+                      Exportar CSV
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => setNewProductOpen(true)}
                     >
                       <Plus className="h-4 w-4 mr-1" />
@@ -1460,7 +1542,7 @@ const EditSite = () => {
                       size="sm"
                       onClick={() => setCsvImportOpen(true)}
                     >
-                      📄 CSV
+                      📄 Importar CSV
                     </Button>
                   </div>
                 </CardHeader>
