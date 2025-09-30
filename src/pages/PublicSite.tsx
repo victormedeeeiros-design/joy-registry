@@ -920,12 +920,12 @@ const PublicSiteContent = () => {
                       
                       return (
                         <Card key={siteProduct.id} className="group hover:shadow-elegant transition-all duration-300 overflow-hidden border-0 shadow-soft">
-                          <div className="aspect-square overflow-hidden bg-muted/20">
+                          <div className="w-full h-48 overflow-hidden bg-muted/20 flex items-center justify-center">
                             {image ? (
                               <img
                                 src={image}
                                 alt={name}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
                               />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
