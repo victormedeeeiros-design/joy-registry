@@ -912,26 +912,10 @@ const PublicSiteContent = () => {
             </Card>
           ) : (
             <div className="space-y-8 sm:space-y-12">
-              {/* Debug Section */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-yellow-800 mb-2">🔍 Debug Info:</h3>
-                <div className="text-sm text-yellow-700 space-y-1">
-                  <p><strong>Total de produtos:</strong> {products.length}</p>
-                  <p><strong>Primeiro produto:</strong></p>
-                  {products.length > 0 && (
-                    <pre className="bg-white p-2 rounded text-xs overflow-auto max-h-40">
-                      {JSON.stringify(products[0], null, 2)}
-                    </pre>
-                  )}
-                  <p><strong>Produtos têm .product?</strong> {products.length > 0 ? (products[0].product ? '✅ Sim' : '❌ Não') : 'N/A'}</p>
-                  <p><strong>Site atual:</strong> {site?.slug || 'Carregando...'}</p>
-                </div>
-              </div>
-              
-              {/* Renderização direta dos produtos sem categorização */}
+              {/* Renderização dos produtos */}
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
                 {products.map((siteProduct, index) => {
-                  console.log(`🔍 Produto ${index}:`, siteProduct);
+                  console.log(`🔍 Renderizando produto ${index}:`, siteProduct.custom_name);
                   
                   // Para produtos do banco: dados estão nas propriedades custom_*
                   // Para fallback: dados estão em siteProduct.product
@@ -944,6 +928,8 @@ const PublicSiteContent = () => {
                     const image = siteProduct.custom_image_url || '';
                     const description = siteProduct.custom_description || '';
                     const category = 'Geral';
+                    
+                    console.log(`✅ Produto ${index} será renderizado:`, { name, price });
                     
                     return (
                       <Card key={siteProduct.id || index} className="group hover:shadow-elegant transition-all duration-300 overflow-hidden border shadow-sm">
