@@ -12,6 +12,7 @@ import { useSiteAuth } from "@/hooks/useSiteAuth";
 import { useToast } from "@/hooks/use-toast";
 import { Countdown } from "@/components/Countdown";
 import { CategoryFilter } from "@/components/CategoryFilter";
+import { MobileMenuDrawer } from "@/components/MobileMenuDrawer";
 
 // Product images (ESM imports ensure correct URLs in build)
 import stoveImg from "@/assets/products/stove.jpg";
@@ -614,60 +615,57 @@ const PublicSiteContent = () => {
             </nav>
 
             <div className="flex items-center gap-3">
-              {/* Botão rápido para Lista de Presentes no mobile */}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="md:hidden"
-                onClick={() => {
-                  const element = document.getElementById('gifts');
-                  if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
-                  }
-                }}
-                style={{ 
-                  color: site.color_scheme === 'dark-elegance' || site.color_scheme === 'midnight-black'
-                    ? 'var(--menu-color, #ffffff)'
-                    : 'var(--menu-color, var(--foreground))'
-                }}
-              >
-                <Gift className="h-4 w-4" />
-              </Button>
+              {/* Menu Mobile Drawer */}
+              <div className="md:hidden">
+                <MobileMenuDrawer 
+                  site={site} 
+                  activeSection={activeSection} 
+                  scrollToSection={scrollToSection} 
+                  siteUser={siteUser} 
+                  signOut={signOut}
+                  navigate={navigate}
+                  toast={toast}
+                />
+              </div>
               
               <CartSidebar siteId={site.id} />
-              {siteUser ? (
-                <div className="flex items-center gap-2">
-                  <div className="text-sm">
-                    <span className="text-muted-foreground">Olá, </span>
-                    <span className="font-medium">{siteUser.name}</span>
+              
+              {/* Login/Logout - Hidden on mobile, shown in drawer */}
+              <div className="hidden md:flex items-center gap-2">
+                {siteUser ? (
+                  <div className="flex items-center gap-2">
+                    <div className="text-sm">
+                      <span className="text-muted-foreground">Olá, </span>
+                      <span className="font-medium">{siteUser.name}</span>
+                    </div>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={async () => {
+                        await signOut();
+                        toast({
+                          title: "Logout realizado",
+                          description: "Você foi desconectado com sucesso.",
+                        });
+                      }}
+                    >
+                      <LogOut className="h-4 w-4" />
+                    </Button>
                   </div>
+                ) : (
                   <Button 
-                    variant="ghost" 
+                    variant="outline" 
                     size="sm"
-                    onClick={async () => {
-                      await signOut();
-                      toast({
-                        title: "Logout realizado",
-                        description: "Você foi desconectado com sucesso.",
-                      });
+                    onClick={() => {
+                      localStorage.setItem('currentSiteId', site.id);
+                      navigate(`/guest-login?siteId=${site.id}`);
                     }}
                   >
-                    <LogOut className="h-4 w-4" />
+                    <User className="h-4 w-4 mr-2" />
+                    Login
                   </Button>
-                </div>
-              ) : (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => {
-                    localStorage.setItem('currentSiteId', site.id);
-                    navigate(`/guest-login?siteId=${site.id}`);
-                  }}
-                >
-                  <User className="h-4 w-4 mr-2" />
-                  Login
-                </Button>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>

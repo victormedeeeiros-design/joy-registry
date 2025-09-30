@@ -53,7 +53,7 @@ export const Countdown = ({ targetDate, className = "" }: CountdownProps) => {
   return (
     <div className={`w-full ${className}`}>
       <div className="text-center mb-6">
-        <h3 className="text-2xl md:text-3xl font-sloop text-primary mb-2 tracking-wide">
+        <h3 className="text-2xl md:text-3xl font-playfair font-semibold text-primary mb-2 tracking-wider uppercase">
           CONTAGEM REGRESSIVA
         </h3>
       </div>
