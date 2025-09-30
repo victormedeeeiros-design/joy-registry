@@ -348,12 +348,12 @@ const ManageProducts = () => {
             return (
               <Card key={product.id} className="hover:shadow-elegant transition-all duration-300">
                 <CardHeader className="p-4">
-                  <div className="aspect-square rounded-lg overflow-hidden mb-4 bg-muted">
+                  <div className="w-full h-48 rounded-lg overflow-hidden mb-4 bg-muted flex items-center justify-center">
                     {imageUrl ? (
                       <img 
                         src={imageUrl} 
                         alt={product.name}
-                        className="w-full h-full object-contain bg-white"
+                        className="max-w-full max-h-full object-contain bg-white"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
                           target.style.display = 'none';
