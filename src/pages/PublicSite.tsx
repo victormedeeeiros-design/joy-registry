@@ -439,11 +439,20 @@ const PublicSiteContent = () => {
   }
 
   const handleAddToCart = (siteProduct: SiteProduct) => {
-    if (!siteProduct.product) return;
+    console.log('🛒 Adicionando ao carrinho:', siteProduct);
     
-    const name = siteProduct.custom_name || siteProduct.product.name;
-    const price = siteProduct.custom_price || siteProduct.product.price;
-    const image = siteProduct.custom_image_url || siteProduct.product.image_url;
+    // Para produtos do banco (sem .product) usa dados custom
+    // Para fallback (com .product) usa combinação custom + product
+    const product = siteProduct.product;
+    
+    const name = siteProduct.custom_name || (product?.name) || 'Produto sem nome';
+    const price = siteProduct.custom_price || (product?.price) || 0;
+    const image = siteProduct.custom_image_url || (product?.image_url) || '';
+    
+    if (!name || name === 'Produto sem nome') {
+      console.warn('❌ Produto sem nome válido:', siteProduct);
+      return;
+    }
     
     addItem({
       id: siteProduct.id,
@@ -451,6 +460,8 @@ const PublicSiteContent = () => {
       price,
       image
     });
+    
+    console.log('✅ Item adicionado ao carrinho:', { name, price, image });
   };
 
   const scrollToSection = (sectionId: string) => {
@@ -911,154 +922,135 @@ const PublicSiteContent = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-8 sm:space-y-12">
-              {/* Renderização dos produtos */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-                {products.map((siteProduct, index) => {
-                  console.log(`🔍 Renderizando produto ${index}:`, siteProduct.custom_name);
-                  
-                  // Para produtos do banco: dados estão nas propriedades custom_*
-                  // Para fallback: dados estão em siteProduct.product
-                  const product = siteProduct.product;
-                  
-                  // Se não tem .product, usa os dados custom direto (produtos do banco)
-                  if (!product) {
-                    const name = siteProduct.custom_name || 'Produto sem nome';
-                    const price = siteProduct.custom_price || 0;
-                    const image = siteProduct.custom_image_url || '';
-                    const description = siteProduct.custom_description || '';
-                    const category = 'Geral';
-                    
-                    console.log(`✅ Produto ${index} será renderizado:`, { name, price });
-                    
-                    return (
-                      <Card key={siteProduct.id || index} className="group hover:shadow-elegant transition-all duration-300 overflow-hidden border shadow-sm">
-                        <div className="w-full h-40 sm:h-48 overflow-hidden bg-muted/20 flex items-center justify-center">
-                          {image ? (
-                            <img
-                              src={image}
-                              alt={name}
-                              className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Gift className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/50" />
-                            </div>
-                          )}
-                        </div>
-                        <CardContent className="p-4 sm:p-6">
-                          <div className="flex items-start justify-between mb-3">
-                            <h3 className="font-playfair font-semibold text-base sm:text-lg leading-tight text-foreground pr-2 flex-1">{name}</h3>
-                            <Badge variant="secondary" className="text-xs flex-shrink-0">{category}</Badge>
-                          </div>
-                          {description && (
-                            <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2 leading-relaxed">{description}</p>
-                          )}
-                          <div className="mb-4 sm:mb-6">
-                            <span className="text-xl sm:text-2xl font-bold text-primary">
-                              R$ {price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                            </span>
-                          </div>
-                          <div className="space-y-2 sm:space-y-3">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full h-10 sm:h-12 border-primary/20 hover:border-primary hover:bg-primary/5 text-xs sm:text-sm"
-                              onClick={() => handleAddToCart(siteProduct)}
-                            >
-                              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                              Adicionar à Lista
-                            </Button>
-                            <Button
-                              size="sm"
-                              className="w-full h-10 sm:h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm"
-                              onClick={() => handleCreatePayment([{
-                                id: siteProduct.id,
-                                quantity: 1,
-                                name,
-                                price,
-                                description,
-                                image_url: image
-                              }])}
-                            >
-                              <Gift className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                              Presentear
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    );
+            (() => {
+              console.log('🔍 Total de produtos para categorizar:', products.length);
+              
+              // Agrupar produtos por categoria
+              const categorizedProducts = products.reduce((acc, siteProduct) => {
+                const product = siteProduct.product;
+                
+                // Determinar categoria
+                let category = 'Eletrodomésticos'; // default
+                
+                if (product?.category) {
+                  category = product.category;
+                } else if (siteProduct.custom_name) {
+                  // Inferir categoria pelo nome para produtos do banco
+                  const name = siteProduct.custom_name.toLowerCase();
+                  if (name.includes('micro') || name.includes('forno') || name.includes('fogão') || 
+                      name.includes('geladeira') || name.includes('liquidificador') || name.includes('batedeira')) {
+                    category = 'Eletrodomésticos';
+                  } else if (name.includes('kit') || name.includes('pano') || name.includes('tapete') || name.includes('manual')) {
+                    category = 'Brincadeiras';
+                  } else if (name.includes('notebook') || name.includes('smartphone') || name.includes('fone')) {
+                    category = 'Tecnologia';
                   }
-                  
-                  // Se tem .product, usa a estrutura do fallback
-                  const name = siteProduct.custom_name || product.name;
-                  const price = siteProduct.custom_price || product.price || 0;
-                  const image = siteProduct.custom_image_url || product.image_url || getProductImageFallback(product.id, product.name);
-                  const description = siteProduct.custom_description || product.description;
-                  const category = product.category || 'Geral';
-                  
-                  return (
-                    <Card key={siteProduct.id || index} className="group hover:shadow-elegant transition-all duration-300 overflow-hidden border shadow-sm">
-                      <div className="w-full h-40 sm:h-48 overflow-hidden bg-muted/20 flex items-center justify-center">
-                        {image ? (
-                          <img
-                            src={image}
-                            alt={name}
-                            className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Gift className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/50" />
-                          </div>
-                        )}
+                }
+                
+                if (!acc[category]) {
+                  acc[category] = [];
+                }
+                acc[category].push(siteProduct);
+                return acc;
+              }, {} as Record<string, typeof products>);
+
+              console.log('🔍 Produtos categorizados:', categorizedProducts);
+
+              return (
+                <div className="space-y-8 sm:space-y-12">
+                  {Object.entries(categorizedProducts).map(([category, categoryProducts]) => (
+                    <div key={category} className="space-y-4 sm:space-y-6">
+                      <div className="text-center">
+                        <h3 className="text-xl sm:text-2xl font-playfair font-semibold text-foreground mb-2">
+                          {category}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          {categoryProducts.length} {categoryProducts.length === 1 ? 'produto' : 'produtos'}
+                        </p>
                       </div>
-                      <CardContent className="p-4 sm:p-6">
-                        <div className="flex items-start justify-between mb-3">
-                          <h3 className="font-playfair font-semibold text-base sm:text-lg leading-tight text-foreground pr-2 flex-1">{name}</h3>
-                          <Badge variant="secondary" className="text-xs flex-shrink-0">{category}</Badge>
-                        </div>
-                        {description && (
-                          <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2 leading-relaxed">{description}</p>
-                        )}
-                        <div className="mb-4 sm:mb-6">
-                          <span className="text-xl sm:text-2xl font-bold text-primary">
-                            R$ {price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                          </span>
-                        </div>
-                        <div className="space-y-2 sm:space-y-3">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full h-10 sm:h-12 border-primary/20 hover:border-primary hover:bg-primary/5 text-xs sm:text-sm"
-                            onClick={() => handleAddToCart(siteProduct)}
-                          >
-                            <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                            Adicionar à Lista
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="w-full h-10 sm:h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm"
-                            onClick={() => handleCreatePayment([{
-                              id: siteProduct.id,
-                              quantity: 1,
-                              name,
-                              price,
-                              description,
-                              image_url: image
-                            }])}
-                          >
-                            <Gift className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                            Presentear
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
+                        {categoryProducts.map((siteProduct, index) => {
+                          console.log(`🔍 Renderizando produto ${index} da categoria ${category}:`, siteProduct.custom_name);
+                          
+                          const product = siteProduct.product;
+                          const name = siteProduct.custom_name || (product?.name) || 'Produto sem nome';
+                          const price = siteProduct.custom_price || (product?.price) || 0;
+                          const image = siteProduct.custom_image_url || (product?.image_url) || getProductImageFallback(siteProduct.product_id, name);
+                          const description = siteProduct.custom_description || (product?.description) || '';
+                          
+                          // Pular produtos sem nome válido
+                          if (!name || name === 'Produto sem nome') {
+                            console.warn(`❌ Pulando produto sem nome:`, siteProduct);
+                            return null;
+                          }
+                          
+                          console.log(`✅ Produto ${index} será renderizado:`, { name, price, category });
+                      
+                          return (
+                            <Card key={siteProduct.id || index} className="group hover:shadow-elegant transition-all duration-300 overflow-hidden border shadow-sm">
+                              <div className="w-full h-40 sm:h-48 overflow-hidden bg-muted/20 flex items-center justify-center">
+                                {image ? (
+                                  <img
+                                    src={image}
+                                    alt={name}
+                                    className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                                    loading="lazy"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center">
+                                    <Gift className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/50" />
+                                  </div>
+                                )}
+                              </div>
+                              <CardContent className="p-4 sm:p-6">
+                                <div className="flex items-start justify-between mb-3">
+                                  <h3 className="font-playfair font-semibold text-base sm:text-lg leading-tight text-foreground pr-2 flex-1">{name}</h3>
+                                  <Badge variant="secondary" className="text-xs flex-shrink-0">{category}</Badge>
+                                </div>
+                                {description && (
+                                  <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2 leading-relaxed">{description}</p>
+                                )}
+                                <div className="mb-4 sm:mb-6">
+                                  <span className="text-xl sm:text-2xl font-bold text-primary">
+                                    R$ {price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                  </span>
+                                </div>
+                                <div className="space-y-2 sm:space-y-3">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full h-10 sm:h-12 border-primary/20 hover:border-primary hover:bg-primary/5 text-xs sm:text-sm"
+                                    onClick={() => handleAddToCart(siteProduct)}
+                                  >
+                                    <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                                    Adicionar à Lista
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    className="w-full h-10 sm:h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm"
+                                    onClick={() => handleCreatePayment([{
+                                      id: siteProduct.id,
+                                      quantity: 1,
+                                      name,
+                                      price,
+                                      description,
+                                      image_url: image
+                                    }])}
+                                  >
+                                    <Gift className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                                    Presentear
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()
           )}
         </div>
       </section>
