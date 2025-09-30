@@ -390,9 +390,10 @@ const PublicSiteContent = () => {
   // Auto slideshow for story images
   useEffect(() => {
     if (site?.story_images && site.story_images.length > 1 && !isSlideShowPaused) {
+      const imagesLength = site.story_images.length;
       const interval = setInterval(() => {
         setCurrentImageIndex((prev) => 
-          (prev + 1) % site.story_images!.length
+          (prev + 1) % imagesLength
         );
       }, 4000); // Change image every 4 seconds
 
@@ -461,9 +462,10 @@ const PublicSiteContent = () => {
   };
 
   const nextImage = () => {
-    if (site?.story_images) {
+    if (site?.story_images && site.story_images.length > 0) {
+      const imagesLength = site.story_images.length;
       setCurrentImageIndex((prev) => 
-        (prev + 1) % site.story_images!.length
+        (prev + 1) % imagesLength
       );
       setIsSlideShowPaused(true);
       setTimeout(() => setIsSlideShowPaused(false), 8000); // Resume after 8 seconds
@@ -471,9 +473,10 @@ const PublicSiteContent = () => {
   };
 
   const previousImage = () => {
-    if (site?.story_images) {
+    if (site?.story_images && site.story_images.length > 0) {
+      const imagesLength = site.story_images.length;
       setCurrentImageIndex((prev) => 
-        prev === 0 ? site.story_images!.length - 1 : prev - 1
+        prev === 0 ? imagesLength - 1 : prev - 1
       );
       setIsSlideShowPaused(true);
       setTimeout(() => setIsSlideShowPaused(false), 8000); // Resume after 8 seconds
