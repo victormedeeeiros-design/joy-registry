@@ -49,7 +49,9 @@ export const RSVPSection = ({ site, siteUser, navigate }: RSVPSectionProps) => {
       // Se não estiver logado, redireciona para login com RSVP
       console.log('RSVP - User not logged, redirecting to login');
       localStorage.setItem('currentSiteId', site.id);
-      navigate(`/guest-login?siteId=${site.id}&rsvp=${willAttend ? 'yes' : 'no'}`);
+      const url = `/guest-login?siteId=${site.id}&rsvp=${willAttend ? 'yes' : 'no'}`;
+      console.log('RSVP - Redirecting to:', url);
+      navigate(url);
       return;
     }
 

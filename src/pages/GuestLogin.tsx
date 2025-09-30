@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 export default function GuestLogin() {
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -21,11 +22,7 @@ export default function GuestLogin() {
     const rsvpParam = searchParams.get('rsvp');
     const siteIdParam = searchParams.get('siteId');
     
-    // Mostra um alerta para depuração no celular
-    // Você pode remover esta linha depois de confirmar que funciona
-    if (!siteIdParam) {
-      alert("ALERTA: O ID do site não foi encontrado na URL. A confirmação de presença vai falhar.");
-    }
+    console.log('GuestLogin - URL params:', { rsvpParam, siteIdParam });
 
     if (siteIdParam) {
       setSiteId(siteIdParam);
@@ -41,6 +38,11 @@ export default function GuestLogin() {
     
     if (!name.trim()) {
       toast.error('Por favor, digite seu nome para confirmar a presença.');
+      return;
+    }
+    
+    if (!email.trim()) {
+      toast.error('Por favor, digite seu email para confirmar a presença.');
       return;
     }
 
@@ -59,8 +61,8 @@ export default function GuestLogin() {
         .insert({
           site_id: siteId, // Usa o siteId do estado, que é mais confiável
           guest_name: name,
+          guest_email: email, // Campo obrigatório
           will_attend: willAttend,
-          is_anonymous: true,
         })
         .select()
         .single();
@@ -119,6 +121,14 @@ export default function GuestLogin() {
                 placeholder="Seu nome completo"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                disabled={loading}
+                required
+              />
+              <Input
+                type="email"
+                placeholder="Seu email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
                 required
               />

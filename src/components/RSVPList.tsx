@@ -27,6 +27,27 @@ export const RSVPList = ({ siteId }: RSVPListProps) => {
 
   useEffect(() => {
     loadRSVPs();
+    
+    // Configurar listener para atualizações em tempo real
+    const subscription = supabase
+      .channel(`rsvp-changes-${siteId}`)
+      .on('postgres_changes', 
+        {
+          event: '*',
+          schema: 'public',
+          table: 'site_rsvps',
+          filter: `site_id=eq.${siteId}`
+        },
+        () => {
+          console.log('RSVP updated, reloading...');
+          loadRSVPs();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [siteId]);
 
   const loadRSVPs = async () => {
