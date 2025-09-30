@@ -286,6 +286,26 @@ const PublicSiteContent = () => {
             root.style.setProperty('--menu-color', 'var(--foreground)');
           }
         }
+        
+        // Aplicar família de fonte se especificada
+        if (siteData.font_family) {
+          const fontFamilyMap: { [key: string]: string } = {
+            'inter': 'Inter, sans-serif',
+            'playfair': 'Playfair Display, serif',
+            'dancing': 'Dancing Script, cursive',
+            'sloop': 'Tangerine, Dancing Script, cursive',
+            'tangerine': 'Tangerine, cursive',
+            'montserrat': 'Montserrat, sans-serif'
+          };
+          
+          if (fontFamilyMap[siteData.font_family]) {
+            root.style.setProperty('--font-family', fontFamilyMap[siteData.font_family]);
+            // Aplicar também especificamente para títulos script
+            if (siteData.font_family === 'sloop' || siteData.font_family === 'tangerine') {
+              root.style.setProperty('--font-sloop', fontFamilyMap[siteData.font_family]);
+            }
+          }
+        }
 
         // Buscar produtos do site com dados dos produtos
         console.log('🔍 Buscando site_products para site_id:', siteData.id);
@@ -413,11 +433,13 @@ const PublicSiteContent = () => {
       const body = document.body;
       body.className = body.className.replace(/theme-[\w-]+/g, '');
       
-      // Reset font colors to default
+      // Reset font colors and fonts to default
       const root = document.documentElement;
       root.style.removeProperty('--menu-color');
       root.style.removeProperty('--hero-color');
       root.style.removeProperty('--title-color');
+      root.style.removeProperty('--font-family');
+      root.style.removeProperty('--font-sloop');
     };
   }, [slug, id]);
 

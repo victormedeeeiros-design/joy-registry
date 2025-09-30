@@ -301,8 +301,13 @@
 @layer utilities {
   /* Primary script font similar to Sloop Script Pro Bold */
   .font-sloop {
-    font-family: 'Tangerine', 'Dancing Script', cursive;
+    font-family: var(--font-sloop, 'Tangerine', 'Dancing Script', cursive);
     font-weight: 700;
+  }
+  
+  /* Dynamic font family application */
+  .font-dynamic {
+    font-family: var(--font-family, inherit);
   }
   
   /* Smooth transitions for modern interactions */

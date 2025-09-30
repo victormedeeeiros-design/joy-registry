@@ -85,7 +85,8 @@ const fontFamilies = [
   { id: 'inter', name: 'Inter (Moderna)', value: 'Inter, sans-serif' },
   { id: 'playfair', name: 'Playfair Display (Elegante)', value: 'Playfair Display, serif' },
   { id: 'dancing', name: 'Dancing Script (Manuscrita)', value: 'Dancing Script, cursive' },
-  { id: 'sloop', name: 'Sloop Script Pro (Premium)', value: 'Sloop Script Pro, cursive' },
+  { id: 'sloop', name: 'Sloop Script Pro Bold', value: 'Tangerine, Dancing Script, cursive' },
+  { id: 'tangerine', name: 'Tangerine Bold', value: 'Tangerine, cursive' },
   { id: 'montserrat', name: 'Montserrat (Clean)', value: 'Montserrat, sans-serif' }
 ];
 

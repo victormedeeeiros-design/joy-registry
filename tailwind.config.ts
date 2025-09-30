@@ -74,6 +74,7 @@ export default {
         elegant: ['Great Vibes', 'cursive'],
         handwriting: ['Caveat', 'cursive'],
         sloop: ['Tangerine', 'Dancing Script', 'cursive'],
+        tangerine: ['Tangerine', 'cursive'],
       },
       borderRadius: {
         lg: "var(--radius)",
