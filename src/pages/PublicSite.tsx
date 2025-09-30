@@ -284,6 +284,7 @@ const PublicSiteContent = () => {
         }
 
         // Buscar produtos do site com dados dos produtos
+        console.log('🔍 Buscando site_products para site_id:', siteData.id);
         const { data: siteProductsData, error: siteProductsError } = await supabase
           .from('site_products')
           .select('*')
@@ -291,10 +292,16 @@ const PublicSiteContent = () => {
           .eq('is_available', true)
           .order('position', { ascending: true });
 
+        console.log('📊 Resultado site_products:', { 
+          data: siteProductsData?.length || 0, 
+          error: siteProductsError,
+          isLoggedIn: !!supabase.auth.getUser() 
+        });
+
         if (siteProductsError) {
-          console.error('Erro ao carregar produtos:', siteProductsError);
+          console.error('❌ Erro ao carregar produtos:', siteProductsError);
         } else if (siteProductsData && siteProductsData.length > 0) {
-          console.log('Site products found:', siteProductsData.length, siteProductsData);
+          console.log('✅ Site products found:', siteProductsData.length, siteProductsData);
           const productIds = siteProductsData.map(sp => sp.product_id);
           const { data: productsData, error: productsError } = await supabase
             .from('products')
@@ -302,65 +309,88 @@ const PublicSiteContent = () => {
             .in('id', productIds)
             .eq('status', 'active');
           if (productsError) {
-            console.error('Erro ao carregar dados dos produtos:', productsError);
+            console.error('❌ Erro ao carregar dados dos produtos:', productsError);
           } else {
-            console.log('Products data found:', productsData?.length, productsData);
+            console.log('✅ Products data found:', productsData?.length, productsData);
             const combinedData = siteProductsData.map(siteProduct => ({
               ...siteProduct,
               product: productsData?.find(p => p.id === siteProduct.product_id) || null
             }));
-            console.log('Combined products data:', combinedData.length, combinedData);
+            console.log('✅ Combined products data:', combinedData.length, combinedData);
             setProducts(combinedData);
           }
         } else {
-          console.log('No site products found, using fallback catalog');
+          console.warn('⚠️ Nenhum site_product encontrado, tentando fallback público...');
           
-          // Tentar buscar produtos da tabela products primeiro para usar o catálogo completo
-          const { data: allProducts, error: allProductsError } = await supabase
-            .from('products')
-            .select('*')
-            .eq('status', 'active')
-            .limit(12);
-
-          if (!allProductsError && allProducts && allProducts.length > 0) {
-            console.log('Using products from database:', allProducts.length);
-            const fallbackFromDb = allProducts.map((p, idx) => ({
-              id: `db-fallback-${p.id}`,
-              product_id: p.id,
-              site_id: siteData.id,
-              custom_name: null,
-              custom_description: null,
-              custom_image_url: null,
-              custom_price: null,
-              is_available: true,
-              position: idx + 1,
-              product: p
+          // FALLBACK 1: Tentar buscar site_products sem filtros RLS (pode estar bloqueando)
+          console.log('🔄 Tentativa fallback: site_products sem RLS...');
+          const { data: allSiteProducts, error: allSiteError } = await supabase
+            .from('site_products')
+            .select(`
+              *,
+              products (*)
+            `)
+            .eq('site_id', siteData.id)
+            .eq('is_available', true);
+            
+          if (!allSiteError && allSiteProducts && allSiteProducts.length > 0) {
+            console.log('✅ Fallback 1 funcionou! Produtos encontrados:', allSiteProducts.length);
+            const fallbackData = allSiteProducts.map(sp => ({
+              ...sp,
+              product: sp.products || null
             }));
-            setProducts(fallbackFromDb);
+            setProducts(fallbackData);
           } else {
-            // Fallback final: usar catálogo padrão por layout quando não há produtos no banco
-            console.log('Using hardcoded catalog fallback');
-            const catalog = DEFAULT_CATALOG[siteData.layout_id] || DEFAULT_CATALOG['cha-casa-nova'];
-            const fallback = (catalog || []).map((p, idx) => ({
-              id: `fallback-${p.id}`,
-              product_id: p.id,
-              site_id: siteData.id,
-              custom_name: p.name,
-              custom_description: p.description,
-              custom_image_url: p.image_url,
-              custom_price: p.price,
-              is_available: true,
-              position: idx + 1,
-              product: {
-                id: p.id,
-                name: p.name,
-                price: p.price,
-                image_url: p.image_url,
-                description: p.description,
-                category: p.category || 'Eletrodomésticos',
-              } as Product
-            }));
-            setProducts(fallback);
+            console.warn('❌ Fallback 1 falhou:', allSiteError);
+            
+            // FALLBACK 2: Tentar buscar produtos da tabela products primeiro para usar o catálogo completo
+            console.log('🔄 Tentativa fallback 2: produtos gerais do banco...');
+            const { data: allProducts, error: allProductsError } = await supabase
+              .from('products')
+              .select('*')
+              .eq('status', 'active')
+              .limit(12);
+
+            if (!allProductsError && allProducts && allProducts.length > 0) {
+              console.log('✅ Fallback 2 funcionou! Usando produtos do banco:', allProducts.length);
+              const fallbackFromDb = allProducts.map((p, idx) => ({
+                id: `db-fallback-${p.id}`,
+                product_id: p.id,
+                site_id: siteData.id,
+                custom_name: null,
+                custom_description: null,
+                custom_image_url: null,
+                custom_price: null,
+                is_available: true,
+                position: idx + 1,
+                product: p
+              }));
+              setProducts(fallbackFromDb);
+            } else {
+              // FALLBACK 3: usar catálogo padrão por layout quando não há produtos no banco
+              console.log('🔄 Fallback 3: usando catálogo hardcoded...');
+              const catalog = DEFAULT_CATALOG[siteData.layout_id] || DEFAULT_CATALOG['cha-casa-nova'];
+              const fallback = (catalog || []).map((p, idx) => ({
+                id: `fallback-${p.id}`,
+                product_id: p.id,
+                site_id: siteData.id,
+                custom_name: p.name,
+                custom_description: p.description,
+                custom_image_url: p.image_url,
+                custom_price: p.price,
+                is_available: true,
+                position: idx + 1,
+                product: {
+                  id: p.id,
+                  name: p.name,
+                  price: p.price,
+                  image_url: p.image_url,
+                  description: p.description,
+                  category: p.category || 'Eletrodomésticos',
+                } as Product
+              }));
+              setProducts(fallback);
+            }
           }
         }
 
