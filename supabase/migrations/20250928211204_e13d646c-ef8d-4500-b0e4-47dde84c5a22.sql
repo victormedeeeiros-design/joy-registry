@@ -5,12 +5,10 @@ FOR INSERT
 TO authenticated
 WITH CHECK (true);
 
--- Allow authenticated users to select products
-CREATE POLICY "Authenticated users can select products" 
-ON public.products 
-FOR SELECT 
-TO authenticated
-USING (true);
+CREATE POLICY "Anyone can view active products"
+ON public.products
+FOR SELECT
+USING (status = 'active');
 
 -- Allow authenticated users to update products 
 CREATE POLICY "Authenticated users can update products" 
