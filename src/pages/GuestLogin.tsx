@@ -1,379 +1,134 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useSiteAuth } from "@/hooks/useSiteAuth";
-import { useToast } from "@/hooks/use-toast";
-import { Heart, Gift, CheckCircle, ArrowLeft } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from 'react';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { toast } from 'sonner';
 
-const GuestLogin = () => {
-  const [searchParams] = useSearchParams();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
-  const [guestName, setGuestName] = useState("");
-  const [guestMessage, setGuestMessage] = useState("");
+export default function GuestLogin() {
+  const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showRSVP, setShowRSVP] = useState(false);
-  const [rsvpStatus, setRsvpStatus] = useState<'yes' | 'no' | null>(null);
-  const { siteUser, loading: authLoading, signIn, signUp } = useSiteAuth();
-  const { toast } = useToast();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Armazena o siteId em um estado para maior confiabilidade
+  const [siteId, setSiteId] = useState<string | null>(null);
+  const [willAttend, setWillAttend] = useState<boolean | null>(null);
 
   useEffect(() => {
     const rsvpParam = searchParams.get('rsvp');
-    if (rsvpParam === 'yes' || rsvpParam === 'no') {
-      setRsvpStatus(rsvpParam as 'yes' | 'no');
-      setShowRSVP(true);
+    const siteIdParam = searchParams.get('siteId');
+    
+    // Mostra um alerta para depuração no celular
+    // Você pode remover esta linha depois de confirmar que funciona
+    if (!siteIdParam) {
+      alert("ALERTA: O ID do site não foi encontrado na URL. A confirmação de presença vai falhar.");
     }
-    // Persist current siteId for safe redirects
-    const siteId = searchParams.get('siteId');
-    if (siteId) {
-      localStorage.setItem('currentSiteId', siteId);
+
+    if (siteIdParam) {
+      setSiteId(siteIdParam);
+    }
+    
+    if (rsvpParam) {
+      setWillAttend(rsvpParam === 'yes');
     }
   }, [searchParams]);
 
-  useEffect(() => {
-    if (!authLoading && siteUser) {
-      // Get the siteId from URL params to redirect back to the correct site
-      const siteId = searchParams.get('siteId');
-      if (siteId) {
-        navigate(`/site/${siteId}`, { replace: true });
-      } else {
-        // Fallback to localStorage returnUrl, but default to current site if available
-        const returnUrl = localStorage.getItem('returnUrl');
-        const currentSiteId = localStorage.getItem('currentSiteId');
-        localStorage.removeItem('returnUrl');
-        
-        if (returnUrl) {
-          navigate(returnUrl, { replace: true });
-        } else if (currentSiteId) {
-          navigate(`/site/${currentSiteId}`, { replace: true });
-        } else {
-          navigate('/', { replace: true });
-        }
-      }
-    }
-  }, [authLoading, siteUser, navigate, searchParams]);
-
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const siteId = searchParams.get('siteId') || localStorage.getItem('currentSiteId');
-    if (!siteId) {
-      toast({
-        title: "Erro",
-        description: "ID do site não encontrado",
-        variant: "destructive",
-      });
-      setLoading(false);
-      return;
-    }
-
-    const { error } = await signIn(siteId, email, password);
-    
-    if (error) {
-      toast({
-        title: "Erro no login",
-        description: error.message || "Erro desconhecido",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Login realizado com sucesso",
-        description: "Bem-vindo de volta!",
-      });
-    }
-    setLoading(false);
-  };
-
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const siteId = searchParams.get('siteId') || localStorage.getItem('currentSiteId');
-    if (!siteId) {
-      toast({
-        title: "Erro",
-        description: "ID do site não encontrado",
-        variant: "destructive",
-      });
-      setLoading(false);
-      return;
-    }
-
-    const { error } = await signUp(siteId, email, password, name);
-    
-    if (error) {
-      toast({
-        title: "Erro no cadastro",
-        description: error.message || "Erro desconhecido",
-        variant: "destructive",
-      });
-    } else {
-      toast({
-        title: "Cadastro realizado com sucesso",
-        description: "Bem-vindo!",
-      });
-    }
-    setLoading(false);
-  };
-
   const handleRSVP = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!name.trim()) {
+      toast.error('Por favor, digite seu nome para confirmar a presença.');
+      return;
+    }
+
+    // Validação crucial: Garante que o siteId existe antes de continuar
+    if (!siteId) {
+      toast.error('Erro: ID do site não encontrado. Não foi possível confirmar a presença.');
+      console.error('Tentativa de RSVP sem siteId.');
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const siteId = searchParams.get('siteId') || searchParams.get('site') || localStorage.getItem('currentSiteId');
+      const { data, error } = await supabase
+        .from('site_rsvps')
+        .insert({
+          site_id: siteId, // Usa o siteId do estado, que é mais confiável
+          guest_name: name,
+          will_attend: willAttend,
+          is_anonymous: true,
+        })
+        .select()
+        .single();
       
-      if (!siteId) {
-        throw new Error('ID do site não encontrado');
+      if (error) {
+        throw error;
       }
 
-      const { error } = await supabase
-        .from('site_rsvps')
-        .upsert({
-          site_id: siteId,
-          guest_name: guestName,
-          guest_email: email || `guest_${Date.now()}@temp.com`,
-          message: guestMessage,
-          will_attend: rsvpStatus === 'yes'
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "RSVP enviado com sucesso!",
-        description: rsvpStatus === 'yes' 
-          ? "Obrigado por confirmar sua presença!" 
-          : "Obrigado por nos avisar!",
+      // Envia o e-mail de notificação de forma assíncrona
+      supabase.functions.invoke('send-rsvp-email', {
+        body: { rsvpId: data.id },
       });
 
-      // Redirect back to the site
-      navigate(`/site/${siteId}`, { replace: true });
+      toast.success('Presença confirmada com sucesso!');
+      
+      // Limpa o estado e redireciona de volta para o site público
+      localStorage.removeItem('currentSiteId');
+      navigate(`/s/${siteId}`);
+
     } catch (error: any) {
-      toast({
-        title: "Erro ao enviar RSVP",
-        description: error.message,
-        variant: "destructive",
-      });
+      console.error('Erro ao confirmar presença:', error);
+      if (error.message.includes('violates row-level security policy')) {
+        toast.error('Falha de segurança ao confirmar presença. O site pode não estar ativo.');
+      } else {
+        toast.error('Ocorreu um erro ao confirmar sua presença. Tente novamente.');
+      }
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
-  if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  const getTitle = () => {
+    if (willAttend === null) return 'Confirmar Presença';
+    return willAttend ? 'Confirmar Presença' : 'Recusar Convite';
+  };
+
+  const getDescription = () => {
+    if (willAttend === null) return 'Digite seu nome para confirmar sua presença no evento.';
+    return willAttend
+      ? 'Estamos felizes por você vir! Digite seu nome para confirmar.'
+      : 'Que pena que você não poderá comparecer. Deixe seu nome para sabermos.';
+  };
 
   return (
-    <div className="min-h-screen gradient-accent flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <Card className="gradient-card border-0 shadow-elegant">
-          <CardHeader className="text-center">
-            <CardTitle className="text-2xl">
-              {showRSVP ? (
-                rsvpStatus === 'yes' ? 'Confirmar Presença' : 'Informar Ausência'
-              ) : (
-                'Acesso para Compradores'
-              )}
-            </CardTitle>
-            <p className="text-muted-foreground">
-              {showRSVP 
-                ? 'Por favor, confirme sua participação no evento'
-                : 'Entre ou cadastre-se para comprar presentes'
-              }
-            </p>
-          </CardHeader>
-          <CardContent>
-            {showRSVP ? (
-              <form onSubmit={handleRSVP} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="guestName">Nome completo</Label>
-                  <Input
-                    id="guestName"
-                    type="text"
-                    value={guestName}
-                    onChange={(e) => setGuestName(e.target.value)}
-                    placeholder="Seu nome completo"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email (opcional)</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="seu@email.com"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="message">Mensagem (opcional)</Label>
-                  <Textarea
-                    id="message"
-                    value={guestMessage}
-                    onChange={(e) => setGuestMessage(e.target.value)}
-                    placeholder="Deixe uma mensagem especial..."
-                    rows={3}
-                  />
-                </div>
-                <div className="flex gap-3 pt-4">
-                  <Button 
-                    type="submit" 
-                    disabled={loading}
-                    className="flex-1 gap-2"
-                  >
-                    {loading ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    ) : (
-                      <CheckCircle className="h-4 w-4" />
-                    )}
-                    {rsvpStatus === 'yes' ? 'Confirmar Presença' : 'Informar Ausência'}
-                  </Button>
-                  <Button 
-                    type="button"
-                    variant="outline"
-                    onClick={() => {
-                      setShowRSVP(false);
-                      setRsvpStatus(null);
-                    }}
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                  </Button>
-                </div>
-                <p className="text-center text-sm text-muted-foreground mt-3">
-                  Prefere entrar ou cadastrar-se?
-                  <button
-                    type="button"
-                    className="ml-1 underline hover:text-foreground"
-                    onClick={() => {
-                      setShowRSVP(false);
-                      setRsvpStatus(null);
-                    }}
-                  >
-                    Acessar com email e senha
-                  </button>
-                </p>
-              </form>
-            ) : (
-              <><Tabs defaultValue="signin" className="space-y-4">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="signin">Entrar</TabsTrigger>
-                  <TabsTrigger value="signup">Cadastrar</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="signin">
-                  <form onSubmit={handleSignIn} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signin-email">Email</Label>
-                      <Input
-                        id="signin-email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="seu@email.com"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signin-password">Senha</Label>
-                      <Input
-                        id="signin-password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Sua senha"
-                        required
-                      />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      ) : (
-                        "Entrar"
-                      )}
-                    </Button>
-                  </form>
-                </TabsContent>
-                
-                <TabsContent value="signup">
-                  <form onSubmit={handleSignUp} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-name">Nome completo</Label>
-                      <Input
-                        id="signup-name"
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        placeholder="Seu nome completo"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-email">Email</Label>
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="seu@email.com"
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-password">Senha</Label>
-                      <Input
-                        id="signup-password"
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Crie uma senha"
-                        required
-                        minLength={6}
-                      />
-                    </div>
-                    <Button type="submit" className="w-full" disabled={loading}>
-                      {loading ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      ) : (
-                        "Cadastrar"
-                      )}
-                    </Button>
-                  </form>
-                </TabsContent>
-              </Tabs>
-              <p className="text-center text-sm text-muted-foreground mt-3">
-                Quer apenas confirmar presença?
-                <button
-                  type="button"
-                  className="ml-1 underline hover:text-foreground"
-                  onClick={() => {
-                    setShowRSVP(true);
-                    setRsvpStatus('yes');
-                  }}
-                >
-                  Confirmar presença sem login
-                </button>
-              </p>
-              </>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle>{getTitle()}</CardTitle>
+          <CardDescription>{getDescription()}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleRSVP}>
+            <div className="space-y-4">
+              <Input
+                type="text"
+                placeholder="Seu nome completo"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={loading}
+                required
+              />
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Confirmando...' : 'Confirmar'}
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
-};
-
-export default GuestLogin;
+}
