@@ -20,7 +20,7 @@ import electricOvenImg from "@/assets/products/electric-oven.jpg";
 import airFryerImg from "@/assets/products/air-fryer.jpg";
 import grillImg from "@/assets/products/grill.jpg";
 import rangeHoodImg from "@/assets/products/range-hood.jpg";
-import { RSVPSection } from "@/components/RSVPSection";
+import RSVPSection from "@/components/RSVPSection";
 
 interface Site {
   id: string;

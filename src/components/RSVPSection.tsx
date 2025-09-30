@@ -11,7 +11,7 @@ interface RSVPSectionProps {
   onRsvpSuccess: () => void;
 }
 
-export default function RSVPSection({ site, onRsvpSuccess }: RSVPSectionProps) {
+export function RSVPSection({ site, onRsvpSuccess }: RSVPSectionProps) {
   const { user: siteUser } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
