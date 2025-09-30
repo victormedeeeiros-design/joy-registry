@@ -49,17 +49,24 @@ export const RSVPSection = ({ site, siteUser, navigate }: RSVPSectionProps) => {
 
     setLoading(true);
     try {
+      console.log('RSVP Debug - Site ID:', site.id, 'User:', siteUser);
+      
       // Primeiro verifica se já existe um RSVP para este usuário neste site
-      const { data: existingRSVP } = await supabase
+      const { data: existingRSVP, error: selectError } = await supabase
         .from('site_rsvps')
         .select('*')
         .eq('site_id', site.id)
         .eq('guest_email', siteUser.email)
         .single();
 
+      if (selectError && selectError.code !== 'PGRST116') {
+        console.error('Erro ao buscar RSVP existente:', selectError);
+      }
+
       let error = null;
 
       if (existingRSVP) {
+        console.log('RSVP Debug - Atualizando RSVP existente:', existingRSVP.id);
         // Se já existe, faz update
         const { error: updateError } = await supabase
           .from('site_rsvps')
@@ -76,24 +83,34 @@ export const RSVPSection = ({ site, siteUser, navigate }: RSVPSectionProps) => {
           .eq('id', existingRSVP.id);
         error = updateError;
       } else {
+        console.log('RSVP Debug - Criando novo RSVP');
         // Se não existe, faz insert
-        const { error: insertError } = await supabase
+        const rsvpData = {
+          site_id: site.id,
+          site_user_id: siteUser.id,
+          guest_name: siteUser.name,
+          guest_email: siteUser.email,
+          message: message.trim() || null,
+          phone: phone.trim() || null,
+          adults_count: willAttend ? parseInt(adultsCount) : null,
+          children_count: willAttend ? parseInt(childrenCount) : null,
+          will_attend: willAttend
+        };
+        
+        console.log('RSVP Debug - Dados do RSVP:', rsvpData);
+        
+        const { error: insertError, data: insertData } = await supabase
           .from('site_rsvps')
-          .insert({
-            site_id: site.id,
-            site_user_id: siteUser.id,
-            guest_name: siteUser.name,
-            guest_email: siteUser.email,
-            message: message.trim() || null,
-            phone: phone.trim() || null,
-            adults_count: willAttend ? parseInt(adultsCount) : null,
-            children_count: willAttend ? parseInt(childrenCount) : null,
-            will_attend: willAttend
-          });
+          .insert(rsvpData);
+        
+        console.log('RSVP Debug - Resultado insert:', { error: insertError, data: insertData });
         error = insertError;
       }
 
-      if (error) throw error;
+      if (error) {
+        console.error('RSVP Debug - Erro na operação:', error);
+        throw error;
+      }
 
       setHasRSVP(true);
       setRsvpStatus(willAttend ? 'yes' : 'no');
@@ -124,9 +141,20 @@ export const RSVPSection = ({ site, siteUser, navigate }: RSVPSectionProps) => {
       }
 
     } catch (error: any) {
+      console.error('RSVP Error Details:', error);
+      
+      let errorMessage = error.message || 'Erro desconhecido';
+      
+      // Tratar erros específicos de RLS
+      if (error.message && error.message.includes('row-level security policy')) {
+        errorMessage = 'Erro de permissão. Tente fazer login novamente.';
+      } else if (error.message && error.message.includes('duplicate key')) {
+        errorMessage = 'Você já confirmou presença para este evento.';
+      }
+      
       toast({
         title: "Erro ao enviar RSVP",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
