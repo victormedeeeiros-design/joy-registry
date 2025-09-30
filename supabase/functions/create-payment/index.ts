@@ -22,14 +22,20 @@ serve(async (req) => {
   try {
     // Parse request body
     const { items, siteId } = await req.json();
+    
+    console.log('Payment Debug - Raw request:', { items, siteId });
 
     if (!items || !Array.isArray(items) || items.length === 0) {
+      console.error('Payment Debug - Invalid items:', items);
       throw new Error("Items are required");
     }
 
     if (!siteId) {
+      console.error('Payment Debug - Missing siteId');
       throw new Error("Site ID is required");
     }
+    
+    console.log('Payment Debug - Processing', items.length, 'items for site', siteId);
 
     // Initialize Stripe
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {

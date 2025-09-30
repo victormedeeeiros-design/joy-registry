@@ -776,7 +776,8 @@ const PublicSiteContent = () => {
               }}
             >
               <Heart className="h-5 w-5 mr-2" />
-              Vou comparecer
+              <span className="hidden sm:inline">Vou comparecer</span>
+              <span className="sm:hidden">Compareço</span>
             </Button>
             <Button 
               variant="outline" 
@@ -787,7 +788,8 @@ const PublicSiteContent = () => {
                 navigate(`/guest-login?siteId=${site.id}&rsvp=no`);
               }}
             >
-              Não poderei comparecer
+              <span className="hidden sm:inline">Não poderei comparecer</span>
+              <span className="sm:hidden">Não vou</span>
             </Button>
             <Button 
               size="lg" 
@@ -795,7 +797,8 @@ const PublicSiteContent = () => {
               onClick={() => scrollToSection('gifts')}
             >
               <Gift className="h-5 w-5 mr-2" />
-              Ver Lista de Presentes
+              <span className="hidden sm:inline">Ver Lista de Presentes</span>
+              <span className="sm:hidden">Presentes</span>
             </Button>
           </div>
         </section>

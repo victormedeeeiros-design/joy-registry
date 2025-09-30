@@ -11,6 +11,10 @@ export const CartSidebar = ({ siteId }: { siteId?: string }) => {
 
   const handleCheckout = async () => {
     if (!siteId || items.length === 0) return;
+    
+    console.log('Checkout Debug - Items:', items);
+    console.log('Checkout Debug - Site ID:', siteId);
+    
     try {
       const payloadItems = items.map((i) => ({
         id: i.id,
@@ -19,9 +23,15 @@ export const CartSidebar = ({ siteId }: { siteId?: string }) => {
         price: i.price,
         image_url: i.image,
       }));
+      
+      console.log('Checkout Debug - Payload Items:', payloadItems);
+      
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: { items: payloadItems, siteId },
       });
+      
+      console.log('Checkout Debug - Response:', { data, error });
+      
       if (error) throw error;
       if (data?.url) {
         // Detectar se é mobile para evitar popup blockers
@@ -45,8 +55,8 @@ export const CartSidebar = ({ siteId }: { siteId?: string }) => {
     <Sheet>
       <SheetTrigger asChild>
         <Button variant="outline" size="sm" className="relative">
-          <ShoppingCart className="h-4 w-4 mr-2" />
-          Meus Presentes
+          <ShoppingCart className="h-4 w-4 md:mr-2" />
+          <span className="hidden md:inline">Meus Presentes</span>
           {itemCount > 0 && (
             <Badge variant="destructive" className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs">
               {itemCount}

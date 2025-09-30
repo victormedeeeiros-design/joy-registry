@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
 interface CartItem {
   id: string;
@@ -21,7 +21,29 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
-  const [items, setItems] = useState<CartItem[]>([]);
+  const [items, setItems] = useState<CartItem[]>(() => {
+    // Carregar do localStorage na inicialização
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('cart-items');
+        return saved ? JSON.parse(saved) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+
+  // Salvar no localStorage sempre que items mudar
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('cart-items', JSON.stringify(items));
+      } catch (error) {
+        console.error('Erro ao salvar carrinho:', error);
+      }
+    }
+  }, [items]);
 
   const addItem = (newItem: Omit<CartItem, 'quantity'>) => {
     setItems(prev => {

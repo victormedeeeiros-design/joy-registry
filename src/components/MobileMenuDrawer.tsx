@@ -38,10 +38,10 @@ export const MobileMenuDrawer = ({
   const [open, setOpen] = useState(false);
 
   const menuItems = [
-    { id: 'home', label: 'Home', icon: Home },
-    { id: 'story', label: 'Recepção', icon: Heart },
-    { id: 'gifts', label: 'Lista de presentes', icon: Gift },
-    { id: 'rsvp', label: 'Confirme sua presença', icon: Calendar },
+    { id: 'home', label: 'Início', icon: Home },
+    { id: 'story', label: 'História', icon: Heart },
+    { id: 'gifts', label: 'Presentes', icon: Gift },
+    { id: 'rsvp', label: 'Presença', icon: Calendar },
   ];
 
   const handleMenuClick = (sectionId: string) => {

@@ -40,8 +40,11 @@ export const RSVPSection = ({ site, siteUser, navigate }: RSVPSectionProps) => {
   const { toast } = useToast();
 
   const handleRSVP = async (willAttend: boolean) => {
+    console.log('RSVP handleRSVP called with:', { willAttend, siteUser, site });
+    
     if (!siteUser) {
       // Se não estiver logado, redireciona para login com RSVP
+      console.log('RSVP - User not logged, redirecting to login');
       localStorage.setItem('currentSiteId', site.id);
       navigate(`/guest-login?siteId=${site.id}&rsvp=${willAttend ? 'yes' : 'no'}`);
       return;
