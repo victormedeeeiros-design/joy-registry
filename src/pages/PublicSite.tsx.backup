@@ -284,6 +284,7 @@ const PublicSiteContent = () => {
         }
 
         // Buscar produtos do site com dados dos produtos
+        console.log('Tentando carregar produtos para site_id:', siteData.id);
         const { data: siteProductsData, error: siteProductsError } = await supabase
           .from('site_products')
           .select('*')
@@ -291,8 +292,37 @@ const PublicSiteContent = () => {
           .eq('is_available', true)
           .order('position', { ascending: true });
 
-        if (siteProductsError) {
-          console.error('Erro ao carregar produtos:', siteProductsError);
+        console.log('Resultado site_products:', { data: siteProductsData, error: siteProductsError });
+
+        // Se há erro OU se não há produtos específicos do site, usar fallback
+        if (siteProductsError || !siteProductsData || siteProductsData.length === 0) {
+          console.log('Usando fallback - erro:', siteProductsError, 'produtos encontrados:', siteProductsData?.length || 0);
+          
+          // FALLBACK IMEDIATO: usar catálogo padrão
+          console.log('Usando catálogo padrão hardcoded');
+          const catalog = DEFAULT_CATALOG[siteData.layout_id] || DEFAULT_CATALOG['cha-casa-nova'];
+          const fallback = (catalog || []).map((p, idx) => ({
+            id: `fallback-${p.id}`,
+            product_id: p.id,
+            site_id: siteData.id,
+            custom_name: p.name,
+            custom_description: p.description,
+            custom_image_url: p.image_url,
+            custom_price: p.price,
+            is_available: true,
+            position: idx + 1,
+            product: {
+              id: p.id,
+              name: p.name,
+              price: p.price,
+              image_url: p.image_url,
+              description: p.description,
+              category: p.category || 'Eletrodomésticos',
+            } as Product
+          }));
+          console.log('Fallback products set:', fallback.length, fallback);
+          setProducts(fallback);
+          
         } else if (siteProductsData && siteProductsData.length > 0) {
           console.log('Site products found:', siteProductsData.length, siteProductsData);
           const productIds = siteProductsData.map(sp => sp.product_id);
@@ -311,56 +341,6 @@ const PublicSiteContent = () => {
             }));
             console.log('Combined products data:', combinedData.length, combinedData);
             setProducts(combinedData);
-          }
-        } else {
-          console.log('No site products found, using fallback catalog');
-          
-          // Tentar buscar produtos da tabela products primeiro para usar o catálogo completo
-          const { data: allProducts, error: allProductsError } = await supabase
-            .from('products')
-            .select('*')
-            .eq('status', 'active')
-            .limit(12);
-
-          if (!allProductsError && allProducts && allProducts.length > 0) {
-            console.log('Using products from database:', allProducts.length);
-            const fallbackFromDb = allProducts.map((p, idx) => ({
-              id: `db-fallback-${p.id}`,
-              product_id: p.id,
-              site_id: siteData.id,
-              custom_name: null,
-              custom_description: null,
-              custom_image_url: null,
-              custom_price: null,
-              is_available: true,
-              position: idx + 1,
-              product: p
-            }));
-            setProducts(fallbackFromDb);
-          } else {
-            // Fallback final: usar catálogo padrão por layout quando não há produtos no banco
-            console.log('Using hardcoded catalog fallback');
-            const catalog = DEFAULT_CATALOG[siteData.layout_id] || DEFAULT_CATALOG['cha-casa-nova'];
-            const fallback = (catalog || []).map((p, idx) => ({
-              id: `fallback-${p.id}`,
-              product_id: p.id,
-              site_id: siteData.id,
-              custom_name: p.name,
-              custom_description: p.description,
-              custom_image_url: p.image_url,
-              custom_price: p.price,
-              is_available: true,
-              position: idx + 1,
-              product: {
-                id: p.id,
-                name: p.name,
-                price: p.price,
-                image_url: p.image_url,
-                description: p.description,
-                category: p.category || 'Eletrodomésticos',
-              } as Product
-            }));
-            setProducts(fallback);
           }
         }
 
@@ -911,106 +891,211 @@ const PublicSiteContent = () => {
               </CardContent>
             </Card>
           ) : (
-            <div className="space-y-8 sm:space-y-12">
-              {/* Debug Section */}
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-yellow-800 mb-2">🔍 Debug Info:</h3>
-                <div className="text-sm text-yellow-700 space-y-1">
-                  <p><strong>Total de produtos:</strong> {products.length}</p>
-                  <p><strong>Primeiro produto:</strong></p>
-                  {products.length > 0 && (
-                    <pre className="bg-white p-2 rounded text-xs overflow-auto max-h-40">
-                      {JSON.stringify(products[0], null, 2)}
-                    </pre>
-                  )}
-                  <p><strong>Produtos têm .product?</strong> {products.length > 0 ? (products[0].product ? '✅ Sim' : '❌ Não') : 'N/A'}</p>
-                  <p><strong>Site atual:</strong> {site?.slug || 'Carregando...'}</p>
+            <div>
+              {/* Renderização simples para debug */}
+              <div className="mb-4 text-center text-sm text-muted-foreground bg-yellow-50 p-2 rounded">
+                Debug: Tentando renderizar {products.length} produtos
+              </div>
+              
+              {/* Renderização direta primeiro (fallback) */}
+              <div className="mb-8">
+                <h3 className="text-xl font-semibold mb-4 text-center">Todos os Produtos</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
+                  {products.map((siteProduct, index) => {
+                    console.log(`Renderizando produto ${index}:`, siteProduct);
+                    
+                    const product = siteProduct.product;
+                    if (!product) {
+                      console.warn(`Produto ${index} sem dados:`, siteProduct);
+                      return (
+                        <div key={siteProduct.id || index} className="border-2 border-red-200 p-4 rounded">
+                          <p className="text-red-600 text-sm">Produto sem dados: {siteProduct.id}</p>
+                        </div>
+                      );
+                    }
+                    
+                    const name = siteProduct.custom_name || product.name;
+                    const price = siteProduct.custom_price || product.price;
+                    const image = siteProduct.custom_image_url || product.image_url || getProductImageFallback(product.id, product.name);
+                    const description = siteProduct.custom_description || product.description;
+                    const category = product.category || 'Geral';
+                    
+                    return (
+                      <Card key={siteProduct.id || index} className="group hover:shadow-elegant transition-all duration-300 overflow-hidden border shadow-sm">
+                        <div className="w-full h-40 sm:h-48 overflow-hidden bg-muted/20 flex items-center justify-center">
+                          {image ? (
+                            <img
+                              src={image}
+                              alt={name}
+                              className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                              loading="lazy"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Gift className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/50" />
+                            </div>
+                          )}
+                        </div>
+                        <CardContent className="p-4 sm:p-6">
+                          <div className="flex items-start justify-between mb-3">
+                            <h3 className="font-playfair font-semibold text-base sm:text-lg leading-tight text-foreground pr-2 flex-1">{name}</h3>
+                            <Badge variant="secondary" className="text-xs flex-shrink-0">{category}</Badge>
+                          </div>
+                          {description && (
+                            <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2 leading-relaxed">{description}</p>
+                          )}
+                          <div className="mb-4 sm:mb-6">
+                            <span className="text-xl sm:text-2xl font-bold text-primary">
+                              R$ {price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                          <div className="space-y-2 sm:space-y-3">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full h-10 sm:h-12 border-primary/20 hover:border-primary hover:bg-primary/5 text-xs sm:text-sm"
+                              onClick={() => handleAddToCart(siteProduct)}
+                            >
+                              <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                              Adicionar à Lista
+                            </Button>
+                            <Button
+                              size="sm"
+                              className="w-full h-10 sm:h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm"
+                              onClick={() => handleCreatePayment([{
+                                id: siteProduct.id,
+                                quantity: 1,
+                                name,
+                                price,
+                                description,
+                                image_url: image
+                              }])}
+                            >
+                              <Gift className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                              Presentear
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
                 </div>
               </div>
               
-              {/* Renderização direta dos produtos sem categorização */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
-                {products.map((siteProduct, index) => {
-                  console.log(`🔍 Produto ${index}:`, siteProduct);
+              {/* Renderização categorizada (original) */}
+              {(() => {
+              console.log('Renderizando produtos:', products.length, products);
+              
+              // Group products by category
+              const categorizedProducts = products.reduce((acc, siteProduct) => {
+                console.log('Processando produto:', siteProduct);
+                
+                if (!siteProduct.product) {
+                  console.warn('Produto sem dados:', siteProduct);
+                  return acc;
+                }
+                
+                const category = siteProduct.product.category || 'Eletrodomésticos';
+                if (!acc[category]) {
+                  acc[category] = [];
+                }
+                acc[category].push(siteProduct);
+                return acc;
+              }, {} as Record<string, typeof products>);
+
+              console.log('Produtos categorizados:', categorizedProducts);
+
+              return Object.entries(categorizedProducts).map(([category, categoryProducts]) => (
+                <div key={category} className="mb-16">
+                  {/* Category Header */}
+                  <div className="text-center mb-10">
+                    <h3 className="text-2xl font-playfair font-semibold mb-2" style={{ color: 'var(--title-color, var(--foreground))' }}>{category}</h3>
+                    <div className="w-24 h-0.5 bg-primary mx-auto"></div>
+                  </div>
                   
-                  const product = siteProduct.product;
-                  
-                  if (!product) {
-                    console.warn(`❌ Produto ${index} sem product:`, siteProduct);
-                    return (
-                      <div key={siteProduct.id || index} className="p-4 bg-red-50 border border-red-200 rounded">
-                        <p className="text-red-600 text-sm">Produto sem dados válidos</p>
-                        <pre className="text-xs mt-2">{JSON.stringify(siteProduct, null, 2)}</pre>
-                      </div>
-                    );
-                  }
-                  
-                  const name = siteProduct.custom_name || product.name;
-                  const price = siteProduct.custom_price || product.price || 0;
-                  const image = siteProduct.custom_image_url || product.image_url || getProductImageFallback(product.id, product.name);
-                  const description = siteProduct.custom_description || product.description;
-                  const category = product.category || 'Geral';
-                  
-                  return (
-                    <Card key={siteProduct.id || index} className="group hover:shadow-elegant transition-all duration-300 overflow-hidden border shadow-sm">
-                      <div className="w-full h-40 sm:h-48 overflow-hidden bg-muted/20 flex items-center justify-center">
-                        {image ? (
-                          <img
-                            src={image}
-                            alt={name}
-                            className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Gift className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/50" />
+                  {/* Products Grid - Otimizado para Android */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 md:gap-8">
+                    {categoryProducts.map((siteProduct) => {
+                      const product = siteProduct.product;
+                      if (!product) return null;
+                      
+                      const name = siteProduct.custom_name || product.name;
+                      const price = siteProduct.custom_price || product.price;
+                      const image = siteProduct.custom_image_url || product.image_url || getProductImageFallback(product.id, product.name);
+                      const description = siteProduct.custom_description || product.description;
+                      
+                      // Debug log for image issues
+                      if (!image) {
+                        console.log('No image found for product:', {
+                          productId: product.id,
+                          productName: product.name,
+                          customImageUrl: siteProduct.custom_image_url,
+                          productImageUrl: product.image_url,
+                          fallback: getProductImageFallback(product.id, product.name)
+                        });
+                      }
+                      
+                      return (
+                        <Card key={siteProduct.id} className="group hover:shadow-elegant transition-all duration-300 overflow-hidden border shadow-sm">
+                          <div className="w-full h-40 sm:h-48 overflow-hidden bg-muted/20 flex items-center justify-center">
+                            {image ? (
+                              <img
+                                src={image}
+                                alt={name}
+                                className="max-w-full max-h-full object-contain group-hover:scale-105 transition-transform duration-500"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <Gift className="h-12 w-12 sm:h-16 sm:w-16 text-muted-foreground/50" />
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      <CardContent className="p-4 sm:p-6">
-                        <div className="flex items-start justify-between mb-3">
-                          <h3 className="font-playfair font-semibold text-base sm:text-lg leading-tight text-foreground pr-2 flex-1">{name}</h3>
-                          <Badge variant="secondary" className="text-xs flex-shrink-0">{category}</Badge>
-                        </div>
-                        {description && (
-                          <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2 leading-relaxed">{description}</p>
-                        )}
-                        <div className="mb-4 sm:mb-6">
-                          <span className="text-xl sm:text-2xl font-bold text-primary">
-                            R$ {price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                          </span>
-                        </div>
-                        <div className="space-y-2 sm:space-y-3">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full h-10 sm:h-12 border-primary/20 hover:border-primary hover:bg-primary/5 text-xs sm:text-sm"
-                            onClick={() => handleAddToCart(siteProduct)}
-                          >
-                            <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                            Adicionar à Lista
-                          </Button>
-                          <Button
-                            size="sm"
-                            className="w-full h-10 sm:h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm"
-                            onClick={() => handleCreatePayment([{
-                              id: siteProduct.id,
-                              quantity: 1,
-                              name,
-                              price,
-                              description,
-                              image_url: image
-                            }])}
-                          >
-                            <Gift className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                            Presentear
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
+                          <CardContent className="p-4 sm:p-6">
+                            <div className="flex items-start justify-between mb-3">
+                              <h3 className="font-playfair font-semibold text-base sm:text-lg leading-tight text-foreground pr-2 flex-1">{name}</h3>
+                              <Badge variant="secondary" className="text-xs flex-shrink-0">{category}</Badge>
+                            </div>
+                            {description && (
+                              <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2 leading-relaxed">{description}</p>
+                            )}
+                            <div className="mb-4 sm:mb-6">
+                              <span className="text-xl sm:text-2xl font-bold text-primary">
+                                R$ {price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                              </span>
+                            </div>
+                            <div className="space-y-2 sm:space-y-3">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-full h-10 sm:h-12 border-primary/20 hover:border-primary hover:bg-primary/5 text-xs sm:text-sm"
+                                onClick={() => handleAddToCart(siteProduct)}
+                              >
+                                <ShoppingCart className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                                Adicionar à Lista
+                              </Button>
+                              <Button
+                                size="sm"
+                                className="w-full h-10 sm:h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-xs sm:text-sm"
+                                onClick={() => handleCreatePayment([{
+                                  id: siteProduct.id,
+                                  quantity: 1,
+                                  name,
+                                  price,
+                                  description,
+                                  image_url: image
+                                }])}
+                              >
+                                <Gift className="h-4 w-4 mr-2" />
+                                Presentear
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
             </div>
           )}
         </div>
