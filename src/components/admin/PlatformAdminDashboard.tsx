@@ -176,7 +176,13 @@ const PlatformAdminDashboard = () => {
               <p className="text-muted-foreground mb-4">
                 Visualizar e gerenciar todos os usuários da plataforma
               </p>
-              <Button variant="outline" className="w-full">Acessar Usuários</Button>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => navigate('/admin/users')}
+              >
+                Acessar Usuários
+              </Button>
             </CardContent>
           </Card>
 

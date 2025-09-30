@@ -16,11 +16,13 @@ import EditSite from "./pages/EditSite";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import GuestLogin from "./pages/GuestLogin";
 import ManageProducts from "./pages/ManageProducts";
+import ApprovalStatus from "@/components/ApprovalStatus";
+import AdminUsers from "./pages/AdminUsers";
 
 const queryClient = new QueryClient();
 
 const ProtectedRoute = ({ children, userType }: { children: React.ReactNode; userType?: string }) => {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, loading, isApproved, isPending, isRejected } = useAuth();
   
   if (loading) {
     return (
@@ -36,15 +38,21 @@ const ProtectedRoute = ({ children, userType }: { children: React.ReactNode; use
   if (!user || !profile) {
     return <Navigate to="/auth" replace />;
   }
-  
-  if (userType && profile.user_type !== userType) {
-    // Redirect to appropriate dashboard based on user type
-    if (profile.user_type === 'platform_admin') {
-      return <Navigate to="/admin" replace />;
-    } else if (profile.user_type === 'site_creator') {
-      return <Navigate to="/dashboard" replace />;
+
+  // Verificar aprovação para usuários que não são admin
+  if (profile.email !== 'victormedeeeiros@gmail.com') {
+    if (isPending() || isRejected()) {
+      return <ApprovalStatus />;
     }
-    return <Navigate to="/" replace />;
+    
+    if (!isApproved()) {
+      return <ApprovalStatus />;
+    }
+  }
+  
+  // Verificar se é admin para rotas administrativas
+  if (userType === 'platform_admin' && profile.email !== 'victormedeeeiros@gmail.com') {
+    return <Navigate to="/dashboard" replace />;
   }
   
   return <>{children}</>;
@@ -114,6 +122,14 @@ const App = () => (
             element={
               <ProtectedRoute userType="platform_admin">
                 <ManageProducts />
+              </ProtectedRoute>
+            } 
+          />
+          <Route 
+            path="/admin/users" 
+            element={
+              <ProtectedRoute userType="platform_admin">
+                <AdminUsers />
               </ProtectedRoute>
             } 
           />
