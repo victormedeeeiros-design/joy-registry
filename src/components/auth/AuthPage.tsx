@@ -159,12 +159,27 @@ const AuthPage = () => {
       navigate(`/site/${siteId}`, { replace: true });
     } catch (error: any) {
       console.error('Erro AuthPage RSVP:', error);
+      console.error('Detalhes do erro AuthPage:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        userAgent: navigator.userAgent,
+        isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      });
       
       let errorMessage = error.message;
       if (error.message?.includes('violates row-level security policy')) {
-        errorMessage = 'Falha de segurança ao confirmar presença. O site pode não estar ativo.';
+        errorMessage = 'Erro de permissão detectado. As configurações de segurança estão sendo corrigidas...';
+        
+        // Para mobile, mostrar mensagem específica
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+          errorMessage += ' Se o erro persistir no celular, tente pelo computador.';
+        }
       } else if (error.message?.includes('duplicate key')) {
         errorMessage = 'Você já confirmou presença para este evento.';
+      } else if (error.code === 'PGRST301') {
+        errorMessage = 'Erro de configuração do servidor. Tente novamente em alguns minutos.';
       }
       
       toast({

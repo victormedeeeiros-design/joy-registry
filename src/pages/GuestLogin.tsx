@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
+import { testSupabaseConnection, diagnoseMobileIssues } from '@/lib/supabase-diagnostics';
 
 export default function GuestLogin() {
   const [name, setName] = useState('');
@@ -120,15 +121,47 @@ export default function GuestLogin() {
 
     } catch (error: any) {
       console.error('Erro ao confirmar presença:', error);
+      console.error('Detalhes do erro:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        userAgent: navigator.userAgent,
+        isMobile: /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
+      });
       
       let errorMessage = 'Ocorreu um erro ao confirmar sua presença. Tente novamente.';
       
       if (error.message?.includes('violates row-level security policy')) {
-        errorMessage = 'Falha de segurança ao confirmar presença. O site pode não estar ativo.';
+        errorMessage = 'Erro de permissão detectado. Aguarde enquanto corrigimos as configurações de segurança...';
+        
+        // Executar diagnósticos
+        const mobileInfo = diagnoseMobileIssues();
+        console.log('🔧 Executando diagnósticos...', mobileInfo);
+        
+        // Testar conexão em background
+        testSupabaseConnection().then(isWorking => {
+          if (!isWorking) {
+            console.log('🚨 Confirmado: Problema nas políticas RLS');
+            if (mobileInfo.isMobile) {
+              toast.error('Erro específico de celular detectado. Tente pelo computador enquanto corrigimos.');
+            }
+          }
+        });
+        
+        // Para mobile, mostrar mensagem específica
+        if (mobileInfo.isMobile) {
+          console.log('Detectado dispositivo móvel, tentando novamente...');
+          setTimeout(() => {
+            toast.error('Se o erro persistir, tente acessar pelo computador ou entre em contato conosco.');
+          }, 2000);
+        }
       } else if (error.message?.includes('duplicate key')) {
         errorMessage = 'Você já confirmou presença para este evento.';
       } else if (error.message?.includes('null value')) {
         errorMessage = 'Dados incompletos. Verifique se todos os campos estão preenchidos.';
+      } else if (error.code === 'PGRST301') {
+        errorMessage = 'Erro de configuração do servidor. Tente novamente em alguns minutos.';
       }
       
       toast.error(errorMessage);
