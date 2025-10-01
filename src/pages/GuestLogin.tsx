@@ -30,8 +30,13 @@ export default function GuestLogin() {
     
     if (rsvpParam) {
       setWillAttend(rsvpParam === 'yes');
+    } else {
+      // Se não há parâmetro RSVP, redireciona para auth
+      console.log('GuestLogin - Sem parâmetro RSVP, redirecionando para auth');
+      navigate(`/auth?site=${siteIdParam || ''}`);
+      return;
     }
-  }, [searchParams]);
+  }, [searchParams, navigate]);
 
   const handleRSVP = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,42 +58,80 @@ export default function GuestLogin() {
       return;
     }
 
+    // Garantir que willAttend tem um valor válido
+    if (willAttend === null) {
+      toast.error('Status de presença não definido. Tente novamente.');
+      return;
+    }
+
     setLoading(true);
 
     try {
+      console.log('Inserindo RSVP com dados:', {
+        site_id: siteId,
+        guest_name: name.trim(),
+        guest_email: email.trim(),
+        will_attend: willAttend
+      });
+
       const { data, error } = await supabase
         .from('site_rsvps')
         .insert({
-          site_id: siteId, // Usa o siteId do estado, que é mais confiável
-          guest_name: name,
-          guest_email: email, // Campo obrigatório
+          site_id: siteId,
+          guest_name: name.trim(),
+          guest_email: email.trim(),
           will_attend: willAttend,
+          message: null // Explicitamente definir como null
         })
         .select()
         .single();
       
       if (error) {
+        console.error('Erro Supabase:', error);
         throw error;
       }
 
-      // Envia o e-mail de notificação de forma assíncrona
-      supabase.functions.invoke('send-rsvp-email', {
-        body: { rsvpId: data.id },
-      });
+      console.log('RSVP inserido com sucesso:', data);
 
-      toast.success('Presença confirmada com sucesso!');
+      // Envia o e-mail de notificação de forma assíncrona
+      try {
+        await supabase.functions.invoke('send-rsvp-email', {
+          body: {
+            siteId: siteId,
+            guestName: name.trim(),
+            guestEmail: email.trim(),
+            willAttend: willAttend,
+            message: null,
+            siteTitle: 'Lista de Presentes'
+          },
+        });
+      } catch (emailError) {
+        console.error('Erro ao enviar email:', emailError);
+        // Não falhar o processo por causa do email
+      }
+
+      toast.success(willAttend ? 'Presença confirmada com sucesso!' : 'Resposta registrada com sucesso!');
       
       // Limpa o estado e redireciona de volta para o site público
       localStorage.removeItem('currentSiteId');
-      navigate(`/s/${siteId}`);
+      
+      // Redirecionar de volta para o site usando o ID
+      navigate(`/site/${siteId}`);
 
     } catch (error: any) {
       console.error('Erro ao confirmar presença:', error);
-      if (error.message.includes('violates row-level security policy')) {
-        toast.error('Falha de segurança ao confirmar presença. O site pode não estar ativo.');
-      } else {
-        toast.error('Ocorreu um erro ao confirmar sua presença. Tente novamente.');
+      
+      let errorMessage = 'Ocorreu um erro ao confirmar sua presença. Tente novamente.';
+      
+      if (error.message?.includes('violates row-level security policy')) {
+        errorMessage = 'Falha de segurança ao confirmar presença. O site pode não estar ativo.';
+      } else if (error.message?.includes('duplicate key')) {
+        errorMessage = 'Você já confirmou presença para este evento.';
+      } else if (error.message?.includes('null value')) {
+        errorMessage = 'Dados incompletos. Verifique se todos os campos estão preenchidos.';
       }
+      
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

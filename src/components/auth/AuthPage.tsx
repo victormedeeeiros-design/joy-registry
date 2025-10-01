@@ -98,21 +98,59 @@ const AuthPage = () => {
         throw new Error('ID do site não encontrado');
       }
 
-      const { error } = await supabase
-        .from('rsvps')
+      const willAttend = rsvpStatus === 'yes';
+      const guestEmail = email.trim() || `guest_${Date.now()}@temp.com`;
+      
+      console.log('AuthPage RSVP - Inserindo dados:', {
+        site_id: siteId,
+        guest_name: guestName.trim(),
+        guest_email: guestEmail,
+        message: guestMessage.trim() || null,
+        will_attend: willAttend
+      });
+
+      const { data, error } = await supabase
+        .from('site_rsvps')
         .upsert({
           site_id: siteId,
-          guest_name: guestName,
-          guest_email: email || `guest_${Date.now()}@temp.com`,
-          message: guestMessage,
-          will_attend: rsvpStatus === 'yes'
-        });
+          guest_name: guestName.trim(),
+          guest_email: guestEmail,
+          message: guestMessage.trim() || null,
+          will_attend: willAttend
+        }, {
+          onConflict: 'site_id,guest_email',
+          ignoreDuplicates: false
+        })
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro AuthPage RSVP:', error);
+        throw error;
+      }
+
+      console.log('AuthPage RSVP - Sucesso:', data);
+
+      // Enviar email de confirmação
+      try {
+        await supabase.functions.invoke('send-rsvp-email', {
+          body: {
+            siteId: siteId,
+            guestName: guestName.trim(),
+            guestEmail: guestEmail,
+            willAttend: willAttend,
+            message: guestMessage.trim() || null,
+            siteTitle: 'Lista de Presentes'
+          },
+        });
+      } catch (emailError) {
+        console.error('Erro ao enviar email:', emailError);
+        // Não falhar o processo por causa do email
+      }
 
       toast({
         title: "RSVP enviado com sucesso!",
-        description: rsvpStatus === 'yes' 
+        description: willAttend 
           ? "Obrigado por confirmar sua presença!" 
           : "Obrigado por nos avisar!",
       });
@@ -120,9 +158,18 @@ const AuthPage = () => {
       // Redirect back to the site
       navigate(`/site/${siteId}`, { replace: true });
     } catch (error: any) {
+      console.error('Erro AuthPage RSVP:', error);
+      
+      let errorMessage = error.message;
+      if (error.message?.includes('violates row-level security policy')) {
+        errorMessage = 'Falha de segurança ao confirmar presença. O site pode não estar ativo.';
+      } else if (error.message?.includes('duplicate key')) {
+        errorMessage = 'Você já confirmou presença para este evento.';
+      }
+      
       toast({
         title: "Erro ao enviar RSVP",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     }

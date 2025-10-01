@@ -692,7 +692,7 @@ const PublicSiteContent = () => {
                     size="sm"
                     onClick={() => {
                       localStorage.setItem('currentSiteId', site.id);
-                      navigate(`/guest-login?siteId=${site.id}`);
+                      navigate(`/auth?site=${site.id}`);
                     }}
                   >
                     <User className="h-4 w-4 mr-2" />
