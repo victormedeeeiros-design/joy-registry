@@ -1,66 +1,93 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Gift, Sparkles, Users } from "lucide-react";
+import { Heart, Gift, Sparkles, Users, Crown, Building2, Zap } from "lucide-react";
 import heroImage from "@/assets/hero-gift-registry.jpg";
 
 const Hero = () => {
   return (
     <section className="min-h-screen flex items-center justify-center gradient-hero relative overflow-hidden">
       {/* Decorative Elements */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/10" />
-      <div className="absolute top-20 left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl" />
-      <div className="absolute bottom-20 right-10 w-48 h-48 bg-accent/10 rounded-full blur-3xl" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-accent/12" />
+      <div className="absolute top-20 left-10 w-32 h-32 bg-primary/15 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-20 right-10 w-48 h-48 bg-accent/15 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-gradient-to-r from-primary/5 to-accent/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
       
       <div className="container relative z-10 grid lg:grid-cols-2 gap-12 items-center py-20">
         {/* Left Column - Content */}
         <div className="space-y-8 text-center lg:text-left">
-          <div className="space-y-4">
-            <Badge variant="secondary" className="w-fit mx-auto lg:mx-0">
+          <div className="space-y-6">
+            {/* Logo/Brand */}
+            <div className="flex items-center justify-center lg:justify-start gap-3 mb-8">
+              <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-2xl flex items-center justify-center">
+                <Heart className="w-6 h-6 text-white" />
+              </div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                Amor&Presente
+              </h1>
+            </div>
+
+            <Badge variant="secondary" className="w-fit mx-auto lg:mx-0 px-4 py-2">
               <Sparkles className="w-4 h-4 mr-2" />
-              Plataforma de Presentes Personalizados
+              A Plataforma Completa de Listas de Presentes
             </Badge>
             
-            <h1 className="text-5xl lg:text-7xl font-bold leading-tight text-balance">
-              Crie Sites de
-              <span className="gradient-primary bg-clip-text text-transparent"> Presentes </span>
-              Únicos
-            </h1>
+            <h2 className="text-4xl lg:text-6xl font-bold leading-tight text-balance">
+              Sites de Presentes
+              <span className="gradient-primary bg-clip-text text-transparent"> Profissionais </span>
+              para Todos
+            </h2>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-              Transforme momentos especiais em experiências inesquecíveis. 
-              Crie sites personalizados para casamentos, chás de bebê, bodas e celebrações únicas.
+              Seja você um <strong>assessor de eventos</strong> criando sites com sua marca própria, 
+              ou uma <strong>pessoa</strong> planejando seu evento especial - temos a solução perfeita 
+              com layouts únicos e pagamentos integrados sem taxas.
             </p>
+          </div>
+
+          {/* Target Audience Badges */}
+          <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
+            <Badge variant="outline" className="px-4 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+              <Building2 className="w-4 h-4 mr-2" />
+              Assessores & Eventos
+            </Badge>
+            <Badge variant="outline" className="px-4 py-2 bg-gradient-to-r from-pink-50 to-rose-50 border-pink-200">
+              <Heart className="w-4 h-4 mr-2" />
+              Noivos & Famílias
+            </Badge>
+            <Badge variant="outline" className="px-4 py-2 bg-gradient-to-r from-purple-50 to-violet-50 border-purple-200">
+              <Crown className="w-4 h-4 mr-2" />
+              White Label
+            </Badge>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
             <Button 
               size="xl" 
-              variant="elegant" 
-              className="font-semibold"
+              className="font-semibold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 text-white shadow-lg hover:shadow-xl transition-all duration-300"
               onClick={() => window.location.href = '/auth'}
             >
               <Gift className="w-5 h-5 mr-2" />
-              Criar Meu Site de Presentes
+              Começar Agora - Grátis
             </Button>
-            <Button size="xl" variant="outline" className="font-medium">
+            <Button size="xl" variant="outline" className="font-medium border-2 hover:bg-gradient-to-r hover:from-primary/5 hover:to-accent/5">
               <Users className="w-5 h-5 mr-2" />
               Ver Demonstração
             </Button>
           </div>
 
-          {/* Stats */}
+          {/* Enhanced Stats */}
           <div className="grid grid-cols-3 gap-6 pt-8 border-t border-border/50">
             <div className="text-center lg:text-left">
-              <div className="text-3xl font-bold text-primary">500+</div>
-              <div className="text-sm text-muted-foreground">Sites Criados</div>
+              <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">500+</div>
+              <div className="text-sm text-muted-foreground font-medium">Sites Criados</div>
             </div>
             <div className="text-center lg:text-left">
-              <div className="text-3xl font-bold text-primary">15k+</div>
-              <div className="text-sm text-muted-foreground">Presentes Dados</div>
+              <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">0%</div>
+              <div className="text-sm text-muted-foreground font-medium">Taxa de Comissão</div>
             </div>
             <div className="text-center lg:text-left">
-              <div className="text-3xl font-bold text-primary">98%</div>
-              <div className="text-sm text-muted-foreground">Satisfação</div>
+              <div className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">24h</div>
+              <div className="text-sm text-muted-foreground font-medium">Para Ativar</div>
             </div>
           </div>
         </div>
