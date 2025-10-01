@@ -23,10 +23,15 @@ import mobileImage from "@/assets/mobile-preview.jpg";
 const Features = () => {
   const features = [
     {
-      icon: CreditCard,
-      title: "Zero Taxas de Comissão",
-      description: "Integração direta com seu meio de pagamento. Receba 100% do valor dos presentes na sua conta.",
+      icon: Zap,
+      title: "Site Criado na Hora",
+      description: "Em poucos segundos seu site está pronto! Não precisa esperar dias ou contratar designer.",
       highlight: true
+    },
+    {
+      icon: Settings,
+      title: "Personalização Fácil",
+      description: "Mude tudo com facilidade: cores, fotos, textos. Import/export de listas de presentes em planilhas."
     },
     {
       icon: Crown,
@@ -34,9 +39,9 @@ const Features = () => {
       description: "Assessores podem usar sua própria logo e domínio, criando uma experiência totalmente personalizada."
     },
     {
-      icon: Palette,
-      title: "Layouts Profissionais",
-      description: "Diversos templates exclusivos para cada tipo de evento: casamentos, chás, aniversários e muito mais."
+      icon: CreditCard,
+      title: "Pague Apenas pelo Uso",
+      description: "Modelo justo: você só paga quando realmente usar o site. Sem mensalidades ou taxas escondidas."
     },
     {
       icon: Link2,
@@ -47,11 +52,6 @@ const Features = () => {
       icon: Smartphone,
       title: "100% Responsivo",
       description: "Sites que ficam perfeitos em celular, tablet e desktop. Seus convidados compram de qualquer lugar."
-    },
-    {
-      icon: Settings,
-      title: "Painel Profissional",
-      description: "Dashboard completo para gerenciar múltiplos sites, acompanhar vendas e exportar relatórios."
     }
   ];
 
@@ -99,10 +99,10 @@ const Features = () => {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             <div className="p-6 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100">
               <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mb-4">
-                <CreditCard className="w-6 h-6 text-white" />
+                <Zap className="w-6 h-6 text-white" />
               </div>
-              <h3 className="font-bold text-lg mb-2">0% de Taxa</h3>
-              <p className="text-sm text-muted-foreground">Outras cobram até 5%. Aqui você recebe 100% do valor.</p>
+              <h3 className="font-bold text-lg mb-2">Criação Instantânea</h3>
+              <p className="text-sm text-muted-foreground">Site pronto em segundos. Não precisa esperar dias ou semanas.</p>
             </div>
             
             <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100">
@@ -115,18 +115,18 @@ const Features = () => {
             
             <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-100">
               <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-violet-600 rounded-xl flex items-center justify-center mb-4">
-                <Link2 className="w-6 h-6 text-white" />
+                <Settings className="w-6 h-6 text-white" />
               </div>
-              <h3 className="font-bold text-lg mb-2">Links + PIX</h3>
-              <p className="text-sm text-muted-foreground">Pagamento integrado + links externos + PIX.</p>
+              <h3 className="font-bold text-lg mb-2">Fácil Personalização</h3>
+              <p className="text-sm text-muted-foreground">Personalize tudo com facilidade. Import/export de listas.</p>
             </div>
             
             <div className="p-6 rounded-2xl bg-gradient-to-br from-pink-50 to-rose-50 border border-pink-100">
               <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-rose-600 rounded-xl flex items-center justify-center mb-4">
-                <Palette className="w-6 h-6 text-white" />
+                <CreditCard className="w-6 h-6 text-white" />
               </div>
-              <h3 className="font-bold text-lg mb-2">Layouts Únicos</h3>
-              <p className="text-sm text-muted-foreground">Designs exclusivos que outros não têm.</p>
+              <h3 className="font-bold text-lg mb-2">Pague Apenas o Uso</h3>
+              <p className="text-sm text-muted-foreground">Modelo justo: pague apenas quando usar o site.</p>
             </div>
           </div>
         </div>

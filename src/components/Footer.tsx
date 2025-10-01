@@ -47,11 +47,11 @@ const Footer = () => {
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4" />
-                <span>WhatsApp: (11) 99999-9999</span>
+                <span>WhatsApp: (81) 982128625</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4" />  
-                <span>São Paulo, Brasil</span>
+                <span>Recife - PE, Brasil</span>
               </div>
             </div>
           </div>
