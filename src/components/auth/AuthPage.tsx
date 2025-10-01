@@ -194,13 +194,15 @@ const AuthPage = () => {
               {showRSVP ? (
                 rsvpStatus === 'yes' ? 'Confirmar Presença' : 'Informar Ausência'
               ) : (
-                'Acesso Administrativo'
+                searchParams.get('site') ? 'Login do Convidado' : 'Acesso Administrativo'
               )}
             </CardTitle>
             <p className="text-muted-foreground">
               {showRSVP 
                 ? 'Por favor, confirme sua participação no evento'
-                : 'Entre para gerenciar sites e configurações'
+                : searchParams.get('site') 
+                  ? 'Entre com seus dados para acessar o site'
+                  : 'Entre para gerenciar sites e configurações'
               }
             </p>
           </CardHeader>
@@ -266,8 +268,12 @@ const AuthPage = () => {
             ) : (
               <Tabs defaultValue="signin" className="space-y-4">
                 <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="signin">Entrar</TabsTrigger>
-                  <TabsTrigger value="signup">Cadastrar</TabsTrigger>
+                  <TabsTrigger value="signin">
+                    {searchParams.get('site') ? 'Entrar' : 'Entrar'}
+                  </TabsTrigger>
+                  <TabsTrigger value="signup">
+                    {searchParams.get('site') ? 'Criar Conta' : 'Cadastrar'}
+                  </TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="signin">

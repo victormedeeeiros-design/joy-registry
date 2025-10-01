@@ -9,7 +9,7 @@ import { useSiteAuth } from '@/hooks/useSiteAuth';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Heart, CheckCircle, UserCheck, Phone, Users, Baby } from "lucide-react";
 
 interface Site {
@@ -41,6 +41,40 @@ export const RSVPSection = ({ site, siteUser, navigate }: RSVPSectionProps) => {
   const [hasRSVP, setHasRSVP] = useState(false);
 
   console.log('RSVPSection rendered with:', { site: site?.id, siteUser: siteUser?.email });
+
+  // Verificar se o usuário já fez RSVP
+  useEffect(() => {
+    const checkExistingRSVP = async () => {
+      if (!siteUser || !site) {
+        console.log('RSVPSection useEffect - Usuário ou site não disponível:', { siteUser: !!siteUser, site: !!site });
+        return;
+      }
+
+      console.log('RSVPSection useEffect - Verificando RSVP existente para:', { email: siteUser.email, siteId: site.id });
+
+      try {
+        const { data, error } = await supabase
+          .from('site_rsvps')
+          .select('will_attend')
+          .eq('site_id', site.id)
+          .eq('guest_email', siteUser.email)
+          .single();
+
+        if (data && !error) {
+          console.log('RSVP existente encontrado:', data);
+          setHasRSVP(true);
+          setRsvpStatus(data.will_attend ? 'yes' : 'no');
+        } else {
+          console.log('Nenhum RSVP encontrado, erro:', error?.code);
+        }
+      } catch (error) {
+        console.log('Erro ao buscar RSVP existente:', error);
+        // Isso é normal, usuário ainda não fez RSVP
+      }
+    };
+
+    checkExistingRSVP();
+  }, [siteUser, site]);
 
   const handleRSVP = async (willAttend: boolean) => {
     console.log('RSVP handleRSVP called with:', { willAttend, siteUser: siteUser?.email, site: site?.id });
