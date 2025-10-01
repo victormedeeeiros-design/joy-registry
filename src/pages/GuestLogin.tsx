@@ -67,22 +67,48 @@ export default function GuestLogin() {
 
     setLoading(true);
 
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
     try {
       console.log('Inserindo RSVP com dados:', {
         site_id: siteId,
         guest_name: name.trim(),
         guest_email: email.trim(),
-        will_attend: willAttend
+        will_attend: willAttend,
+        isMobile,
+        userAgent: navigator.userAgent
       });
+
+      // Estratégia unificada: usar sempre upsert para evitar duplicatas
+      const rsvpData = {
+        site_id: siteId,
+        guest_name: name.trim(),
+        guest_email: email.trim(),
+        will_attend: willAttend,
+        message: null
+      };
+
+      // Primeiro verificar se o site existe e está ativo
+      console.log('🔍 Verificando se o site está ativo...');
+      const { data: siteCheck, error: siteError } = await supabase
+        .from('sites')
+        .select('id, title, is_active')
+        .eq('id', siteId)
+        .eq('is_active', true)
+        .single();
+
+      if (siteError || !siteCheck) {
+        throw new Error('Site não encontrado ou inativo. Verifique se o link está correto.');
+      }
+
+      console.log('✅ Site ativo confirmado:', siteCheck.title);
+      console.log('🔄 Tentando inserir/atualizar RSVP...');
 
       const { data, error } = await supabase
         .from('site_rsvps')
-        .insert({
-          site_id: siteId,
-          guest_name: name.trim(),
-          guest_email: email.trim(),
-          will_attend: willAttend,
-          message: null // Explicitamente definir como null
+        .upsert(rsvpData, {
+          onConflict: 'site_id,guest_email',
+          ignoreDuplicates: false
         })
         .select()
         .single();
@@ -133,29 +159,52 @@ export default function GuestLogin() {
       let errorMessage = 'Ocorreu um erro ao confirmar sua presença. Tente novamente.';
       
       if (error.message?.includes('violates row-level security policy')) {
-        errorMessage = 'Erro de permissão detectado. Aguarde enquanto corrigimos as configurações de segurança...';
+        const mobileInfo = diagnoseMobileIssues();
+        
+        if (mobileInfo.isMobile) {
+          console.log('🚨 RLS Error no mobile - tentando método alternativo...');
+          
+          // Para mobile: tentar usando uma Edge Function como fallback
+          try {
+            const fallbackResult = await supabase.functions.invoke('mobile-rsvp-fallback', {
+              body: {
+                site_id: siteId,
+                guest_name: name.trim(),
+                guest_email: email.trim(),
+                will_attend: willAttend,
+                user_agent: navigator.userAgent
+              }
+            });
+
+            if (fallbackResult.error) {
+              throw fallbackResult.error;
+            }
+
+            console.log('✅ Fallback mobile funcionou:', fallbackResult.data);
+            toast.success(willAttend ? 'Presença confirmada com sucesso!' : 'Resposta registrada com sucesso!');
+            
+            // Continuar com o fluxo normal
+            localStorage.removeItem('currentSiteId');
+            navigate(`/site/${siteId}`);
+            return;
+            
+          } catch (fallbackError) {
+            console.error('❌ Fallback também falhou:', fallbackError);
+            errorMessage = 'Problema específico do celular detectado. Por favor, tente pelo computador ou entre em contato conosco.';
+          }
+        } else {
+          errorMessage = 'Erro de permissão detectado. As configurações de segurança estão sendo atualizadas...';
+        }
         
         // Executar diagnósticos
-        const mobileInfo = diagnoseMobileIssues();
         console.log('🔧 Executando diagnósticos...', mobileInfo);
         
         // Testar conexão em background
         testSupabaseConnection().then(isWorking => {
           if (!isWorking) {
             console.log('🚨 Confirmado: Problema nas políticas RLS');
-            if (mobileInfo.isMobile) {
-              toast.error('Erro específico de celular detectado. Tente pelo computador enquanto corrigimos.');
-            }
           }
         });
-        
-        // Para mobile, mostrar mensagem específica
-        if (mobileInfo.isMobile) {
-          console.log('Detectado dispositivo móvel, tentando novamente...');
-          setTimeout(() => {
-            toast.error('Se o erro persistir, tente acessar pelo computador ou entre em contato conosco.');
-          }, 2000);
-        }
       } else if (error.message?.includes('duplicate key')) {
         errorMessage = 'Você já confirmou presença para este evento.';
       } else if (error.message?.includes('null value')) {
