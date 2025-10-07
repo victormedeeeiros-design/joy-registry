@@ -397,3 +397,64 @@
     text-wrap: balance;
   }
 }
+
+/* Color Scheme Themes */
+.theme-elegant-gold {
+  --primary: 45 65% 55%; /* Dourado elegante */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 45 25% 92%; /* Creme suave */
+  --secondary-foreground: 45 15% 25%;
+  --accent: 45 80% 75%; /* Dourado mais claro */
+  --accent-foreground: 45 15% 25%;
+  --muted: 45 15% 95%;
+  --muted-foreground: 45 10% 50%;
+  --border: 45 15% 88%;
+}
+
+.theme-romantic-pink {
+  --primary: 340 65% 75%; /* Rosa romântico */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 340 25% 95%; /* Rosa muito claro */
+  --secondary-foreground: 340 15% 25%;
+  --accent: 340 80% 85%; /* Rosa suave */
+  --accent-foreground: 340 15% 25%;
+  --muted: 340 15% 97%;
+  --muted-foreground: 340 10% 50%;
+  --border: 340 15% 90%;
+}
+
+.theme-modern-blue {
+  --primary: 210 70% 60%; /* Azul moderno */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 210 25% 92%; /* Azul muito claro */
+  --secondary-foreground: 210 15% 25%;
+  --accent: 210 80% 75%; /* Azul claro */
+  --accent-foreground: 210 15% 25%;
+  --muted: 210 15% 95%;
+  --muted-foreground: 210 10% 50%;
+  --border: 210 15% 88%;
+}
+
+.theme-natural-green {
+  --primary: 150 60% 55%; /* Verde natural */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 150 25% 92%; /* Verde muito claro */
+  --secondary-foreground: 150 15% 25%;
+  --accent: 150 70% 75%; /* Verde claro */
+  --accent-foreground: 150 15% 25%;
+  --muted: 150 15% 95%;
+  --muted-foreground: 150 10% 50%;
+  --border: 150 15% 88%;
+}
+
+.theme-classic-navy {
+  --primary: 220 85% 25%; /* Azul marinho clássico */
+  --primary-foreground: 0 0% 100%;
+  --secondary: 220 25% 92%; /* Azul claro */
+  --secondary-foreground: 220 15% 25%;
+  --accent: 220 60% 70%; /* Azul médio */
+  --accent-foreground: 0 0% 100%;
+  --muted: 220 15% 95%;
+  --muted-foreground: 220 10% 50%;
+  --border: 220 15% 88%;
+}

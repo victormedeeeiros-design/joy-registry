@@ -88,18 +88,18 @@ const DEFAULT_CATALOG: Record<string, Array<{ id: string; name: string; price: n
     { id: 'manual-sobrevivencia', name: 'Manual de sobrevivência doméstica', price: 45.00, image_url: '', category: 'Brincadeiras', description: 'Guia humorístico para vida doméstica' }
   ],
   'aniversario': [
-    { id: 'bolo-festa', name: 'Bolo Personalizado', price: 120.00, image_url: '', category: 'Festa', description: 'Bolo de aniversário personalizado' },
-    { id: 'decoracao-mesa', name: 'Kit Decoração Mesa', price: 85.00, image_url: '', category: 'Decoração', description: 'Kit completo para decorar a mesa' },
-    { id: 'baloes-especiais', name: 'Balões Especiais', price: 45.00, image_url: '', category: 'Decoração', description: 'Conjunto de balões temáticos' },
-    { id: 'convites-personalizados', name: 'Convites Personalizados', price: 25.00, image_url: '', category: 'Papelaria', description: '50 convites personalizados' },
-    { id: 'album-fotos-aniversario', name: 'Álbum de Fotos Especial', price: 65.00, image_url: '', category: 'Lembrança', description: 'Álbum para guardar fotos do aniversário' },
-    { id: 'presente-surpresa', name: 'Presente Surpresa', price: 150.00, image_url: '', category: 'Presente', description: 'Presente especial escolhido com carinho' },
-    { id: 'kit-festa-criança', name: 'Kit Festa Infantil', price: 95.00, image_url: '', category: 'Festa', description: 'Kit completo para festa infantil' },
-    { id: 'musica-dj', name: 'Serviço de DJ', price: 300.00, image_url: '', category: 'Entretenimento', description: 'DJ profissional para 4 horas' },
-    { id: 'fotografia-festa', name: 'Fotografia da Festa', price: 250.00, image_url: '', category: 'Serviço', description: 'Cobertura fotográfica completa' },
-    { id: 'lembrancinhas', name: 'Lembrancinhas Personalizadas', price: 40.00, image_url: '', category: 'Lembrança', description: '30 lembrancinhas personalizadas' },
-    { id: 'vela-numerica', name: 'Vela Numérica', price: 15.00, image_url: '', category: 'Festa', description: 'Vela com número da idade' },
-    { id: 'buffet-mini', name: 'Mini Buffet', price: 180.00, image_url: '', category: 'Comida', description: 'Buffet para 20 pessoas' }
+    { id: 'bolo-personalizado', name: 'Bolo de Aniversário Personalizado', price: 89.90, image_url: '', category: 'Doces & Bolos', description: 'Bolo personalizado com tema escolhido' },
+    { id: 'decoracao-festa', name: 'Decoração Completa da Festa', price: 299.90, image_url: '', category: 'Decoração', description: 'Decoração temática com balões, painel e mesa' },
+    { id: 'salgadinhos-festa', name: 'Kit Salgadinhos para Festa', price: 159.90, image_url: '', category: 'Comidas & Bebidas', description: '100 salgadinhos variados' },
+    { id: 'docinhos-brigadeiros', name: 'Docinhos Gourmet (100 unidades)', price: 149.90, image_url: '', category: 'Doces & Bolos', description: 'Brigadeiros, beijinhos e docinhos variados' },
+    { id: 'refrigerantes-sucos', name: 'Bebidas para Festa', price: 89.90, image_url: '', category: 'Comidas & Bebidas', description: 'Refrigerantes, sucos e água para 30 pessoas' },
+    { id: 'animacao-festa', name: 'Animação Infantil', price: 399.90, image_url: '', category: 'Entretenimento', description: 'Recreação com palhaço ou personagem por 3 horas' },
+    { id: 'som-musica', name: 'Sistema de Som e Música', price: 199.90, image_url: '', category: 'Entretenimento', description: 'Caixa de som, microfone e playlist' },
+    { id: 'convites-digitais', name: 'Convites Digitais Personalizados', price: 49.90, image_url: '', category: 'Papelaria & Convites', description: 'Convites digitais com arte personalizada' },
+    { id: 'lembrancinhas-festa', name: 'Lembrancinhas para Convidados', price: 79.90, image_url: '', category: 'Lembranças', description: '30 lembrancinhas personalizadas' },
+    { id: 'fotografia-profissional', name: 'Cobertura Fotográfica', price: 449.90, image_url: '', category: 'Serviços', description: 'Fotógrafo profissional durante toda festa' },
+    { id: 'mesa-guloseimas', name: 'Mesa de Guloseimas', price: 189.90, image_url: '', category: 'Doces & Bolos', description: 'Mesa decorada com doces variados' },
+    { id: 'kit-aniversariante', name: 'Kit Especial do Aniversariante', price: 129.90, image_url: '', category: 'Presentes Especiais', description: 'Coroa, faixa, vela especial e surpresas' }
   ],
   'modern-grid': [
     { id: 'laptop', name: 'Notebook', price: 2499.9, image_url: '', category: 'Tecnologia', description: 'Notebook para trabalho' },
@@ -214,10 +214,8 @@ const PublicSiteContent = () => {
         // Apply theme class based on color scheme
         const body = document.body;
         body.className = body.className.replace(/theme-[\w-]+/g, '');
-        if (siteData.color_scheme === 'dark-elegance') {
-          body.classList.add('theme-dark-elegance');
-        } else if (siteData.color_scheme === 'midnight-black') {
-          body.classList.add('theme-midnight-black');
+        if (siteData.color_scheme) {
+          body.classList.add(`theme-${siteData.color_scheme}`);
         }
         
         // Apply font colors if specified
@@ -645,7 +643,7 @@ const PublicSiteContent = () => {
                 }}
               >
                 <Heart className="h-4 w-4 mr-2" />
-                Nossa História
+                {site.layout_id === 'aniversario' ? 'Minha História' : 'Nossa História'}
               </Button>
               <Button 
                 variant="ghost"
@@ -658,7 +656,7 @@ const PublicSiteContent = () => {
                 }}
               >
                 <Gift className="h-4 w-4 mr-2" />
-                Lista de Presentes
+                {site.layout_id === 'aniversario' ? 'Lista de Desejos' : 'Lista de Presentes'}
               </Button>
             </nav>
 
@@ -815,7 +813,7 @@ const PublicSiteContent = () => {
               onClick={() => scrollToSection('gifts')}
             >
               <Gift className="h-5 w-5 mr-2" />
-              <span className="hidden sm:inline">Ver Lista de Presentes</span>
+              <span className="hidden sm:inline">{site.layout_id === 'aniversario' ? 'Ver Lista de Desejos' : 'Ver Lista de Presentes'}</span>
               <span className="sm:hidden">Presentes</span>
             </Button>
           </div>
@@ -840,7 +838,9 @@ const PublicSiteContent = () => {
             <div className="flex items-center justify-center mb-6">
               <Heart className="h-8 w-8 text-primary" />
             </div>
-            <h2 className="text-5xl font-sloop mb-6" style={{ color: 'var(--title-color, var(--foreground))' }}>Nossa História</h2>
+            <h2 className="text-5xl font-sloop mb-6" style={{ color: 'var(--title-color, var(--foreground))' }}>
+              {site.layout_id === 'aniversario' ? 'Minha História' : 'Nossa História'}
+            </h2>
             <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
               Um amor que encontrou seu lar
             </p>
@@ -982,7 +982,9 @@ const PublicSiteContent = () => {
                   
                   <div className="text-center py-12">
                     <Heart className="h-24 w-24 text-primary/30 mx-auto mb-6" />
-                    <h3 className="text-xl font-semibold mb-2 text-muted-foreground">Nossa história será contada aqui</h3>
+                    <h3 className="text-xl font-semibold mb-2 text-muted-foreground">
+                      {site.layout_id === 'aniversario' ? 'Minha história será contada aqui' : 'Nossa história será contada aqui'}
+                    </h3>
                     <p className="text-muted-foreground">
                       Em breve compartilharemos nossos momentos especiais com vocês
                     </p>
@@ -1003,7 +1005,9 @@ const PublicSiteContent = () => {
           <div className="text-center mb-12 sm:mb-16">
             <div className="flex items-center justify-center mb-4">
               <Gift className="h-6 w-6 sm:h-8 sm:w-8 text-primary mr-2" />
-              <h2 className="text-3xl sm:text-4xl md:text-5xl font-sloop text-center" style={{ color: 'var(--title-color, var(--foreground))' }}>Lista de Presentes</h2>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-sloop text-center" style={{ color: 'var(--title-color, var(--foreground))' }}>
+                {site.layout_id === 'aniversario' ? 'Lista de Desejos' : 'Lista de Presentes'}
+              </h2>
             </div>
             <div className="w-16 sm:w-24 h-1 bg-primary mx-auto mb-4"></div>
             <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto px-4">
