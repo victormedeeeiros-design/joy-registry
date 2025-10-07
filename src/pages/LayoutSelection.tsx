@@ -46,16 +46,16 @@ const layouts: LayoutOption[] = [
     {
       id: "aniversario",
       name: "Aniversário",
-      description: "Em breve - Layout festivo para comemorações de aniversário",
-      preview: "🎂 Em desenvolvimento...",
-      features: ["Em breve"],
+      description: "Layout festivo para comemorações de aniversário com seções especiais para presentes e celebração",
+      preview: "🎂 Layout completo para aniversário",
+      features: ["Lista de presentes personalizada", "Galeria de fotos", "Mensagem de aniversário", "RSVP para festa", "Contador de idade"],
       recommended: false
     }
   ];
 
   const handleLayoutSelect = (layoutId: string) => {
-    // Só permite selecionar chá de casa nova
-    if (layoutId === "cha-casa-nova") {
+    // Permite selecionar chá de casa nova e aniversário
+    if (layoutId === "cha-casa-nova" || layoutId === "aniversario") {
       setSelectedLayout(layoutId);
     }
   };
@@ -95,7 +95,7 @@ const layouts: LayoutOption[] = [
             <Card 
               key={layout.id} 
               className={`transition-all border-2 ${
-                layout.id === "cha-casa-nova" 
+                layout.id === "cha-casa-nova" || layout.id === "aniversario"
                   ? `cursor-pointer ${selectedLayout === layout.id 
                       ? "border-primary bg-primary/5" 
                       : "border-border hover:border-primary/50"}`
@@ -113,7 +113,7 @@ const layouts: LayoutOption[] = [
                           Recomendado
                         </Badge>
                       )}
-                      {layout.id !== "cha-casa-nova" && (
+                      {layout.id !== "cha-casa-nova" && layout.id !== "aniversario" && (
                         <Badge variant="secondary" className="text-xs">
                           <Lock className="h-3 w-3 mr-1" />
                           Em Breve
@@ -139,7 +139,7 @@ const layouts: LayoutOption[] = [
                     {layout.id === "cha-casa-nova" && <Home className="h-12 w-12 mx-auto text-primary" />}
                     {layout.id === "casamento" && <Heart className="h-12 w-12 mx-auto text-muted-foreground" />}
                     {layout.id === "cha-bebe" && <Baby className="h-12 w-12 mx-auto text-muted-foreground" />}
-                    {layout.id === "aniversario" && <Cake className="h-12 w-12 mx-auto text-muted-foreground" />}
+                    {layout.id === "aniversario" && <Cake className="h-12 w-12 mx-auto text-primary" />}
                   </div>
                   <p className="text-sm text-muted-foreground">{layout.preview}</p>
                 </div>
@@ -165,10 +165,12 @@ const layouts: LayoutOption[] = [
           <Button 
             size="lg" 
             onClick={handleContinue} 
-            disabled={!selectedLayout || selectedLayout !== "cha-casa-nova"}
+            disabled={!selectedLayout || (selectedLayout !== "cha-casa-nova" && selectedLayout !== "aniversario")}
             className="px-8"
           >
-            {selectedLayout === "cha-casa-nova" ? "Continuar com Chá de Casa Nova" : "Selecione um Layout Disponível"}
+            {selectedLayout === "cha-casa-nova" ? "Continuar com Chá de Casa Nova" : 
+             selectedLayout === "aniversario" ? "Continuar com Aniversário" :
+             "Selecione um Layout Disponível"}
           </Button>
         </div>
       </div>

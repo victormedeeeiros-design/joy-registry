@@ -87,6 +87,20 @@ const DEFAULT_CATALOG: Record<string, Array<{ id: string; name: string; price: n
     { id: 'tapete-diferentao', name: 'Tapete de porta diferentão', price: 65.00, image_url: '', category: 'Brincadeiras', description: 'Tapete com mensagens divertidas' },
     { id: 'manual-sobrevivencia', name: 'Manual de sobrevivência doméstica', price: 45.00, image_url: '', category: 'Brincadeiras', description: 'Guia humorístico para vida doméstica' }
   ],
+  'aniversario': [
+    { id: 'bolo-festa', name: 'Bolo Personalizado', price: 120.00, image_url: '', category: 'Festa', description: 'Bolo de aniversário personalizado' },
+    { id: 'decoracao-mesa', name: 'Kit Decoração Mesa', price: 85.00, image_url: '', category: 'Decoração', description: 'Kit completo para decorar a mesa' },
+    { id: 'baloes-especiais', name: 'Balões Especiais', price: 45.00, image_url: '', category: 'Decoração', description: 'Conjunto de balões temáticos' },
+    { id: 'convites-personalizados', name: 'Convites Personalizados', price: 25.00, image_url: '', category: 'Papelaria', description: '50 convites personalizados' },
+    { id: 'album-fotos-aniversario', name: 'Álbum de Fotos Especial', price: 65.00, image_url: '', category: 'Lembrança', description: 'Álbum para guardar fotos do aniversário' },
+    { id: 'presente-surpresa', name: 'Presente Surpresa', price: 150.00, image_url: '', category: 'Presente', description: 'Presente especial escolhido com carinho' },
+    { id: 'kit-festa-criança', name: 'Kit Festa Infantil', price: 95.00, image_url: '', category: 'Festa', description: 'Kit completo para festa infantil' },
+    { id: 'musica-dj', name: 'Serviço de DJ', price: 300.00, image_url: '', category: 'Entretenimento', description: 'DJ profissional para 4 horas' },
+    { id: 'fotografia-festa', name: 'Fotografia da Festa', price: 250.00, image_url: '', category: 'Serviço', description: 'Cobertura fotográfica completa' },
+    { id: 'lembrancinhas', name: 'Lembrancinhas Personalizadas', price: 40.00, image_url: '', category: 'Lembrança', description: '30 lembrancinhas personalizadas' },
+    { id: 'vela-numerica', name: 'Vela Numérica', price: 15.00, image_url: '', category: 'Festa', description: 'Vela com número da idade' },
+    { id: 'buffet-mini', name: 'Mini Buffet', price: 180.00, image_url: '', category: 'Comida', description: 'Buffet para 20 pessoas' }
+  ],
   'modern-grid': [
     { id: 'laptop', name: 'Notebook', price: 2499.9, image_url: '', category: 'Tecnologia', description: 'Notebook para trabalho' },
     { id: 'monitor', name: 'Monitor', price: 899.9, image_url: '', category: 'Tecnologia', description: 'Monitor 24 polegadas' },
@@ -713,8 +727,12 @@ const PublicSiteContent = () => {
       >
         <section id="home" className="container mx-auto px-4 text-center" style={{ color: 'var(--hero-color, #ffffff)' }}>
           <Badge variant="outline" className="mb-4 bg-white/10 border-white/20" style={{ color: 'inherit' }}>
-            <Home className="h-4 w-4 mr-2" />
-            {site.layout_id === 'cha-casa-nova' ? 'Chá de Casa Nova' : 'Celebração Especial'}
+            {site.layout_id === 'cha-casa-nova' && <Home className="h-4 w-4 mr-2" />}
+            {site.layout_id === 'aniversario' && <Calendar className="h-4 w-4 mr-2" />}
+            {site.layout_id !== 'cha-casa-nova' && site.layout_id !== 'aniversario' && <Home className="h-4 w-4 mr-2" />}
+            {site.layout_id === 'cha-casa-nova' ? 'Chá de Casa Nova' : 
+             site.layout_id === 'aniversario' ? 'Festa de Aniversário' : 
+             'Celebração Especial'}
           </Badge>
           
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-sloop mb-6 drop-shadow-2xl text-center px-4 text-white" style={{ 

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Loader2, Home, Palette, Type } from "lucide-react";
+import { ArrowLeft, Loader2, Home, Palette, Type, Cake } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +41,8 @@ const CreateSite = () => {
   });
 
   const layoutNames = {
-    "cha-casa-nova": "Chá de Casa Nova"
+    "cha-casa-nova": "Chá de Casa Nova",
+    "aniversario": "Aniversário"
   };
 
   const colorSchemes = [
@@ -98,7 +99,22 @@ const CreateSite = () => {
   ];
 
   const handleInputChange = (field: string, value: string | File[]) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [field]: value };
+      
+      // Atualizar títulos das seções baseado no tipo de evento
+      if (field === "eventType") {
+        if (value === "cha-casa-nova") {
+          newData.section_title_1 = "O Início de Tudo";
+          newData.section_title_2 = "Nossa Nova Casa";
+        } else if (value === "aniversario") {
+          newData.section_title_1 = "Minha História";
+          newData.section_title_2 = "Celebrando a Vida";
+        }
+      }
+      
+      return newData;
+    });
   };
 
   const handleFileUpload = async (files: File[], userId: string): Promise<string[]> => {
@@ -280,6 +296,12 @@ const CreateSite = () => {
                           Chá de Casa Nova
                         </div>
                       </SelectItem>
+                      <SelectItem value="aniversario">
+                        <div className="flex items-center gap-2">
+                          <Cake className="h-4 w-4" />
+                          Aniversário
+                        </div>
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
@@ -438,7 +460,11 @@ const CreateSite = () => {
                       id="section_title_1"
                       value={formData.section_title_1}
                       onChange={(e) => handleInputChange("section_title_1", e.target.value)}
-                      placeholder="Ex: O Início de Tudo"
+                      placeholder={
+                        formData.eventType === "cha-casa-nova" ? "Ex: O Início de Tudo" :
+                        formData.eventType === "aniversario" ? "Ex: Minha História" :
+                        "Ex: Primeira Seção"
+                      }
                     />
                     <p className="text-xs text-muted-foreground">
                       Título da primeira parte da história
@@ -450,7 +476,11 @@ const CreateSite = () => {
                       id="section_title_2"
                       value={formData.section_title_2}
                       onChange={(e) => handleInputChange("section_title_2", e.target.value)}
-                      placeholder="Ex: Nossa Nova Casa"
+                      placeholder={
+                        formData.eventType === "cha-casa-nova" ? "Ex: Nossa Nova Casa" :
+                        formData.eventType === "aniversario" ? "Ex: Celebrando a Vida" :
+                        "Ex: Segunda Seção"
+                      }
                     />
                     <p className="text-xs text-muted-foreground">
                       Título da segunda parte da história
@@ -603,6 +633,8 @@ const CreateSite = () => {
                     <div>
                       <p className="font-medium">{layoutNames[layoutId as keyof typeof layoutNames]}</p>
                       <p className="text-sm text-muted-foreground">
+                        {layoutId === "cha-casa-nova" && "Layout especial para celebrar sua nova casa"}
+                        {layoutId === "aniversario" && "Layout festivo para comemorações de aniversário"}
                         {layoutId === "modern-grid" && "Layout em grade limpo e moderno"}
                         {layoutId === "story-driven" && "Layout que conta uma história"}
                         {layoutId === "minimal-elegant" && "Design clean e sofisticado"}
